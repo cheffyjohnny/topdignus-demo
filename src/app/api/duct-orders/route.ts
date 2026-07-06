@@ -55,12 +55,12 @@ export async function POST(req: NextRequest) {
   let purchaseAmount = 0
   for (const item of ((body.items ?? []) as any[])) {
     if ((item.type === '입상' || item.type === '벽체') && ((item.width ?? 0) + (item.height ?? 0)) > 0) {
-      const price = item.type === '입상'
-        ? Number(ductPriceRow?.riser_price ?? 0)
-        : Number(ductPriceRow?.wall_price ?? 0)
       if (ductPriceRow?.price_type === 'per_item') {
-        purchaseAmount += Math.round(price * (item.quantity ?? 0))
+        purchaseAmount += Math.round(Number(item.purchase_price ?? 0) * (item.quantity ?? 0))
       } else {
+        const price = item.type === '입상'
+          ? Number(ductPriceRow?.riser_price ?? 0)
+          : Number(ductPriceRow?.wall_price ?? 0)
         const perimeterM = Math.round(((item.width ?? 0) + (item.height ?? 0)) * 2 / 1000 * 1000) / 1000
         purchaseAmount += Math.round(price * perimeterM * (item.quantity ?? 0))
       }

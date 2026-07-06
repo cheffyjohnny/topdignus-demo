@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { isProfireManufacturer } from '@/lib/vendor-mappings'
 
 const DUCT_COL_DEFAULTS: Record<string, number> = {
-  name: 176, w: 112, h: 112, perimeter: 96, qty: 80, price: 128, amount: 128, note: 120,
+  name: 176, w: 112, h: 112, perimeter: 96, qty: 80, price: 128, purchasePrice: 128, amount: 128, note: 120,
 }
 const DUCT_COL_KEY = 'duct_items_col_widths'
 
@@ -16,6 +16,7 @@ export interface DuctItem {
   height: number
   quantity: number
   unit_price: number
+  purchase_price?: number
   note?: string
 }
 
@@ -310,6 +311,7 @@ export function DuctItemsTable({
                 <th className="relative group/th px-3 py-2.5 text-right select-none" style={{ width: colW.perimeter }}>M/개{rh('perimeter')}</th>
                 <th className="relative group/th px-3 py-2.5 text-right select-none" style={{ width: colW.qty }}>수량{rh('qty')}</th>
                 <th className="relative group/th px-3 py-2.5 text-right select-none" style={{ width: colW.price }}>{(isProfire && appliedCalc) ? '적용단가/M' : `단가/${priceUnitLabel}`}{rh('price')}</th>
+                <th className="relative group/th px-3 py-2.5 text-right select-none" style={{ width: colW.purchasePrice }}>매입가격{rh('purchasePrice')}</th>
                 <th className="relative group/th px-3 py-2.5 text-right select-none" style={{ width: colW.amount }}>금액{rh('amount')}</th>
                 <th className="relative group/th px-3 py-2.5 text-left select-none" style={{ width: colW.note }}>비고{rh('note')}</th>
                 <th className="w-10" />
@@ -392,6 +394,18 @@ export function DuctItemsTable({
                           disabled={isDisabled}
                           className={`border rounded px-2 py-1.5 text-sm text-right focus:outline-none w-full tabular-nums disabled:opacity-40 disabled:cursor-not-allowed ${!newVendor && !isItemPerItem && dp ? 'border-gray-100 bg-gray-50 text-gray-400 cursor-default' : 'border-gray-200 focus:border-[#014A99]'}`}
                           placeholder="0" />
+                      )}
+                    </td>
+                    <td className="px-3 py-2">
+                      {!isManualItem && isItemPerItem ? (
+                        <input type="number" min={0} value={item.purchase_price ?? ''}
+                          onChange={e => updateItem(item.id, { purchase_price: e.target.value === '' ? undefined : Number(e.target.value) })}
+                          onFocus={e => e.target.select()}
+                          disabled={isDisabled}
+                          className="border border-gray-200 rounded px-2 py-1.5 text-sm text-right focus:outline-none focus:border-[#014A99] w-full disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-gray-50"
+                          placeholder={(item.type === '입상' ? dp?.riser_price : dp?.wall_price)?.toLocaleString('ko-KR') ?? '0'} />
+                      ) : (
+                        <span className="block text-sm text-right text-gray-300 py-1.5 px-2">{isManualItem ? '-' : '자동'}</span>
                       )}
                     </td>
                     <td className="px-3 py-2 text-right font-medium tabular-nums text-gray-700">{amt > 0 ? amt.toLocaleString('ko-KR') : '-'}</td>

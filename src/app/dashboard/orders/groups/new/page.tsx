@@ -208,6 +208,7 @@ export default function NewGroupOrderPage() {
                   width: it.width, height: it.height,
                   perimeter: Math.round(peri * 1000) / 1000,
                   quantity: it.quantity, unit_price: it.unit_price,
+                  purchase_price: it.purchase_price ?? null,
                   amount: amt, note: it.note || null,
                 }
               }),
