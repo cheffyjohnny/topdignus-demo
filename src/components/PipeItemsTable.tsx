@@ -246,14 +246,14 @@ export function PipeItemsTable({
     }
   }
 
-  const showTopBar = (showManufacturer && manufacturers.length > 1) || !!ilwiRawMapByMfr
+  const showTopBar = (showManufacturer && manufacturers.length > 0) || !!ilwiRawMapByMfr
 
   return (
     <div>
       {showTopBar && (
         <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-100 gap-4">
           <div className="flex items-center gap-2">
-            {showManufacturer && manufacturers.length > 1 && (
+            {showManufacturer && manufacturers.length > 0 && (
               <>
                 <span className="text-xs text-gray-500 font-medium">기본 제조사</span>
                 <select
