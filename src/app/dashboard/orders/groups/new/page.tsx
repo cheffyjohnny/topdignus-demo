@@ -27,6 +27,7 @@ export default function NewGroupOrderPage() {
   const [pct, setPct] = useState<number | null>(null)
   const [project, setProject] = useState('')
   const [orderDate, setOrderDate] = useState(today())
+  const [deliveryDate, setDeliveryDate] = useState('')
   const [author, setAuthor] = useState('')
   const [contactName, setContactName] = useState('')
   const [contactPhone, setContactPhone] = useState('')
@@ -89,7 +90,7 @@ export default function NewGroupOrderPage() {
   function saveDraft() {
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify({
-        vendor, pct, project, orderDate, author, contactName, contactPhone,
+        vendor, pct, project, orderDate, deliveryDate, author, contactName, contactPhone,
         deliveryLocation, address, deliveryDest, notes,
         pipeItems, ductItems, insul50Qty, insul25Qty, activeTab,
       }))
@@ -106,6 +107,7 @@ export default function NewGroupOrderPage() {
       if (d.pct != null) setPct(d.pct)
       if (d.project) setProject(d.project)
       if (d.orderDate) setOrderDate(d.orderDate)
+      if (d.deliveryDate) setDeliveryDate(d.deliveryDate)
       if (d.author) setAuthor(d.author)
       if (d.contactName) setContactName(d.contactName)
       if (d.contactPhone) setContactPhone(d.contactPhone)
@@ -132,6 +134,7 @@ export default function NewGroupOrderPage() {
   async function handleSave() {
     if (!vendor.trim()) { setError('업체를 선택해 주세요.'); return }
     if (!author.trim()) { setError('작성자를 입력해 주세요.'); return }
+    if (!deliveryDate) { setError('납품희망일을 입력해 주세요.'); return }
 
     const filledPipe = pipeItems.filter(it => it.name.trim() || (it as any).internalName?.trim())
     if (filledPipe.length === 0 && ductItems.length === 0) {
@@ -165,7 +168,7 @@ export default function NewGroupOrderPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            vendor, orderClient: vendor, project, orderDate, deliveryDate: '', author, contactName, contactPhone,
+            vendor, orderClient: vendor, project, orderDate, deliveryDate, author, contactName, contactPhone,
             deliveryLocation, address, deliveryDest, notes,
             manufacturer: pipePrimaryMfr,
             groupId,
@@ -184,7 +187,7 @@ export default function NewGroupOrderPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             manufacturer: ductPrimaryMfr,
-            customerName: vendor, project, orderDate, deliveryDate: '', author, contactName, contactPhone,
+            customerName: vendor, project, orderDate, deliveryDate, author, contactName, contactPhone,
             deliveryLocation, address, deliveryDest, notes,
             groupId,
             orderNo: `${baseNo}-덕트(${ductPrimaryMfr})`,
@@ -292,6 +295,9 @@ export default function NewGroupOrderPage() {
           </Field>
           <Field label="수주일">
             <input type="date" value={orderDate} onChange={e => setOrderDate(e.target.value)} className={INPUT_CLS} />
+          </Field>
+          <Field label="납품희망일" required>
+            <input type="date" value={deliveryDate} onChange={e => setDeliveryDate(e.target.value)} className={INPUT_CLS} />
           </Field>
           <Field label="작성자" required>
             <select value={author} onChange={e => setAuthor(e.target.value)} className={INPUT_CLS}>
