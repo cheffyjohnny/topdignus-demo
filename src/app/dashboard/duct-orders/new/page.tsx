@@ -154,7 +154,7 @@ export default function NewDuctOrderPage() {
       setItems(prev => prev.map(it => {
         const mfr = it.manufacturer ?? ''
         const dp = ductPrices.find(d => d.manufacturer === mfr)
-        if (!dp || dp.price_type === 'per_item') return it
+        if (!dp) return it
         const sp = cid ? ductSalePrices.find(d => d.manufacturer === mfr && d.customer_id === cid) ?? null : null
         return {
           ...it,

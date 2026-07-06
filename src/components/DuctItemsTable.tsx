@@ -149,6 +149,13 @@ export function DuctItemsTable({
     isProfire ? getDuctPrice(profireMfr) : null
   , [isProfire, profireMfr, getDuctPrice])
 
+  // 단가 컬럼 헤더용: 대표 제조사(첫 정상 품목 기준)의 가격 방식
+  const primaryDuctPrice = useMemo(() => {
+    const mfr = items.find(it => it.type !== '수기 금액 추가')?.manufacturer ?? ''
+    return getDuctPrice(mfr)
+  }, [items, getDuctPrice])
+  const priceUnitLabel = primaryDuctPrice?.price_type === 'per_item' ? '개' : 'M'
+
   const insul50Price = profireDuctPrice?.insul_50t_price ?? 0
   const insul25Price = profireDuctPrice?.insul_25t_price ?? 0
 
@@ -276,7 +283,7 @@ export function DuctItemsTable({
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-gray-400">
-              {newVendor ? '단가/M (직접입력)' : isProfire ? '적용단가/M (자동계산)' : '단가/M (자동)'}
+              {newVendor ? `단가/${priceUnitLabel} (직접입력)` : isProfire ? '적용단가/M (자동계산)' : `단가/${priceUnitLabel} (자동)`}
             </span>
             <button onClick={addItem} className="flex items-center gap-1 text-xs font-medium text-[#014A99] hover:opacity-70 transition-opacity cursor-pointer">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
@@ -302,7 +309,7 @@ export function DuctItemsTable({
                 <th className="relative group/th px-3 py-2.5 text-right select-none" style={{ width: colW.h }}>세로 (mm){rh('h')}</th>
                 <th className="relative group/th px-3 py-2.5 text-right select-none" style={{ width: colW.perimeter }}>M/개{rh('perimeter')}</th>
                 <th className="relative group/th px-3 py-2.5 text-right select-none" style={{ width: colW.qty }}>수량{rh('qty')}</th>
-                <th className="relative group/th px-3 py-2.5 text-right select-none" style={{ width: colW.price }}>{(isProfire && appliedCalc) ? '적용단가/M' : '단가/M'}{rh('price')}</th>
+                <th className="relative group/th px-3 py-2.5 text-right select-none" style={{ width: colW.price }}>{(isProfire && appliedCalc) ? '적용단가/M' : `단가/${priceUnitLabel}`}{rh('price')}</th>
                 <th className="relative group/th px-3 py-2.5 text-right select-none" style={{ width: colW.amount }}>금액{rh('amount')}</th>
                 <th className="relative group/th px-3 py-2.5 text-left select-none" style={{ width: colW.note }}>비고{rh('note')}</th>
                 <th className="w-10" />
