@@ -14,7 +14,7 @@ export function InfoRow({ label, value }: { label: string; value?: string | null
   return (
     <div className="flex gap-2 text-sm">
       <span className="text-gray-400 w-24 shrink-0">{label}</span>
-      <span className="text-gray-800">{value}</span>
+      <span className="text-gray-800 whitespace-pre-wrap">{value}</span>
     </div>
   )
 }
