@@ -6,6 +6,7 @@ import { toast } from 'react-toastify'
 import { DuctItemsTable } from '@/components/DuctItemsTable'
 import type { DuctItem } from '@/components/DuctItemsTable'
 import MultiFileUploader from '@/components/MultiFileUploader'
+import { isProfireManufacturer } from '@/lib/vendor-mappings'
 
 interface DuctPrice {
   manufacturer: string
@@ -185,7 +186,7 @@ export default function NewDuctOrderPage() {
         fileUrls.push(imgData.imageUrl)
       }
 
-      const profireMfr = items.find(it => (it.manufacturer ?? '').startsWith('프로화이어'))?.manufacturer ?? ''
+      const profireMfr = items.find(it => isProfireManufacturer(it.manufacturer))?.manufacturer ?? ''
       const isProfire  = !!profireMfr
       const primaryMfr = items[0]?.manufacturer ?? ductPrices[0]?.manufacturer ?? ''
 

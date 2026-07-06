@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { toast } from 'react-toastify'
 import { buildPriceMap, buildPipeSleeveStructure, buildManufacturerMaps, lookupSalePrice } from '@/lib/price-utils'
+import { isProfireManufacturer } from '@/lib/vendor-mappings'
 import {
   type EmailSignature,
   loadSignatures,
@@ -168,7 +169,7 @@ export default function OrderDetailPage({ type }: { type: OrderType }) {
   const ductRegularItems = useMemo(() => type !== 'duct' || !d ? [] : (d.items as DuctItem[]).filter(it => it.type !== '차열재'), [type, d])
   const ductInsulItems   = useMemo(() => type !== 'duct' || !d ? [] : (d.items as DuctItem[]).filter(it => it.type === '차열재'), [type, d])
   const ductTotalAmount  = useMemo(() => ductRegularItems.reduce((s, it) => s + (it.amount ?? 0), 0), [ductRegularItems])
-  const isProfire        = useMemo(() => type === 'duct' && !!(d?.manufacturer?.startsWith('프로화이어')), [type, d])
+  const isProfire        = useMemo(() => type === 'duct' && isProfireManufacturer(d?.manufacturer), [type, d])
 
   const insulCalc = useMemo(() => {
     if (!isProfire || !d) return null
@@ -243,7 +244,7 @@ export default function OrderDetailPage({ type }: { type: OrderType }) {
   // ── getMfrEmail ──
   function getMfrEmail(mfr: string): string {
     if (type === 'pipe') return mfr === '필립산업' ? 'pl3077@naver.com' : ''
-    return (mfr?.startsWith('프로화이어') || mfr?.includes('킹스아시아')) ? 'profire905@gmail.com' : ''
+    return (isProfireManufacturer(mfr) || mfr?.includes('킹스아시아')) ? 'profire905@gmail.com' : ''
   }
 
   // ── Status update ──
@@ -1208,7 +1209,7 @@ function DuctItemsSection({ order, editMode, editData, d, regularItems, insulIte
       </div>
 
       {/* 차열재 섹션 */}
-      {d.manufacturer?.startsWith('프로화이어') && (editMode || insulItems.length > 0) && (
+      {isProfireManufacturer(d.manufacturer) && (editMode || insulItems.length > 0) && (
         <div className="border-t border-orange-100">
           <div className="px-4 py-2.5 bg-orange-50/70"><span className="text-xs font-semibold text-orange-700">차열재</span></div>
           <table className="w-full text-sm">

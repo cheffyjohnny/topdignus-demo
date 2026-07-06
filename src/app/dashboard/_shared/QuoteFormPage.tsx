@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'react-toastify'
 import type { OrderItem } from '@/lib/parse-order'
 import { buildPriceMap, buildSealantMap, buildPipeSleeveStructure, buildManufacturerMaps, buildIlwidaegaMapByMfr, lookupSalePrice, type PriceRowMin } from '@/lib/price-utils'
+import { isProfireManufacturer } from '@/lib/vendor-mappings'
 import { PipeItemsTable } from '@/components/PipeItemsTable'
 import { DuctItemsTable } from '@/components/DuctItemsTable'
 import type { DuctItem } from '@/components/DuctItemsTable'
@@ -247,7 +248,7 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
         }
         endpoint = '/api/pipe-quotes'
       } else {
-        const profireMfr = ductItems.find(it => (it.manufacturer ?? '').startsWith('프로화이어'))?.manufacturer ?? ''
+        const profireMfr = ductItems.find(it => isProfireManufacturer(it.manufacturer))?.manufacturer ?? ''
         const isProfire = !!profireMfr
         const primaryMfr = ductItems[0]?.manufacturer ?? ductPrices[0]?.manufacturer ?? ''
         const dp = ductPrices.find(d => d.manufacturer === profireMfr)
@@ -306,7 +307,7 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
         }
 
         if (ductItems.length > 0) {
-          const profireMfr = ductItems.find(it => (it.manufacturer ?? '').startsWith('프로화이어'))?.manufacturer ?? ''
+          const profireMfr = ductItems.find(it => isProfireManufacturer(it.manufacturer))?.manufacturer ?? ''
           const isProfire = !!profireMfr
           const ductPrimaryMfr = ductItems[0]?.manufacturer ?? ductPrices[0]?.manufacturer ?? ''
           const dp = ductPrices.find(d => d.manufacturer === profireMfr)

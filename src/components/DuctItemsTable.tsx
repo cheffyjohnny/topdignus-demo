@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import { isProfireManufacturer } from '@/lib/vendor-mappings'
 
 const DUCT_COL_DEFAULTS: Record<string, number> = {
   name: 176, w: 112, h: 112, perimeter: 96, qty: 80, price: 128, amount: 128, note: 120,
@@ -135,7 +136,7 @@ export function DuctItemsTable({
 
   // 프로화이어 여부 (프로화이어 품목이 하나라도 있으면)
   const profireMfr = useMemo(() =>
-    items.find(it => (it.manufacturer ?? '').startsWith('프로화이어'))?.manufacturer ?? ''
+    items.find(it => isProfireManufacturer(it.manufacturer))?.manufacturer ?? ''
   , [items])
   const isProfire = !!profireMfr
 
@@ -173,7 +174,7 @@ export function DuctItemsTable({
   // 프로화이어 차열재 계산 (프로화이어 품목만)
   const insulCalc = useMemo(() => {
     if (!isProfire) return null
-    const profireItems = items.filter(it => (it.manufacturer ?? '').startsWith('프로화이어'))
+    const profireItems = items.filter(it => isProfireManufacturer(it.manufacturer))
     const wallRows  = profireItems.filter(it => it.type === '벽체').map(it => {
       const pMm = (it.width + it.height) * 2
       return { it, pMm, mm50: pMm * 4 * it.quantity }
@@ -247,7 +248,7 @@ export function DuctItemsTable({
   const totalAmount = items.reduce((sum, it) => {
     if (it.type === '수기 금액 추가') return sum + it.unit_price * it.quantity
     const mfr = it.manufacturer ?? ''
-    const isItemProfire = mfr.startsWith('프로화이어')
+    const isItemProfire = isProfireManufacturer(mfr)
     if (isItemProfire && appliedCalc) {
       return sum + Math.round(getAppliedUnitPrice(it.type as '입상' | '벽체') * perimeter(it) * it.quantity)
     }
@@ -312,7 +313,7 @@ export function DuctItemsTable({
                 const isManualItem = item.type === '수기 금액 추가'
                 const mfr = item.manufacturer ?? ''
                 const dp  = getDuctPrice(mfr)
-                const isItemProfire = mfr.startsWith('프로화이어')
+                const isItemProfire = isProfireManufacturer(mfr)
                 const isItemPerItem = dp?.price_type === 'per_item'
                 const peri = perimeter(item)
                 const amt  = isManualItem

@@ -34,3 +34,9 @@ export function getUnit(internalName: string): string {
 export function normalizePipeForExcel(pipe: string): string {
   return /^\d+$/.test(pipe) ? `${pipe}A` : pipe
 }
+
+// 프로화이어 제조사 판별 (한글 "프로화이어" / 영문 "ProFire" 둘 다 인식)
+export function isProfireManufacturer(mfr?: string | null): boolean {
+  const m = mfr ?? ''
+  return m.startsWith('프로화이어') || m.toLowerCase().startsWith('profire')
+}

@@ -12,6 +12,7 @@ import {
   DEFAULT_SIGNATURE,
 } from '@/lib/signatures'
 import { InfoCard, InfoRow, EditCard, EditRow, INPUT_CLS } from '@/app/dashboard/_shared/InfoComponents'
+import { isProfireManufacturer } from '@/lib/vendor-mappings'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -61,7 +62,7 @@ function toKST(iso: string) {
 }
 function makeSigId() { return `sig_${Date.now()}` }
 function getMfrEmail(mfr?: string | null): string {
-  return mfr?.startsWith('프로화이어') ? 'profire905@gmail.com' : ''
+  return isProfireManufacturer(mfr) ? 'profire905@gmail.com' : ''
 }
 
 // ─── Main Component ──────────────────────────────────────────────────────────
