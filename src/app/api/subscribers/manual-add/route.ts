@@ -5,7 +5,9 @@ import { supabaseServer } from "@/lib/supabase-server";
 import { Resend } from "resend";
 import bcrypt from "bcryptjs";
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY!)
+}
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);

@@ -5,7 +5,9 @@ import { supabaseServer } from "@/lib/supabase-server";
 import { Resend } from "resend";
 import bcrypt from "bcryptjs";
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY!)
+}
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -76,7 +78,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 신청자에게 로그인 정보 발송
-    await resend.emails.send({
+    await getResend().emails.send({
       from: "탑디뉴스 <no-reply@topdignus.co.kr>",
       to: sub.email,
       subject: "[탑디뉴스] 구독이 승인되었습니다 — 로그인 정보 안내",

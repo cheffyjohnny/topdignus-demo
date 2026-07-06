@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY!)
+}
 
 export async function POST(req: NextRequest) {
   const { name, company, phone, email, region, needsCrew, message } = await req.json();
@@ -16,7 +18,7 @@ export async function POST(req: NextRequest) {
     undecided: "미정",
   };
 
-  const { error: emailError } = await resend.emails.send({
+  const { error: emailError } = await getResend().emails.send({
     from: "탑디뉴스 파트너십 <no-reply@topdignus.co.kr>",
     to: "topdi@topdignus.co.kr",
     subject: `[파트너십 신청] ${company} / ${name}`,

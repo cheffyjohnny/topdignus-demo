@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { supabaseServer } from "@/lib/supabase-server";
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY!)
+}
 
 export async function POST(req: NextRequest) {
   const { name, email, company } = await req.json();
@@ -40,7 +42,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 신청자에게 확인 이메일
-  const { error: confirmError } = await resend.emails.send({
+  const { error: confirmError } = await getResend().emails.send({
     from: "탑디뉴스 <no-reply@topdignus.co.kr>",
     to: email,
     subject: "[탑디뉴스] 구독 신청이 접수되었습니다",
@@ -74,7 +76,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 관리자 알림
-  await resend.emails.send({
+  await getResend().emails.send({
     from: "탑디뉴스 <no-reply@topdignus.co.kr>",
     to: "topdi@topdignus.co.kr",
     subject: `[탑디뉴스] 새 구독 신청 — ${name}${company ? ` (${company})` : ""}`,

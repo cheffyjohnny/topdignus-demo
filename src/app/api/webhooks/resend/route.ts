@@ -2,7 +2,9 @@
 import { Resend } from 'resend'
 import { supabaseServer } from '@/lib/supabase-server'
 
-const resend = new Resend(process.env.RESEND_API_KEY!)
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY!)
+}
 const FROM_EMAIL = '주식회사 탑디뉴스 <topdi@topdignus.co.kr>'
 const NOTIFY_TO = 'topdi@topdignus.co.kr'
 const BASE_URL = 'https://topdignus.co.kr'
@@ -97,7 +99,7 @@ async function sendNotification({
   const kstTime = new Date(deliveredAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })
   const detailUrl = `${BASE_URL}/dashboard/${orderType === '덕트' ? 'duct-orders' : 'orders'}/${orderId}`
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM_EMAIL,
     to: NOTIFY_TO,
     subject: `[전송확인] ${projectName} ${orderType} 발주서 도달 완료`,

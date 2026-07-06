@@ -7,7 +7,9 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY!)
+}
 
 export async function POST(req: NextRequest) {
   const { name, company, phone, email, message } = await req.json();
@@ -32,7 +34,7 @@ export async function POST(req: NextRequest) {
 
   // Send notification + auto-reply in parallel
   const [{ error: notifyError }, { error: autoReplyError }] = await Promise.all([
-    resend.emails.send({
+    getResend().emails.send({
       from: "탑디뉴스 문의 <no-reply@topdignus.co.kr>",
       to: "topdi@topdignus.co.kr",
       subject: `[탑디뉴스] 새 문의 - ${name}${company ? ` (${company})` : ""}`,
@@ -49,7 +51,7 @@ export async function POST(req: NextRequest) {
         </div>
       `,
     }),
-    resend.emails.send({
+    getResend().emails.send({
       from: "탑디뉴스 <no-reply@topdignus.co.kr>",
       to: email,
       subject: "[탑디뉴스] 문의가 접수되었습니다",
