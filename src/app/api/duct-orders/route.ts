@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
   // 매입 금액 계산 (duct_prices 기준)
   const { data: ductPriceRow } = await supabaseServer
     .from('duct_prices')
-    .select('riser_price, wall_price, insul_50t_price, insul_25t_price')
+    .select('price_type, riser_price, wall_price, insul_50t_price, insul_25t_price')
     .eq('manufacturer', body.manufacturer ?? '')
     .single()
 
@@ -58,8 +58,12 @@ export async function POST(req: NextRequest) {
       const price = item.type === '입상'
         ? Number(ductPriceRow?.riser_price ?? 0)
         : Number(ductPriceRow?.wall_price ?? 0)
-      const perimeterM = Math.round(((item.width ?? 0) + (item.height ?? 0)) * 2 / 1000 * 1000) / 1000
-      purchaseAmount += Math.round(price * perimeterM * (item.quantity ?? 0))
+      if (ductPriceRow?.price_type === 'per_item') {
+        purchaseAmount += Math.round(price * (item.quantity ?? 0))
+      } else {
+        const perimeterM = Math.round(((item.width ?? 0) + (item.height ?? 0)) * 2 / 1000 * 1000) / 1000
+        purchaseAmount += Math.round(price * perimeterM * (item.quantity ?? 0))
+      }
     } else if (item.type === '차열재' && (item.quantity ?? 0) > 0) {
       const is50T = (item.spec ?? '').includes('50T')
       const price = is50T
