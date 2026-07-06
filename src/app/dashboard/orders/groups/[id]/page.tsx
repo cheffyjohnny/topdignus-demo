@@ -98,10 +98,6 @@ export default function GroupDetailPage() {
             <p className="text-sm text-gray-500">{group.project || '-'}</p>
           </div>
         </div>
-        <button onClick={() => router.push(`/dashboard/orders/groups/${id}/edit`)}
-          className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">
-          수정
-        </button>
       </div>
 
       {/* 합산 금액 카드 */}
@@ -244,8 +240,8 @@ export default function GroupDetailPage() {
                         {sub.items.map((item: any, idx: number) => (
                           <tr key={idx} className="bg-white">
                             <td className="px-3 py-2 text-gray-400">{idx + 1}</td>
-                            <td className="px-3 py-2 font-medium">{item.name || item.displayName || item.internalName || '-'}</td>
-                            <td className="px-3 py-2 text-gray-500">{item.spec || (item.pipeSpec ? `${item.pipeSpec}${item.sleeveSpec ? `×${item.sleeveSpec}` : ''}` : '-')}</td>
+                            <td className="px-3 py-2 font-medium">{t.type === '덕트' ? item.type : (item.name || item.displayName || item.internalName || '-')}</td>
+                            <td className="px-3 py-2 text-gray-500">{t.type === '덕트' ? '-' : (item.spec || (item.pipeSpec ? `${item.pipeSpec}${item.sleeveSpec ? `×${item.sleeveSpec}` : ''}` : '-'))}</td>
                             <td className="px-3 py-2 text-center text-gray-500">{item.unit || 'ea'}</td>
                             <td className="px-3 py-2 text-right">{item.quantity}</td>
                             {t.type === '덕트' && <>
