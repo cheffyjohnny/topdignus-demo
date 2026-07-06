@@ -1,0 +1,49 @@
+{
+  "name": "topdignus",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "dev:demo": "dotenv -e .env.demo -- next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "crawl": "tsx scripts/crawlers/run.ts",
+    "crawl:kict": "tsx scripts/crawlers/run.ts --source=kict"
+  },
+  "dependencies": {
+    "@react-pdf/renderer": "^4.5.1",
+    "@supabase/supabase-js": "^2.100.0",
+    "@types/jszip": "^3.4.0",
+    "@types/xml2js": "^0.4.14",
+    "bcryptjs": "^3.0.3",
+    "cheerio": "^1.2.0",
+    "exceljs": "^4.4.0",
+    "googleapis": "^171.4.0",
+    "jszip": "^3.10.1",
+    "next": "16.1.7",
+    "next-auth": "^4.24.13",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-toastify": "^11.1.0",
+    "resend": "^6.9.4",
+    "sharp": "^0.34.5",
+    "xml2js": "^0.6.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/adm-zip": "^0.5.8",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "adm-zip": "^0.5.17",
+    "dotenv-cli": "^11.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.7",
+    "tailwindcss": "^4",
+    "tsx": "^4.21.0",
+    "typescript": "^5",
+    "xlsx": "^0.18.5"
+  }
+}
