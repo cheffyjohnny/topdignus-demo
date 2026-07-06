@@ -165,7 +165,7 @@ export function DuctItemsTable({
   // 품목 단가 자동 계산 (제조사×타입 기반)
   function getAutoUnitPrice(type: '입상' | '벽체', mfr: string): number {
     const dp = getDuctPrice(mfr)
-    if (!dp || dp.price_type === 'per_item') return 0
+    if (!dp) return 0
     const sp = getSalePrice(mfr)
     if (sp) return type === '입상' ? sp.riser_sale_price : sp.wall_sale_price
     return type === '입상' ? dp.riser_price : dp.wall_price
@@ -219,7 +219,7 @@ export function DuctItemsTable({
       if (('type' in patch || 'manufacturer' in patch) && updated.type !== '수기 금액 추가') {
         const mfr = updated.manufacturer ?? ''
         const dp = getDuctPrice(mfr)
-        if (dp && dp.price_type !== 'per_item') {
+        if (dp) {
           updated.unit_price = getAutoUnitPrice(updated.type as '입상' | '벽체', mfr)
         }
       }
