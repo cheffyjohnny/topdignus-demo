@@ -8,6 +8,7 @@ import { buildPriceMap, buildSealantMap, buildPipeSleeveStructure, buildManufact
 import { PipeItemsTable } from '@/components/PipeItemsTable'
 import { DuctItemsTable } from '@/components/DuctItemsTable'
 import type { DuctItem } from '@/components/DuctItemsTable'
+import { isProfireManufacturer } from '@/lib/vendor-mappings'
 
 interface Customer { id: string; name: string; sale_pct: number }
 interface DuctPrice { manufacturer: string; price_type: 'per_m' | 'per_item'; riser_price: number; wall_price: number; insul_50t_price?: number; insul_25t_price?: number }
@@ -176,6 +177,8 @@ export default function NewGroupOrderPage() {
 
       if (ductItems.length > 0) {
         const ductPrimaryMfr = ductItems[0]?.manufacturer ?? ''
+        const profireMfr = ductItems.find(it => isProfireManufacturer(it.manufacturer))?.manufacturer ?? ''
+        const isDuctProfire = !!profireMfr
         await fetch('/api/duct-orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -185,9 +188,38 @@ export default function NewGroupOrderPage() {
             deliveryLocation, address, deliveryDest, notes,
             groupId,
             orderNo: `${baseNo}-덕트(${ductPrimaryMfr})`,
-            items: ductItems.map(it => it.type === '수기 금액 추가'
-              ? { ...it, manufacturer: null, width: 0, height: 0, perimeter: 0, amount: it.unit_price * it.quantity }
-              : it),
+            items: [
+              ...ductItems.map(it => {
+                if (it.type === '수기 금액 추가') {
+                  return { type: it.type, manufacturer: null, width: 0, height: 0, perimeter: 0, quantity: it.quantity, unit_price: it.unit_price, amount: it.unit_price * it.quantity, note: it.note || null }
+                }
+                const mfr  = it.manufacturer ?? ''
+                const dp   = ductPrices.find(d => d.manufacturer === mfr)
+                const pt   = dp?.price_type ?? 'per_m'
+                const peri = (it.width + it.height) * 2 / 1000
+                const amt  = pt === 'per_m'
+                  ? Math.round(it.unit_price * peri * it.quantity)
+                  : Math.round(it.unit_price * it.quantity)
+                return {
+                  type: it.type, manufacturer: it.manufacturer || null,
+                  width: it.width, height: it.height,
+                  perimeter: Math.round(peri * 1000) / 1000,
+                  quantity: it.quantity, unit_price: it.unit_price,
+                  amount: amt, note: it.note || null,
+                }
+              }),
+              ...(isDuctProfire ? (() => {
+                const dp  = ductPrices.find(d => d.manufacturer === profireMfr)
+                const cid = customers.find(c => c.name === vendor)?.id
+                const sp  = cid ? ductSalePrices.find(d => d.manufacturer === profireMfr && d.customer_id === cid) : null
+                const p50 = (sp?.insul_50t_sale_price ?? 0) > 0 ? sp!.insul_50t_sale_price! : (dp?.insul_50t_price ?? 0)
+                const p25 = (sp?.insul_25t_sale_price ?? 0) > 0 ? sp!.insul_25t_sale_price! : (dp?.insul_25t_price ?? 0)
+                return [
+                  ...(insul50Qty > 0 ? [{ type: '차열재', spec: '50T×400×3.6M', quantity: insul50Qty, unit_price: p50, amount: insul50Qty * p50 }] : []),
+                  ...(insul25Qty > 0 ? [{ type: '차열재', spec: '25T×400×7.2M', quantity: insul25Qty, unit_price: p25, amount: insul25Qty * p25 }] : []),
+                ]
+              })() : []),
+            ],
           }),
         })
       }
