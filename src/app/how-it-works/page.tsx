@@ -78,6 +78,41 @@ export default function HowItWorksPage() {
           </ol>
         </Section>
 
+        <Section title="Automated compliance-data crawling">
+          <p>
+            Separately from the sales workflow, the system runs scheduled crawlers that keep the
+            company&apos;s regulatory/compliance data current automatically — no one has to check
+            government or certification sites by hand. Unlike the fictional business data
+            elsewhere in this demo, this is a real, live pipeline.
+          </p>
+          <ul className="list-disc list-inside space-y-2">
+            <li>
+              <strong className="text-white">KICT (Korea Institute of Civil Engineering and
+              Building Technology).</strong> Fire-resistance penetration seal (내화채움구조)
+              product certifications — new, changed, and cancelled listings.
+            </li>
+            <li>
+              <strong className="text-white">KFI (Korea Fire Institute).</strong> Fire-blanket
+              (방화포) performance certification approvals.
+            </li>
+            <li>
+              <strong className="text-white">Ministry of Government Legislation Open API.</strong>{" "}
+              The specific statutes and administrative rules that govern these products (Building
+              Act, its enforcement decree, fire/evacuation structure rules, fire-safety
+              installation law, and the material quality-certification standard), tracked for
+              revision dates.
+            </li>
+          </ul>
+          <p>
+            KICT and the legislation feed run daily via a Vercel Cron job; KFI runs on manual
+            trigger due to a legacy-TLS quirk in its server that a scheduled serverless job
+            can&apos;t negotiate around. When a crawler finds a new item, it emails an internal
+            notification automatically. Results are exposed two ways: a public-facing page shows
+            the latest entries per source with &quot;updated N days ago&quot; badges, and an admin
+            dashboard tab gives staff the full history plus manual re-run controls.
+          </p>
+        </Section>
+
         <Section title="Notable engineering decisions">
           <ul className="list-disc list-inside space-y-2">
             <li>
@@ -122,6 +157,7 @@ export default function HowItWorksPage() {
             <span>ExcelJS</span>
             <span>Google Drive OCR</span>
             <span>ERP integration</span>
+            <span>Scheduled crawlers (Vercel Cron)</span>
           </div>
         </Section>
 
