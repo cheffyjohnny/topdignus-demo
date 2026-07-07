@@ -77,13 +77,29 @@ function extractHeader(text: string): OrderHeader {
   const header: OrderHeader = {}
   const line = (p: RegExp) => text.match(p)?.[1]?.trim()
 
-  header.serialNo = line(/일련번호[^\n]*\n([^\n]+)/)
-  header.recipient = line(/수\s*신[^\n]*\n([^\n]+)/) ?? line(/수신\s*[:：]?\s*([^\n]+)/)
+  // OCR이 "일련번호 수신 {수신값}\n{일련번호값}" 순서로 라벨과 값을 뒤섞어 내보내는 레이아웃 대응
+  const serialRecipientCombo = text.match(/일련번호\s+수\s*신\s+([^\n]+)\n([^\n]+)/)
+  if (serialRecipientCombo) {
+    header.recipient = serialRecipientCombo[1].trim()
+    header.serialNo = serialRecipientCombo[2].trim()
+  } else {
+    header.serialNo = line(/일련번호[^\n]*\n([^\n]+)/)
+    header.recipient = line(/수\s*신[^\n]*\n([^\n]+)/) ?? line(/수신\s*[:：]?\s*([^\n]+)/)
+  }
+
   header.businessNo = line(/사업자등록번호\s+([0-9\-]+)/)
   header.companyName = line(/회사명[\/\s]*대표\s+([^\/\n]+)/)
   header.representative = text.match(/회사명[\/\s]*대표\s+[^\/\n]+\/\s*([^\n]+)/)?.[1]?.trim()
-  header.address = line(/주\s*소\s+([^\n]+)/)
-  header.contact = line(/담당[\/\s]*연락처\s+([^\n]+)/)
+
+  // OCR이 "주소 담당/연락처" 라벨만 한 줄에 묶고 값은 다음 두 줄에 순서대로 내보내는 레이아웃 대응
+  const addressContactCombo = text.match(/주\s*소\s+담당[\/\s]*연락처\s*\n([^\n]+)\n([^\n]+)/)
+  if (addressContactCombo) {
+    header.address = addressContactCombo[1].trim()
+    header.contact = addressContactCombo[2].trim()
+  } else {
+    header.address = line(/주\s*소\s+([^\n]+)/)
+    header.contact = line(/담당[\/\s]*연락처\s+([^\n]+)/)
+  }
   header.deliveryDate = line(/납기일자[^\n]*\n([^\n]+)/) ?? line(/납기일자\s*[:：]?\s*([^\n]+)/)
   header.project = line(/프로젝트\s*[:：]?\s*([^\n]+)/)
   header.deliveryAddress = line(/납품주소\s*[:：]?\s*([^\n]+)/)
@@ -171,6 +187,39 @@ function extractItems(text: string): OrderItem[] {
   }
 
   return items
+}
+
+// OCR로 추출한 납기일자 원문(e.g. "7/9", "2026.7.9", "2026-07-09")을
+// <input type="date">에 쓸 수 있는 "yyyy-mm-dd"로 정규화.
+// 연도가 없는 M/D 표기는 기준일(basisDate) 연도를 쓰고, 기준일보다 과거면 다음 해로 넘김.
+export function normalizeDeliveryDate(raw: string | undefined, basisDate: string): string {
+  if (!raw) return ''
+  const trimmed = raw.trim()
+
+  const iso = trimmed.match(/^(\d{4})[.\-/](\d{1,2})[.\-/](\d{1,2})/)
+  if (iso) {
+    const [, y, m, d] = iso
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
+  }
+
+  const md = trimmed.match(/^(\d{1,2})[./](\d{1,2})$/)
+  if (md) {
+    const basisMatch = (basisDate || '').match(/^(\d{4})-(\d{2})-(\d{2})/)
+    const now = new Date()
+    const [basisY, basisM, basisD] = basisMatch
+      ? basisMatch.slice(1).map(Number)
+      : [now.getFullYear(), now.getMonth() + 1, now.getDate()]
+
+    let year = basisY
+    const month = parseInt(md[1])
+    const day = parseInt(md[2])
+    // 월/일만으로는 basis보다 과거가 되면 다음 해로 간주
+    if (month < basisM || (month === basisM && day < basisD)) year += 1
+
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  }
+
+  return ''
 }
 
 export function parseOrder(ocrText: string): ParsedOrder {

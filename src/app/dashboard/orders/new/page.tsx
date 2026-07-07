@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'react-toastify'
-import type { OrderItem } from '@/lib/parse-order'
+import type { OrderItem, OrderHeader } from '@/lib/parse-order'
+import { normalizeDeliveryDate } from '@/lib/parse-order'
 import { buildPriceMap, buildSealantMap, buildPipeSleeveStructure, buildManufacturerMaps, buildIlwidaegaMapByMfr, lookupSalePrice, type PriceRowMin } from '@/lib/price-utils'
 import { PipeItemsTable } from '@/components/PipeItemsTable'
 import MultiFileUploader from '@/components/MultiFileUploader'
@@ -20,6 +21,34 @@ const today = () => new Date().toISOString().slice(0, 10)
 
 function makeItem(no: number): OrderItem {
   return { no, name: '', spec: '', unit: 'ea', quantity: 1 }
+}
+
+interface HeaderDraft {
+  vendor: string
+  project: string
+  deliveryDate: string
+  deliveryDest: string
+  contactName: string
+  contactPhone: string
+  deliveryLocation: string
+  address: string
+}
+
+function buildHeaderDraft(h: OrderHeader, basisDate: string): HeaderDraft {
+  return {
+    vendor: h.companyName ?? '',
+    project: h.project ?? '',
+    deliveryDate: normalizeDeliveryDate(h.deliveryDate, basisDate),
+    deliveryDest: h.companyName ?? '',
+    contactName: h.representative ?? h.recipient ?? '',
+    contactPhone: h.contact ?? '',
+    deliveryLocation: h.deliveryAddress ?? '',
+    address: h.address ?? '',
+  }
+}
+
+function isHeaderDraftEmpty(d: HeaderDraft): boolean {
+  return Object.values(d).every(v => !v)
 }
 
 export default function NewOrderPage() {
@@ -75,6 +104,7 @@ export default function NewOrderPage() {
   const [parsePreview, setParsePreview]   = useState<string | null>(null)
   const [parseParsing, setParseParsing]   = useState(false)
   const [parsedItems, setParsedItems]     = useState<any[] | null>(null)
+  const [headerDraft, setHeaderDraft]     = useState<HeaderDraft | null>(null)
   const parseInputRef                     = useRef<HTMLInputElement>(null)
   const [fromQuoteId, setFromQuoteId] = useState<string | null>(null)
   const [prefillVendor, setPrefillVendor] = useState<string | null>(null)
@@ -161,9 +191,17 @@ export default function NewOrderPage() {
     setHasDraft(false)
   }
 
+  function resetParseModal() {
+    setParseFile(null)
+    setParsePreview(null)
+    setParsedItems(null)
+    setHeaderDraft(null)
+  }
+
   function handleParseFileSelect(file: File) {
     setParseFile(file)
     setParsedItems(null)
+    setHeaderDraft(null)
     if (file.type.startsWith('image/')) {
       const reader = new FileReader()
       reader.onload = e => setParsePreview(e.target?.result as string)
@@ -185,18 +223,43 @@ export default function NewOrderPage() {
       const items = data.parsed?.items ?? []
       if (items.length === 0) { toast.warning('파싱된 품목이 없습니다.'); return }
       setParsedItems(items)
+      setHeaderDraft(buildHeaderDraft(data.parsed?.header ?? {}, orderDate))
     } catch { toast.error('파싱 중 오류가 발생했습니다.') }
     finally { setParseParsing(false) }
+  }
+
+  function updateParsedItem(index: number, patch: Partial<{ name: string; spec: string; quantity: number }>) {
+    setParsedItems(prev => prev ? prev.map((it, i) => i === index ? { ...it, ...patch } : it) : prev)
+  }
+
+  function updateHeaderDraft(patch: Partial<HeaderDraft>) {
+    setHeaderDraft(prev => prev ? { ...prev, ...patch } : prev)
   }
 
   function applyParsedItems() {
     if (!parsedItems) return
     setItems(parsedItems.map((it: any, i: number) => ({ ...it, no: i + 1 })))
-    toast.success(`${parsedItems.length}개 품목이 적용되었습니다. 내부 품명을 선택해 주세요.`)
+
+    const h = headerDraft
+    if (h) {
+      if (h.vendor.trim()) {
+        const trimmed = h.vendor.trim()
+        const matched = customers.find(c => c.name === trimmed)
+        if (matched) { setVendorMode('existing'); setVendor(matched.name); setPct(matched.sale_pct) }
+        else { setVendorMode('new'); setVendor(trimmed) }
+      }
+      if (h.project) setProject(h.project)
+      if (h.deliveryDate) setDeliveryDate(h.deliveryDate)
+      if (h.contactName) setContactName(h.contactName)
+      if (h.contactPhone) setContactPhone(h.contactPhone)
+      if (h.deliveryLocation) setDeliveryLocation(h.deliveryLocation)
+      if (h.address) setAddress(h.address)
+      if (h.deliveryDest) setDeliveryDest(h.deliveryDest)
+    }
+
+    toast.success(`${parsedItems.length}개 품목이 적용되었습니다. 내부 품명을 직접 선택해 주세요.`)
     setParseOpen(false)
-    setParseFile(null)
-    setParsePreview(null)
-    setParsedItems(null)
+    resetParseModal()
   }
 
   function selectType(type: OrderType) {
@@ -587,19 +650,19 @@ export default function NewOrderPage() {
       })()}
       {/* 이미지 파싱 모달 */}
       {parseOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={e => { if (e.target === e.currentTarget) { setParseOpen(false); setParseFile(null); setParsePreview(null); setParsedItems(null) } }}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={e => { if (e.target === e.currentTarget) { setParseOpen(false); resetParseModal() } }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
               <div>
                 <h2 className="text-base font-bold text-gray-900">이미지 파싱</h2>
                 <p className="text-xs text-gray-400 mt-0.5">이미지에 있는 내용을 보다 편리하게 기입해보세요</p>
               </div>
-              <button onClick={() => { setParseOpen(false); setParseFile(null); setParsePreview(null); setParsedItems(null) }} className="text-gray-400 hover:text-gray-600 cursor-pointer">
+              <button onClick={() => { setParseOpen(false); resetParseModal() }} className="text-gray-400 hover:text-gray-600 cursor-pointer">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-4 overflow-y-auto">
               {/* 이미지 업로드 */}
               {!parsedItems && (
                 <>
@@ -642,32 +705,74 @@ export default function NewOrderPage() {
                 </>
               )}
 
-              {/* 파싱 결과 미리보기 */}
+              {/* 파싱 결과 미리보기 (편집 가능) */}
               {parsedItems && (
                 <>
+                  {headerDraft && !isHeaderDraftEmpty(headerDraft) && (
+                    <div className="rounded-lg border border-gray-200 overflow-hidden">
+                      <div className="px-3 py-2 bg-blue-50/40 border-b border-gray-200 text-xs font-medium text-blue-800">
+                        발주 정보 (확인 후 필요하면 수정하세요)
+                      </div>
+                      <div className="p-3 grid grid-cols-2 gap-2.5">
+                        <ParseField label="발주의뢰처">
+                          <input value={headerDraft.vendor} onChange={e => updateHeaderDraft({ vendor: e.target.value })} className={PARSE_INPUT_CLS} />
+                        </ParseField>
+                        <ParseField label="현장명">
+                          <input value={headerDraft.project} onChange={e => updateHeaderDraft({ project: e.target.value })} className={PARSE_INPUT_CLS} />
+                        </ParseField>
+                        <ParseField label="납품희망일">
+                          <input type="date" value={headerDraft.deliveryDate} onChange={e => updateHeaderDraft({ deliveryDate: e.target.value })} className={PARSE_INPUT_CLS} />
+                        </ParseField>
+                        <ParseField label="납품처">
+                          <input value={headerDraft.deliveryDest} onChange={e => updateHeaderDraft({ deliveryDest: e.target.value })} className={PARSE_INPUT_CLS} />
+                        </ParseField>
+                        <ParseField label="인수자">
+                          <input value={headerDraft.contactName} onChange={e => updateHeaderDraft({ contactName: e.target.value })} className={PARSE_INPUT_CLS} />
+                        </ParseField>
+                        <ParseField label="인수자 연락처">
+                          <input value={headerDraft.contactPhone} onChange={e => updateHeaderDraft({ contactPhone: e.target.value })} className={PARSE_INPUT_CLS} />
+                        </ParseField>
+                        <ParseField label="납품장소">
+                          <input value={headerDraft.deliveryLocation} onChange={e => updateHeaderDraft({ deliveryLocation: e.target.value })} className={PARSE_INPUT_CLS} />
+                        </ParseField>
+                        <ParseField label="주소">
+                          <input value={headerDraft.address} onChange={e => updateHeaderDraft({ address: e.target.value })} className={PARSE_INPUT_CLS} />
+                        </ParseField>
+                      </div>
+                    </div>
+                  )}
                   <div className="rounded-lg border border-gray-200 overflow-hidden max-h-64 overflow-y-auto">
                     <table className="w-full text-xs">
                       <thead className="bg-gray-50 text-gray-500 sticky top-0">
                         <tr>
                           <th className="px-3 py-2.5 text-left font-medium">품목명</th>
-                          <th className="px-3 py-2.5 text-left font-medium">규격</th>
-                          <th className="px-3 py-2.5 text-right font-medium w-16">수량</th>
+                          <th className="px-3 py-2.5 text-left font-medium w-24">규격</th>
+                          <th className="px-3 py-2.5 text-right font-medium w-14">수량</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-50">
                         {parsedItems.map((it: any, i: number) => (
                           <tr key={i} className="hover:bg-gray-50/50">
-                            <td className="px-3 py-2 text-gray-700">{it.name || '—'}</td>
-                            <td className="px-3 py-2 text-gray-500">{it.spec || '—'}</td>
-                            <td className="px-3 py-2 text-right tabular-nums">{it.quantity ?? 1}</td>
+                            <td className="px-1 py-1">
+                              <input value={it.name ?? ''} onChange={e => updateParsedItem(i, { name: e.target.value })}
+                                className="w-full px-2 py-1.5 text-xs border border-transparent hover:border-gray-200 focus:border-[#014A99] rounded outline-none bg-transparent" />
+                            </td>
+                            <td className="px-1 py-1">
+                              <input value={it.spec ?? ''} onChange={e => updateParsedItem(i, { spec: e.target.value })}
+                                className="w-full px-2 py-1.5 text-xs border border-transparent hover:border-gray-200 focus:border-[#014A99] rounded outline-none bg-transparent" />
+                            </td>
+                            <td className="px-1 py-1">
+                              <input type="number" value={it.quantity ?? 1} onChange={e => updateParsedItem(i, { quantity: parseInt(e.target.value) || 0 })}
+                                className="w-full px-2 py-1.5 text-xs text-right border border-transparent hover:border-gray-200 focus:border-[#014A99] rounded outline-none bg-transparent tabular-nums" />
+                            </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
-                  <p className="text-xs text-gray-400">총 {parsedItems.length}건 파싱됨 · 적용 후 내부 품명을 직접 선택해 주세요.</p>
+                  <p className="text-xs text-gray-400">총 {parsedItems.length}건 파싱됨 · OCR 오류가 있으면 위에서 바로 수정한 뒤 적용하세요. 적용 후 내부 품명을 직접 선택해 주세요.</p>
                   <div className="flex items-center justify-between">
-                    <button onClick={() => { setParsedItems(null); setParseFile(null); setParsePreview(null) }}
+                    <button onClick={resetParseModal}
                       className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer">
                       다시 업로드
                     </button>
@@ -698,6 +803,17 @@ function Field({ label, required, className, children }: {
       <label className="text-xs font-medium text-gray-500">
         {label}{required && <span className="text-red-400 ml-0.5">*</span>}
       </label>
+      {children}
+    </div>
+  )
+}
+
+const PARSE_INPUT_CLS = 'border border-gray-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#014A99] transition-colors w-full'
+
+function ParseField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-[11px] font-medium text-gray-400">{label}</label>
       {children}
     </div>
   )
