@@ -10,7 +10,7 @@ export default function DemoBanner() {
         </span>
         <p className="opacity-90 leading-relaxed">
           You&apos;re viewing a portfolio demo of a full ERP/CRM system built from scratch for a
-          fire-resistance product supplier, replacing manual Excel workflows across order
+          fire resistance product supplier, replacing manual Excel workflows across order
           management, product catalogue, and customer data. All data below is fictional (no
           real customer or business data). Built with Next.js 16 (App Router), React 19,
           TypeScript, Tailwind CSS v4, Supabase, and NextAuth. The interface is in Korean —
@@ -29,6 +29,18 @@ export default function DemoBanner() {
             Read the engineering overview
           </a>{" "}
           — the problem, the workflow, and the key technical decisions behind it.
+        </p>
+      </div>
+      <div className="max-w-[1536px] flex items-center gap-4 mt-1.5 pt-1.5 border-t border-white/10">
+        <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-300 shrink-0">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-300" />
+          ERP SCOPE
+        </span>
+        <p className="opacity-90 leading-relaxed">
+          This system owns the company&apos;s internal pricing and margin logic end-to-end. Tax
+          invoices and e-banking are handled by a licensed third-party ERP (ECOUNT) instead of
+          being rebuilt here: every order or quote saved in this app is pushed to ECOUNT
+          automatically via API, so compliance grade documents stay in sync without double entry.
         </p>
       </div>
     </div>
