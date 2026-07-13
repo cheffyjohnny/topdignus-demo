@@ -36,6 +36,7 @@ export interface DuctOrderFormData {
 
 const TEMPLATE_PATH = path.join(
   process.cwd(),
+  'templates',
   '번호 ^^ 사각덕트(프로화이어) ^^ 품목 ^^ 거래처 ^^ 현장명 ^^ 발주일 ^^ 납품일 ^^ 작성자.xlsx'
 )
 

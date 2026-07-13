@@ -45,6 +45,7 @@ export interface PriceRow {
 
 const TEMPLATE_PATH = path.join(
   process.cwd(),
+  'templates',
   '번호 ^^ 배관(필립산업) ^^ 품목 ^^ 거래처 ^^ 현장명 ^^ 발주일 ^^ 납품일 ^^ 작성자.xlsx'
 )
 

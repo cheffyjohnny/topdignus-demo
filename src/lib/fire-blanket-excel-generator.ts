@@ -31,6 +31,7 @@ export interface FireBlanketOrderFormData {
 // 방화포 전용 템플릿이 따로 없어 프로화이어 사각덕트 템플릿을 그대로 재사용
 const TEMPLATE_PATH = path.join(
   process.cwd(),
+  'templates',
   '번호 ^^ 사각덕트(프로화이어) ^^ 품목 ^^ 거래처 ^^ 현장명 ^^ 발주일 ^^ 납품일 ^^ 작성자.xlsx'
 )
 

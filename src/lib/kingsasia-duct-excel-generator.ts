@@ -11,6 +11,7 @@ export interface KingsasiaDuctOrderFormData extends DuctOrderFormData {
 
 const TEMPLATE_PATH = path.join(
   process.cwd(),
+  'templates',
   '번호 ^^ 사각덕트(킹스아시아) ^^ 품목 ^^ 거래처 ^^ 현장명 ^^ 발주일 ^^ 납품일 ^^ 작성자.xlsx'
 )
 
