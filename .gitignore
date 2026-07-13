@@ -55,3 +55,4 @@ src/app/api/orders/pdf-test/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+CLAUDE.md
