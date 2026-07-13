@@ -2,9 +2,15 @@ import { OAuth2Client } from 'google-auth-library'
 import http from 'http'
 import { URL } from 'url'
 
-const CLIENT_ID = '777416031101-qubtutmml2paid64n8opkmgglgg27l64.apps.googleusercontent.com'
-const CLIENT_SECRET = 'REDACTED_GOOGLE_CLIENT_SECRET'
+const CLIENT_ID = process.env.GOOGLE_CLIENT_ID
+const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
 const REDIRECT_URI = 'http://localhost:4000'
+
+if (!CLIENT_ID || !CLIENT_SECRET) {
+  console.error('GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET 환경변수가 필요합니다.')
+  console.error('Usage: npx dotenv-cli -e .env.local -- node get-refresh-token.mjs')
+  process.exit(1)
+}
 
 const oauth2Client = new OAuth2Client(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
 

@@ -1,9 +1,15 @@
 import { google } from 'googleapis'
 import * as readline from 'readline'
 
-const CLIENT_ID = '1083448792265-7fr2gka3apk9dvhe18r3h99cnk5ci871.apps.googleusercontent.com'
-const CLIENT_SECRET = 'REDACTED_GOOGLE_CLIENT_SECRET'
+const CLIENT_ID = process.env.GOOGLE_CLIENT_ID
+const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
 const REDIRECT_URI = 'urn:ietf:wg:oauth:2.0:oob'
+
+if (!CLIENT_ID || !CLIENT_SECRET) {
+  console.error('GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET 환경변수가 필요합니다.')
+  console.error('Usage: npx dotenv-cli -e .env.local -- npx tsx get-refresh-token.ts')
+  process.exit(1)
+}
 
 const SCOPES = [
   'https://www.googleapis.com/auth/gmail.readonly',
