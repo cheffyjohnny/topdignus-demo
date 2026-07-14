@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'react-toastify'
 import type { QuoteType } from './QuoteFormPage'
+import { statusLabel, QUOTE_STATUS_LABEL } from '@/lib/status-labels'
 
 type QuoteStatus = '검토중' | '검토완료' | '송부완료' | '수주확정' | '취소'
 
@@ -85,9 +86,9 @@ export default function QuoteDetailPage({ type }: { type: QuoteType }) {
       try {
         const { msg, ecount, ecountError } = JSON.parse(pending)
         toast.success(msg)
-        if (ecount === 'ok') toast.success('[ECOUNT] 견적서 등록 완료')
-        else if (ecount === 'skipped') toast.info('ECOUNT 품목코드가 없어 견적서 등록을 건너뛰었습니다.')
-        else if (ecount === 'fail') toast.error(`[ECOUNT] 견적서 등록 실패${ecountError ? `\n${ecountError}` : ''}`, { autoClose: false })
+        if (ecount === 'ok') toast.success('[ECOUNT] Quote registered')
+        else if (ecount === 'skipped') toast.info('Skipped ECOUNT registration — no matching item code.')
+        else if (ecount === 'fail') toast.error(`[ECOUNT] Quote registration failed${ecountError ? `\n${ecountError}` : ''}`, { autoClose: false })
       } catch {}
     }
 
@@ -128,9 +129,9 @@ export default function QuoteDetailPage({ type }: { type: QuoteType }) {
     if (res.ok) {
       setQuote(prev => prev ? { ...prev, ...editData } : prev)
       setEditMode(false)
-      toast.success('견적서가 저장되었습니다.')
+      toast.success('Quote saved.')
     } else {
-      toast.error('저장 중 오류가 발생했습니다.')
+      toast.error('An error occurred while saving.')
     }
     setSaving(false)
   }
@@ -146,9 +147,9 @@ export default function QuoteDetailPage({ type }: { type: QuoteType }) {
         ...prev, status,
         status_history: [...(prev.status_history ?? []), { type: 'status', value: status, at: new Date().toISOString() }],
       } : prev)
-      toast.success(`"${status}"로 변경되었습니다.`)
+      toast.success(`Changed to "${statusLabel(status, QUOTE_STATUS_LABEL)}".`)
     } else {
-      toast.error('상태 변경 중 오류가 발생했습니다.')
+      toast.error('An error occurred while changing status.')
     }
     setStatusSaving(false)
   }
@@ -166,10 +167,10 @@ export default function QuoteDetailPage({ type }: { type: QuoteType }) {
       let url = `${apiBase}/${id}/excel`
       if (type === 'pipe' && mfr) url += `?manufacturer=${encodeURIComponent(mfr)}`
       const res = await fetch(url)
-      if (!res.ok) { toast.error('엑셀 생성 실패'); return }
+      if (!res.ok) { toast.error('Failed to generate Excel'); return }
       const blob = await res.blob()
       const match = res.headers.get('Content-Disposition')?.match(/filename\*=UTF-8''(.+)/)
-      const filename = match ? decodeURIComponent(match[1]) : '견적서.xlsx'
+      const filename = match ? decodeURIComponent(match[1]) : 'quote.xlsx'
       const objUrl = URL.createObjectURL(blob)
       const a = document.createElement('a'); a.href = objUrl; a.download = filename; a.click(); URL.revokeObjectURL(objUrl)
     } finally { setDownloading(false) }
@@ -202,35 +203,35 @@ export default function QuoteDetailPage({ type }: { type: QuoteType }) {
     }
   }
 
-  if (loading) return <div className="text-center py-20 text-sm text-gray-400">불러오는 중...</div>
-  if (!quote) return <div className="text-center py-20 text-sm text-red-400">견적서를 찾을 수 없습니다.</div>
+  if (loading) return <div className="text-center py-20 text-sm text-gray-400">Loading...</div>
+  if (!quote) return <div className="text-center py-20 text-sm text-red-400">Quote not found.</div>
 
   const convertedId = type === 'pipe' ? quote.converted_order_id : quote.converted_duct_order_id
   const convertedPath = type === 'pipe' ? `/dashboard/orders/${convertedId}` : `/dashboard/duct-orders/${convertedId}`
   const ed = (field: keyof Quote) => editMode ? (editData[field] as string ?? '') : (quote[field] as string ?? '')
 
-  // 배관: 제조사 목록
+  // Pipe: manufacturer list
   const pipeMfrs = type === 'pipe'
     ? [...new Set((quote.items ?? []).map((it: any) => it.manufacturer).filter(Boolean))] as string[]
     : []
 
-  // 덕트: 일반 품목 vs 차열재 분리
+  // Duct: separate regular items vs heat insulator
   const ductRegular = type === 'duct' ? (quote.items ?? []).filter((it: any) => it.type !== '차열재') : []
   const ductInsul   = type === 'duct' ? (quote.items ?? []).filter((it: any) => it.type === '차열재') : []
   const ductTotal   = ductRegular.reduce((s: number, it: any) => s + (it.amount ?? 0), 0)
 
   return (
     <div className="max-w-5xl mx-auto space-y-5 pb-10">
-      {/* 헤더 */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button onClick={() => router.push(backUrl)} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </button>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">{type === 'pipe' ? '배관' : '덕트'} 견적서 상세</h1>
+            <h1 className="text-xl font-bold text-gray-900">{type === 'pipe' ? 'Pipe' : 'Duct'} Quote Details</h1>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${STATUS_COLORS[quote.status]}`}>{quote.status}</span>
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${STATUS_COLORS[quote.status]}`}>{statusLabel(quote.status, QUOTE_STATUS_LABEL)}</span>
               {quote.quote_no && <span className="text-xs font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{quote.quote_no}</span>}
               <span className="text-xs text-gray-400">{quote.created_at?.slice(0, 10)}</span>
             </div>
@@ -240,22 +241,22 @@ export default function QuoteDetailPage({ type }: { type: QuoteType }) {
           {!convertedId && quote.status !== '취소' && quote.status !== '수주확정' && (
             <button onClick={() => setShowConvertModal(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
-              수주서로 전환
+              Convert to Order
             </button>
           )}
           {convertedId && (
-            <button onClick={() => router.push(convertedPath)} className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors cursor-pointer">수주서 보기</button>
+            <button onClick={() => router.push(convertedPath)} className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors cursor-pointer">View Order</button>
           )}
           {editMode ? (
             <>
-              <button onClick={() => setEditMode(false)} className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">취소</button>
-              <button onClick={saveEdit} disabled={saving} className="px-4 py-2 rounded-md text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60 transition-colors cursor-pointer" style={{ backgroundColor: '#014A99' }}>{saving ? '저장 중...' : '저장'}</button>
+              <button onClick={() => setEditMode(false)} className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
+              <button onClick={saveEdit} disabled={saving} className="px-4 py-2 rounded-md text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60 transition-colors cursor-pointer" style={{ backgroundColor: '#014A99' }}>{saving ? 'Saving...' : 'Save'}</button>
             </>
           ) : (
             <>
               <button onClick={startEdit} className="flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 16H9v-3z" /></svg>
-                편집
+                Edit
               </button>
               <button onClick={() => setShowDeleteModal(true)} className="p-2 rounded-md text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors cursor-pointer">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -265,61 +266,61 @@ export default function QuoteDetailPage({ type }: { type: QuoteType }) {
         </div>
       </div>
 
-      {/* 상태 변경 */}
+      {/* Status change */}
       <div className="bg-white rounded-lg border border-gray-200 px-5 py-3.5 flex items-center gap-4">
-        <span className="text-sm font-medium text-gray-500">상태 변경</span>
+        <span className="text-sm font-medium text-gray-500">Change Status</span>
         <div className="flex items-center gap-2">
           {(['검토중', '검토완료', '송부완료', '수주확정', '취소'] as QuoteStatus[]).map(s => (
             <button key={s} onClick={() => changeStatus(s)} disabled={statusSaving || quote.status === s}
               className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer disabled:cursor-default ${quote.status === s ? STATUS_COLORS[s] + ' cursor-default' : 'border-gray-200 text-gray-400 hover:border-gray-400 hover:text-gray-600'}`}>
-              {s}
+              {statusLabel(s, QUOTE_STATUS_LABEL)}
             </button>
           ))}
         </div>
-        {statusSaving && <span className="text-xs text-gray-400">저장 중...</span>}
+        {statusSaving && <span className="text-xs text-gray-400">Saving...</span>}
       </div>
 
-      {/* 견적 정보 */}
+      {/* Quote info */}
       <div className="bg-white rounded-lg border border-gray-200">
         <div className="px-5 py-3.5 border-b border-gray-200 flex items-center gap-2">
           <span className="w-1 h-4 rounded-full flex-shrink-0 bg-[#014A99]" />
-          <h2 className="font-semibold text-gray-800 text-sm">견적 정보</h2>
+          <h2 className="font-semibold text-gray-800 text-sm">Quote Info</h2>
         </div>
         <div className="p-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <InfoField label="발주의뢰처" editMode={editMode}>
+          <InfoField label="Requesting Party" editMode={editMode}>
             {editMode
               ? <input value={ed('vendor')} onChange={e => setEditData(p => ({ ...p, vendor: e.target.value }))} className={INPUT_CLS} />
               : <span>{quote.vendor}</span>}
           </InfoField>
-          <InfoField label="제조사" editMode={editMode}>
+          <InfoField label="Manufacturer" editMode={editMode}>
             {editMode
               ? <input value={ed('manufacturer')} onChange={e => setEditData(p => ({ ...p, manufacturer: e.target.value }))} className={INPUT_CLS} />
               : <span>{quote.manufacturer || '-'}</span>}
           </InfoField>
-          <InfoField label="현장명" editMode={editMode}>
+          <InfoField label="Project" editMode={editMode}>
             {editMode
               ? <input value={ed('project')} onChange={e => setEditData(p => ({ ...p, project: e.target.value }))} className={INPUT_CLS} />
               : <span>{quote.project || '-'}</span>}
           </InfoField>
-          <InfoField label="작성일" editMode={editMode}>
+          <InfoField label="Date Created" editMode={editMode}>
             {editMode
               ? <input type="date" value={ed('order_date')} onChange={e => setEditData(p => ({ ...p, order_date: e.target.value }))} className={INPUT_CLS} />
               : <span>{quote.order_date?.slice(0, 10) || '-'}</span>}
           </InfoField>
-          <InfoField label="유효기간" editMode={editMode}>
+          <InfoField label="Valid Until" editMode={editMode}>
             {editMode
               ? <input type="date" value={ed('delivery_date')} onChange={e => setEditData(p => ({ ...p, delivery_date: e.target.value }))} className={INPUT_CLS} />
               : <span>{quote.delivery_date?.slice(0, 10) || '-'}</span>}
           </InfoField>
-          <InfoField label="작성자" editMode={editMode}>
+          <InfoField label="Author" editMode={editMode}>
             {editMode
               ? <select value={ed('author')} onChange={e => setEditData(p => ({ ...p, author: e.target.value }))} className={INPUT_CLS}>
-                  <option value="">-- 선택 --</option>
-                  {['이주헌', '이주선', '이주송', '이민수'].map(n => <option key={n} value={n}>{n}</option>)}
+                  <option value="">-- Select --</option>
+                  {['John Lee', 'Sarah Kim', 'Tom Choi', 'Anna Min'].map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
               : <span>{quote.author || '-'}</span>}
           </InfoField>
-          <InfoField label="비고" className="col-span-2" editMode={editMode}>
+          <InfoField label="Notes" className="col-span-2" editMode={editMode}>
             {editMode
               ? <textarea value={ed('notes')} onChange={e => setEditData(p => ({ ...p, notes: e.target.value }))} rows={3} className={INPUT_CLS + ' resize-y'} />
               : <span className="whitespace-pre-wrap">{quote.notes || '-'}</span>}
@@ -327,7 +328,7 @@ export default function QuoteDetailPage({ type }: { type: QuoteType }) {
         </div>
       </div>
 
-      {/* 첨부파일 */}
+      {/* Attachments */}
       {(() => {
         const effectiveUrls = (quote.file_urls && quote.file_urls.length > 0)
           ? quote.file_urls
@@ -337,7 +338,7 @@ export default function QuoteDetailPage({ type }: { type: QuoteType }) {
           <div className="bg-white rounded-lg border border-gray-200">
             <div className="px-5 py-3.5 border-b border-gray-200 flex items-center gap-2">
               <span className="w-1 h-4 rounded-full flex-shrink-0 bg-[#014A99]" />
-              <h2 className="font-semibold text-gray-800 text-sm">첨부파일 <span className="text-gray-400 font-normal text-xs">({effectiveUrls.length}개)</span></h2>
+              <h2 className="font-semibold text-gray-800 text-sm">Attachments <span className="text-gray-400 font-normal text-xs">({effectiveUrls.length})</span></h2>
             </div>
             <ul className="divide-y divide-gray-100">
               {effectiveUrls.map((url, i) => {
@@ -348,7 +349,7 @@ export default function QuoteDetailPage({ type }: { type: QuoteType }) {
                 const isPdf = /\.pdf$/.test(lower)
                 const isExcel = /\.(xlsx?|csv)$/.test(lower)
                 const iconColor = isPdf ? 'text-red-400' : isExcel ? 'text-green-500' : isImg ? 'text-blue-400' : 'text-gray-400'
-                const badge = isPdf ? 'PDF' : isExcel ? 'Excel' : isImg ? '이미지' : '파일'
+                const badge = isPdf ? 'PDF' : isExcel ? 'Excel' : isImg ? 'Image' : 'File'
                 const badgeColor = isPdf ? 'bg-red-50 text-red-500' : isExcel ? 'bg-green-50 text-green-600' : isImg ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'
                 return (
                   <li key={i} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
@@ -359,7 +360,7 @@ export default function QuoteDetailPage({ type }: { type: QuoteType }) {
                     <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${badgeColor}`}>{badge}</span>
                     <a href={isImg ? cleanUrl : `/api/download?url=${encodeURIComponent(cleanUrl)}&name=${encodeURIComponent(fname)}`}
                       target={isImg ? '_blank' : '_self'} rel="noopener noreferrer"
-                      className="text-xs text-blue-500 hover:text-blue-700 hover:underline shrink-0">{isImg ? '열기' : '다운로드'}</a>
+                      className="text-xs text-blue-500 hover:text-blue-700 hover:underline shrink-0">{isImg ? 'Open' : 'Download'}</a>
                   </li>
                 )
               })}
@@ -368,12 +369,12 @@ export default function QuoteDetailPage({ type }: { type: QuoteType }) {
         )
       })()}
 
-      {/* 품목 목록 */}
+      {/* Item list */}
       <div className="bg-white rounded-lg border border-gray-200">
         <div className="px-5 py-3.5 border-b border-gray-200 flex items-center gap-2">
           <span className="w-1 h-4 rounded-full flex-shrink-0 bg-[#014A99]" />
-          <h2 className="font-semibold text-gray-800 text-sm">품목 목록</h2>
-          <span className="text-xs text-gray-400 ml-auto">{type === 'pipe' ? (quote.items?.length ?? 0) : ductRegular.length}건</span>
+          <h2 className="font-semibold text-gray-800 text-sm">Item List</h2>
+          <span className="text-xs text-gray-400 ml-auto">{type === 'pipe' ? (quote.items?.length ?? 0) : ductRegular.length}</span>
         </div>
 
         {type === 'pipe' ? (
@@ -383,14 +384,14 @@ export default function QuoteDetailPage({ type }: { type: QuoteType }) {
                 <table className="w-full text-sm min-w-[700px]">
                   <thead className="bg-gray-50 text-gray-500 text-xs border-b border-gray-100"><tr>
                     <th className="px-4 py-2.5 text-left w-10">No.</th>
-                    <th className="px-4 py-2.5 text-left w-24">제조사</th>
-                    <th className="px-4 py-2.5 text-left">품목명</th>
-                    <th className="px-4 py-2.5 text-left">규격</th>
-                    <th className="px-4 py-2.5 text-right w-16">수량</th>
-                    <th className="px-4 py-2.5 text-left w-40">내부 품명</th>
-                    <th className="px-4 py-2.5 text-right w-24">판매가</th>
-                    <th className="px-4 py-2.5 text-right w-28">공급가액</th>
-                    <th className="px-4 py-2.5 text-left">비고</th>
+                    <th className="px-4 py-2.5 text-left w-24">Manufacturer</th>
+                    <th className="px-4 py-2.5 text-left">Item</th>
+                    <th className="px-4 py-2.5 text-left">Spec</th>
+                    <th className="px-4 py-2.5 text-right w-16">Qty</th>
+                    <th className="px-4 py-2.5 text-left w-40">Internal Name</th>
+                    <th className="px-4 py-2.5 text-right w-24">Sale Price</th>
+                    <th className="px-4 py-2.5 text-right w-28">Supply Amt</th>
+                    <th className="px-4 py-2.5 text-left">Note</th>
                   </tr></thead>
                   <tbody className="divide-y divide-gray-50">
                     {quote.items.map((item: any, i: number) => {
@@ -417,7 +418,7 @@ export default function QuoteDetailPage({ type }: { type: QuoteType }) {
                     const total = (quote.items ?? []).reduce((s: number, it: any) => it.unitPrice != null ? s + it.unitPrice * it.quantity : s, 0)
                     if (!total) return null
                     return <tfoot><tr className="bg-gray-50 border-t border-gray-200 font-semibold text-sm">
-                      <td colSpan={7} className="px-4 py-2.5 text-right text-gray-500 text-xs">합계</td>
+                      <td colSpan={7} className="px-4 py-2.5 text-right text-gray-500 text-xs">Total</td>
                       <td className="px-4 py-2.5 text-right tabular-nums text-gray-800">{total.toLocaleString()}</td>
                       <td />
                     </tr></tfoot>
@@ -429,41 +430,41 @@ export default function QuoteDetailPage({ type }: { type: QuoteType }) {
                   <span className="text-xs text-gray-400">{mfr}</span>
                   <button onClick={() => handleDownloadExcel(mfr)} disabled={downloading} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors cursor-pointer">
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                    {downloading ? '생성 중...' : '엑셀'}
+                    {downloading ? 'Generating...' : 'Excel'}
                   </button>
                 </div>
               )) : (
                 <div className="px-4 py-3 border-t border-gray-100 flex items-center gap-3">
                   <button onClick={() => handleDownloadExcel()} disabled={downloading} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors cursor-pointer">
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                    {downloading ? '생성 중...' : '엑셀 다운로드'}
+                    {downloading ? 'Generating...' : 'Download Excel'}
                   </button>
                 </div>
               )}
             </>
-          ) : <div className="px-5 py-8 text-center text-sm text-gray-400">품목 없음</div>
+          ) : <div className="px-5 py-8 text-center text-sm text-gray-400">No items</div>
         ) : (
           <>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 text-gray-500 text-xs border-b border-gray-100"><tr>
                   <th className="px-3 py-2.5 text-center w-10">No</th>
-                  <th className="relative group/th px-3 py-2.5 text-center select-none" style={{width:ductColW.name}}>품명{rhDuct('name')}</th>
-                  <th className="relative group/th px-3 py-2.5 text-right select-none" style={{width:ductColW.w}}>가로(mm){rhDuct('w')}</th>
-                  <th className="relative group/th px-3 py-2.5 text-right select-none" style={{width:ductColW.h}}>세로(mm){rhDuct('h')}</th>
-                  <th className="relative group/th px-3 py-2.5 text-right select-none" style={{width:ductColW.peri}}>M/개{rhDuct('peri')}</th>
-                  <th className="relative group/th px-3 py-2.5 text-right select-none" style={{width:ductColW.qty}}>수량{rhDuct('qty')}</th>
-                  <th className="relative group/th px-3 py-2.5 text-right select-none" style={{width:ductColW.price}}>단가{rhDuct('price')}</th>
-                  <th className="relative group/th px-3 py-2.5 text-right select-none" style={{width:ductColW.amount}}>공급가액{rhDuct('amount')}</th>
-                  <th className="relative group/th px-3 py-2.5 text-left select-none" style={{width:ductColW.note}}>비고{rhDuct('note')}</th>
+                  <th className="relative group/th px-3 py-2.5 text-center select-none" style={{width:ductColW.name}}>Item{rhDuct('name')}</th>
+                  <th className="relative group/th px-3 py-2.5 text-right select-none" style={{width:ductColW.w}}>Width(mm){rhDuct('w')}</th>
+                  <th className="relative group/th px-3 py-2.5 text-right select-none" style={{width:ductColW.h}}>Height(mm){rhDuct('h')}</th>
+                  <th className="relative group/th px-3 py-2.5 text-right select-none" style={{width:ductColW.peri}}>M/pc{rhDuct('peri')}</th>
+                  <th className="relative group/th px-3 py-2.5 text-right select-none" style={{width:ductColW.qty}}>Qty{rhDuct('qty')}</th>
+                  <th className="relative group/th px-3 py-2.5 text-right select-none" style={{width:ductColW.price}}>Unit Price{rhDuct('price')}</th>
+                  <th className="relative group/th px-3 py-2.5 text-right select-none" style={{width:ductColW.amount}}>Supply Amt{rhDuct('amount')}</th>
+                  <th className="relative group/th px-3 py-2.5 text-left select-none" style={{width:ductColW.note}}>Note{rhDuct('note')}</th>
                 </tr></thead>
                 <tbody className="divide-y divide-gray-100">
-                  {ductRegular.length === 0 && <tr><td colSpan={9} className="px-4 py-6 text-center text-sm text-gray-400">품목 없음</td></tr>}
+                  {ductRegular.length === 0 && <tr><td colSpan={9} className="px-4 py-6 text-center text-sm text-gray-400">No items</td></tr>}
                   {ductRegular.map((it: any, i: number) => (
                     <tr key={i} className="bg-white">
                       <td className="px-3 py-2.5 text-gray-400 text-center">{i+1}</td>
                       <td className="px-3 py-2.5 text-center">
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${it.type==='입상'?'bg-blue-50 text-blue-700':'bg-violet-50 text-violet-700'}`}>{it.type}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${it.type==='입상'?'bg-blue-50 text-blue-700':'bg-violet-50 text-violet-700'}`}>{it.type === '입상' ? 'Riser' : 'Wall'}</span>
                       </td>
                       <td className="px-3 py-2.5 text-right text-gray-600">{it.width ?? 0}</td>
                       <td className="px-3 py-2.5 text-right text-gray-600">{it.height ?? 0}</td>
@@ -474,20 +475,20 @@ export default function QuoteDetailPage({ type }: { type: QuoteType }) {
                       <td className="px-3 py-2.5 text-gray-400 text-xs">{it.note || '—'}</td>
                     </tr>
                   ))}
-                  {ductTotal > 0 && <tr className="bg-gray-50 font-semibold"><td colSpan={7} className="px-3 py-2.5 text-right text-xs text-gray-500">합계</td><td className="px-3 py-2.5 text-right tabular-nums text-gray-800">{ductTotal.toLocaleString()}원</td><td /></tr>}
+                  {ductTotal > 0 && <tr className="bg-gray-50 font-semibold"><td colSpan={7} className="px-3 py-2.5 text-right text-xs text-gray-500">Total</td><td className="px-3 py-2.5 text-right tabular-nums text-gray-800">₩{ductTotal.toLocaleString()}</td><td /></tr>}
                 </tbody>
               </table>
             </div>
-            {/* 차열재 */}
+            {/* Heat insulator */}
             {ductInsul.length > 0 && (
               <div className="border-t border-orange-100">
-                <div className="px-4 py-2.5 bg-orange-50/70"><span className="text-xs font-semibold text-orange-700">차열재</span></div>
+                <div className="px-4 py-2.5 bg-orange-50/70"><span className="text-xs font-semibold text-orange-700">Heat Insulator</span></div>
                 <table className="w-full text-sm">
                   <thead className="bg-orange-50/50 text-xs text-orange-600 border-b border-orange-100"><tr>
-                    <th className="px-4 py-2 text-left">품명</th>
-                    <th className="px-3 py-2 text-right w-28">수량 (롤)</th>
-                    <th className="px-3 py-2 text-right w-32">단가</th>
-                    <th className="px-3 py-2 text-right w-32">금액</th>
+                    <th className="px-4 py-2 text-left">Item</th>
+                    <th className="px-3 py-2 text-right w-28">Qty (rolls)</th>
+                    <th className="px-3 py-2 text-right w-32">Unit Price</th>
+                    <th className="px-3 py-2 text-right w-32">Amount</th>
                   </tr></thead>
                   <tbody>
                     {ductInsul.map((it: any, i: number) => (
@@ -502,68 +503,68 @@ export default function QuoteDetailPage({ type }: { type: QuoteType }) {
                 </table>
               </div>
             )}
-          {/* 덕트 엑셀 다운로드 버튼 */}
+          {/* Duct Excel download button */}
           <div className="px-4 py-3 border-t border-gray-100 flex items-center gap-3">
-            <span className="text-xs text-gray-400">{quote.manufacturer || '덕트'}</span>
+            <span className="text-xs text-gray-400">{quote.manufacturer || 'Duct'}</span>
             <button onClick={() => handleDownloadExcel()} disabled={downloading} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors cursor-pointer">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-              {downloading ? '생성 중...' : '엑셀 다운로드'}
+              {downloading ? 'Generating...' : 'Download Excel'}
             </button>
           </div>
           </>
         )}
       </div>
 
-      {/* 상태 이력 */}
+      {/* Status history */}
       {quote.status_history && quote.status_history.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200">
           <div className="px-5 py-3.5 border-b border-gray-200 flex items-center gap-2">
             <span className="w-1 h-4 rounded-full flex-shrink-0 bg-gray-300" />
-            <h2 className="font-semibold text-gray-800 text-sm">상태 이력</h2>
+            <h2 className="font-semibold text-gray-800 text-sm">Status History</h2>
           </div>
           <div className="px-5 py-4 space-y-2">
             {[...quote.status_history].reverse().map((h, i) => (
               <div key={i} className="flex items-center gap-3 text-sm">
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full border whitespace-nowrap ${STATUS_COLORS[h.value as QuoteStatus] ?? 'bg-gray-50 text-gray-500 border-gray-200'}`}>{h.value}</span>
-                <span className="text-gray-400 text-xs">{new Date(h.at).toLocaleString('ko-KR')}</span>
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full border whitespace-nowrap ${STATUS_COLORS[h.value as QuoteStatus] ?? 'bg-gray-50 text-gray-500 border-gray-200'}`}>{statusLabel(h.value, QUOTE_STATUS_LABEL)}</span>
+                <span className="text-gray-400 text-xs">{new Date(h.at).toLocaleString('en-US')}</span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* 수주서 전환 모달 */}
+      {/* Convert to order modal */}
       {showConvertModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center shrink-0"><svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg></div>
-              <div><p className="font-semibold text-gray-900">수주서로 전환</p><p className="text-sm text-gray-500 mt-0.5">수주서 작성 페이지로 이동합니다.</p></div>
+              <div><p className="font-semibold text-gray-900">Convert to Order</p><p className="text-sm text-gray-500 mt-0.5">You&apos;ll be taken to the new order form.</p></div>
             </div>
             <div className="bg-gray-50 rounded-lg px-4 py-3 text-sm space-y-1">
-              <p><span className="text-gray-400 w-20 inline-block">업체</span><span className="font-medium">{quote.vendor}</span></p>
-              <p><span className="text-gray-400 w-20 inline-block">현장명</span>{quote.project || '-'}</p>
+              <p><span className="text-gray-400 w-20 inline-block">Vendor</span><span className="font-medium">{quote.vendor}</span></p>
+              <p><span className="text-gray-400 w-20 inline-block">Project</span>{quote.project || '-'}</p>
             </div>
-            <p className="text-xs text-gray-400">수주서 저장 완료 시 이 견적서의 상태가 &apos;수주확정&apos;으로 자동 변경됩니다.</p>
+            <p className="text-xs text-gray-400">Once the order is saved, this quote&apos;s status will automatically change to &apos;Confirmed&apos;.</p>
             <div className="flex gap-2 justify-end">
-              <button onClick={() => setShowConvertModal(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">취소</button>
-              <button onClick={handleGoToConvert} className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 cursor-pointer">작성 페이지로 이동</button>
+              <button onClick={() => setShowConvertModal(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">Cancel</button>
+              <button onClick={handleGoToConvert} className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 cursor-pointer">Go to Order Form</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 삭제 모달 */}
+      {/* Delete modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0"><svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></div>
-              <div><p className="font-semibold text-gray-900">견적서 삭제</p><p className="text-sm text-gray-500">삭제하면 복구할 수 없습니다.</p></div>
+              <div><p className="font-semibold text-gray-900">Delete Quote</p><p className="text-sm text-gray-500">This cannot be undone.</p></div>
             </div>
             <div className="flex gap-2 justify-end">
-              <button onClick={() => setShowDeleteModal(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">취소</button>
-              <button onClick={handleDelete} disabled={deleting} className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-red-500 hover:bg-red-600 disabled:opacity-60 cursor-pointer">{deleting ? '삭제 중...' : '삭제'}</button>
+              <button onClick={() => setShowDeleteModal(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">Cancel</button>
+              <button onClick={handleDelete} disabled={deleting} className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-red-500 hover:bg-red-600 disabled:opacity-60 cursor-pointer">{deleting ? 'Deleting...' : 'Delete'}</button>
             </div>
           </div>
         </div>
