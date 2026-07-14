@@ -14,7 +14,7 @@ export function YearSelector({ year }: { year: number }) {
         ‹
       </button>
       <span className="text-sm font-semibold text-gray-700 tabular-nums w-14 text-center">
-        {year}년
+        {year}
       </span>
       <button
         onClick={() => go(1)}

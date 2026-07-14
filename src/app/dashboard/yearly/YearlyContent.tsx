@@ -5,8 +5,10 @@ import { YearlyChart, ChartMonthData } from './YearlyChart'
 
 function fmtWon(v: number) {
   if (v === 0) return '—'
-  return v.toLocaleString('ko-KR') + '원'
+  return '₩' + v.toLocaleString('en-US')
 }
+
+const ALL = 'All'
 
 interface Props {
   year: number
@@ -17,11 +19,11 @@ interface Props {
 }
 
 export function YearlyContent({ year, vendors, vendorTotals, monthData, chartData }: Props) {
-  const [selectedVendor, setSelectedVendor] = useState('전체')
+  const [selectedVendor, setSelectedVendor] = useState(ALL)
 
-  const isAll = selectedVendor === '전체'
+  const isAll = selectedVendor === ALL
 
-  // 선택 업체 기준 연간 합계
+  // Annual totals based on selected vendor
   const annualSale     = isAll
     ? Object.values(vendorTotals).reduce((s, v) => s + v.sale, 0)
     : (vendorTotals[selectedVendor]?.sale ?? 0)
@@ -36,11 +38,11 @@ export function YearlyContent({ year, vendors, vendorTotals, monthData, chartDat
 
   return (
     <>
-      {/* 업체 필터 */}
+      {/* Vendor filter */}
       <div className="flex items-center gap-2">
-        <span className="text-xs text-gray-400">업체:</span>
+        <span className="text-xs text-gray-400">Vendor:</span>
         <div className="flex flex-wrap gap-1.5">
-          {['전체', ...vendors].map(v => (
+          {[ALL, ...vendors].map(v => (
             <button
               key={v}
               onClick={() => setSelectedVendor(v)}
@@ -56,19 +58,19 @@ export function YearlyContent({ year, vendors, vendorTotals, monthData, chartDat
         </div>
       </div>
 
-      {/* 연간 요약 카드 */}
+      {/* Annual summary cards */}
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-xl border border-blue-100 bg-white px-4 py-3">
-          <p className="text-xs text-gray-400 mb-1">연간 공급가액{!isAll && <span className="ml-1 text-gray-300">({selectedVendor})</span>}</p>
+          <p className="text-xs text-gray-400 mb-1">Annual Supply Amt{!isAll && <span className="ml-1 text-gray-300">({selectedVendor})</span>}</p>
           <p className="text-lg font-bold text-blue-700">{fmtWon(annualSale)}</p>
         </div>
         <div className="rounded-xl border border-orange-100 bg-white px-4 py-3">
-          <p className="text-xs text-gray-400 mb-1">연간 매입</p>
+          <p className="text-xs text-gray-400 mb-1">Annual Cost</p>
           <p className="text-lg font-bold text-orange-600">{fmtWon(annualPurchase)}</p>
         </div>
         <div className={`rounded-xl border px-4 py-3 ${annualProfit >= 0 ? 'border-green-100' : 'border-red-100'} bg-white`}>
           <p className="text-xs text-gray-400 mb-1">
-            연간 순이익{margin !== null && <span className="ml-1 text-gray-300">({margin}%)</span>}
+            Annual Net Profit{margin !== null && <span className="ml-1 text-gray-300">({margin}%)</span>}
           </p>
           <p className={`text-lg font-bold ${annualProfit >= 0 ? 'text-green-600' : 'text-red-500'}`}>
             {fmtWon(Math.abs(annualProfit))}
@@ -76,29 +78,29 @@ export function YearlyContent({ year, vendors, vendorTotals, monthData, chartDat
         </div>
       </div>
 
-      {/* 차트 (전체 기준 고정) */}
+      {/* Chart (always shows all vendors) */}
       <div className="bg-white rounded-xl border border-gray-200 p-4">
         <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
-          {year}년 월별 매출 차트
-          <span className="ml-2 text-gray-300 normal-case font-normal">(공급가액 기준, 순이익 라인)</span>
+          {year} Monthly Revenue Chart
+          <span className="ml-2 text-gray-300 normal-case font-normal">(supply amount basis, net profit line)</span>
         </h2>
         {hasData ? (
           <YearlyChart data={chartData} vendors={vendors} selectedVendor={isAll ? null : selectedVendor} />
         ) : (
-          <p className="py-10 text-center text-sm text-gray-400">{year}년 데이터가 없습니다.</p>
+          <p className="py-10 text-center text-sm text-gray-400">No data for {year}.</p>
         )}
       </div>
 
-      {/* 업체별 월별 매출 테이블 */}
+      {/* Monthly revenue table by vendor */}
       <div>
         <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
-          {year}년 {isAll ? '업체별' : selectedVendor} 월별 매출 현황
-          <span className="ml-2 text-gray-300 normal-case font-normal">(공급가액)</span>
+          {year} Monthly Revenue {isAll ? 'by Vendor' : `— ${selectedVendor}`}
+          <span className="ml-2 text-gray-300 normal-case font-normal">(supply amount)</span>
         </h2>
 
         {!hasData ? (
           <div className="bg-white rounded-xl border border-gray-200 px-6 py-12 text-center text-sm text-gray-400">
-            {year}년 주문이 없습니다.
+            No orders in {year}.
           </div>
         ) : (
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -109,11 +111,11 @@ export function YearlyContent({ year, vendors, vendorTotals, monthData, chartDat
               >
                 <thead className="bg-gray-50 border-b border-gray-100 text-xs text-gray-500">
                   <tr>
-                    <th className="px-4 py-2.5 text-left font-medium w-12">월</th>
+                    <th className="px-4 py-2.5 text-left font-medium w-12">Month</th>
                     {tableVendors.map(v => (
                       <th key={v} className="px-3 py-2.5 text-right font-medium whitespace-nowrap">{v}</th>
                     ))}
-                    {isAll && <th className="px-4 py-2.5 text-right font-medium">합계</th>}
+                    {isAll && <th className="px-4 py-2.5 text-right font-medium">Total</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -124,7 +126,7 @@ export function YearlyContent({ year, vendors, vendorTotals, monthData, chartDat
                     return (
                       <tr key={m} className={isActive ? 'hover:bg-blue-50/20' : ''}>
                         <td className={`px-4 py-2.5 font-medium tabular-nums ${isActive ? 'text-gray-700' : 'text-gray-300'}`}>
-                          {m}월
+                          {m}
                         </td>
                         {tableVendors.map(v => {
                           const amt = monthData[m][v]?.sale ?? 0
@@ -145,7 +147,7 @@ export function YearlyContent({ year, vendors, vendorTotals, monthData, chartDat
                 </tbody>
                 <tfoot className="bg-gray-50 border-t border-gray-200">
                   <tr>
-                    <td className="px-4 py-2.5 font-semibold text-gray-700">합계</td>
+                    <td className="px-4 py-2.5 font-semibold text-gray-700">Total</td>
                     {tableVendors.map(v => (
                       <td key={v} className="px-3 py-2.5 text-right font-semibold text-gray-700 tabular-nums">
                         {fmtWon(vendorTotals[v]?.sale ?? 0)}

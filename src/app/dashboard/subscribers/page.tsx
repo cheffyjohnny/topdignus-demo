@@ -1,7 +1,7 @@
 import { supabaseServer } from "@/lib/supabase-server";
 import SubscriberTable, { Subscriber } from "./SubscriberTable";
 
-export const metadata = { title: "구독자 관리 | Topdignus 관리자" };
+export const metadata = { title: "Subscriber Management | Topdignus Admin" };
 
 export default async function SubscribersPage() {
   const { data } = await supabaseServer
@@ -16,11 +16,11 @@ export default async function SubscribersPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">구독자 관리</h1>
+        <h1 className="text-xl font-bold text-gray-900">Subscriber Management</h1>
         <p className="text-sm text-gray-500 mt-1">
-          전체 {subscribers.length}명 · 승인 {activeCount}명
+          Total {subscribers.length} · Approved {activeCount}
           {pendingCount > 0 && (
-            <span className="ml-2 text-yellow-600 font-medium">· 대기 {pendingCount}명</span>
+            <span className="ml-2 text-yellow-600 font-medium">· Pending {pendingCount}</span>
           )}
         </p>
       </div>

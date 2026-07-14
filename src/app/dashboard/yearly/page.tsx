@@ -78,7 +78,7 @@ export default async function YearlyPage({
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">연별 현황</h1>
+        <h1 className="text-xl font-bold text-gray-900">Yearly Report</h1>
         <YearSelector year={year} />
       </div>
 

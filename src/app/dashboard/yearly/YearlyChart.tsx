@@ -15,8 +15,8 @@ const VENDOR_COLORS = [
 
 function abbr(v: number): string {
   if (v === 0) return '0'
-  if (v >= 100_000_000) return `${(v / 100_000_000).toFixed(1)}억`
-  if (v >= 10_000) return `${Math.round(v / 10_000)}만`
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`
+  if (v >= 1_000) return `${Math.round(v / 1_000)}K`
   return v.toLocaleString()
 }
 
@@ -163,7 +163,7 @@ export function YearlyChart({ data, vendors, selectedVendor }: Props) {
             fontSize={11}
             fill="#6B7280"
           >
-            {d.month}월
+            {d.month}
           </text>
         ))}
       </svg>
@@ -184,7 +184,7 @@ export function YearlyChart({ data, vendors, selectedVendor }: Props) {
             <line x1="0" y1="6" x2="22" y2="6" stroke="#059669" strokeWidth="2.5" />
             <circle cx="11" cy="6" r="3.5" fill="white" stroke="#059669" strokeWidth="2" />
           </svg>
-          <span className="text-xs text-gray-600">순이익</span>
+          <span className="text-xs text-gray-600">Net Profit</span>
         </div>
       </div>
     </div>
