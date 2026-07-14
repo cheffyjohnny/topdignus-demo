@@ -5,9 +5,9 @@ import ExpandableOrgCard, { OrgCrawlItem } from "@/components/ExpandableOrgCard"
 import { supabaseServer } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
-  title: "KFI 방화포 성능인증 운영기관 | 탑디뉴스",
-  description: "한국소방산업기술원(KFI)의 방화포 성능인증 현황을 실시간으로 확인하세요. 관련 법령과 인증 조회 방법도 함께 안내합니다.",
-  keywords: "방화포 성능인증, KFI, 한국소방산업기술원, 소방청, 산업안전보건기준, 방화포 운영기관",
+  title: "KFI Fire Blanket Certification Body | Topdignus",
+  description: "Check the Korea Fire Institute (KFI)'s fire blanket performance certification status in real time. Includes related laws and how to look up certifications.",
+  keywords: "fire blanket performance certification, KFI, Korea Fire Institute, National Fire Agency, occupational safety and health standards, fire blanket regulatory bodies",
 };
 
 async function fetchKfiItems(limit: number): Promise<OrgCrawlItem[]> {
@@ -37,39 +37,39 @@ function formatDateShort(dateStr: string | null): string {
 
 const KFI_LAWS = [
   {
-    title: "건설현장의 화재안전기준 (소방청 고시, 2023.7.1 시행)",
-    desc: "소방청이 건설현장 화재안전기준에 방화포 규정을 신설하였습니다. 화재위험작업 구간에 방화포 설치 의무가 명시되었습니다.",
+    title: "Fire Safety Standards for Construction Sites (National Fire Agency Notice, effective 2023.7.1)",
+    desc: "The National Fire Agency established fire blanket provisions within the fire safety standards for construction sites, specifying the obligation to install fire blankets in fire-risk work zones.",
   },
   {
-    title: "산업안전보건기준에 관한 규칙 개정 (고용노동부, 2025.3.2 시행)",
-    desc: "성능인증을 받은 방화포 사용이 법적으로 의무화되었습니다. 기존 KOSHA GUIDE(안전보건공단 기술지침) 기반 제품은 더 이상 인정되지 않습니다.",
+    title: "Amendment to Occupational Safety and Health Standards Rules (Ministry of Employment and Labor, effective 2025.3.2)",
+    desc: "The use of certified fire blankets became legally mandatory. Products based on the previous KOSHA GUIDE (Korea Occupational Safety and Health Agency technical guideline) are no longer recognized.",
   },
   {
-    title: "방화포 성능인증 및 제품검사의 기술기준 (소방청 고시)",
-    desc: "방화포의 성능인증 신청·심사·발급 및 제품검사에 관한 세부 기술기준입니다. 제품에는 3m 단위로 검사 합격 표식(스티커)이 부착되어야 합니다.",
+    title: "Technical Standards for Fire Blanket Performance Certification and Product Inspection (National Fire Agency Notice)",
+    desc: "Detailed technical standards for applying for, reviewing, issuing, and inspecting fire blanket certification. Products must have inspection pass markers (stickers) attached every 3m.",
   },
 ];
 
 const howToCheck = [
   {
     step: "01",
-    title: "KFI 홈페이지 접속",
-    desc: "검색 사이트에서 '한국소방산업기술원'을 검색하여 공식 사이트(kfi.or.kr)에 접속합니다.",
+    title: "Go to the KFI Website",
+    desc: "Search for '한국소방산업기술원' (Korea Fire Institute) and go to the official site (kfi.or.kr).",
   },
   {
     step: "02",
-    title: "성능인증·제품검사 메뉴",
-    desc: "메인 메뉴에서 '성능인증·제품검사' 항목을 클릭합니다.",
+    title: "Performance Certification & Product Inspection Menu",
+    desc: "Click '성능인증·제품검사' (Performance Certification & Product Inspection) in the main menu.",
   },
   {
     step: "03",
-    title: "공개데이터 선택",
-    desc: "'공개데이터' 메뉴에서 '방화포 승인정보' 항목을 선택합니다.",
+    title: "Select Open Data",
+    desc: "In the '공개데이터' (Open Data) menu, select '방화포 승인정보' (Fire Blanket Approval Info).",
   },
   {
     step: "04",
-    title: "인증 정보 확인",
-    desc: "제조사·승인번호·형식·승인일자를 확인하고, 현장에 반입된 제품의 인증 표식과 대조합니다.",
+    title: "Verify Certification Info",
+    desc: "Check the manufacturer, approval number, model, and approval date, and cross-check against the certification marker on the product brought on site.",
   },
 ];
 
@@ -88,40 +88,40 @@ export default async function FireBlanketOrganizationsPage() {
         >
           <div className="max-w-[980px] mx-auto px-4 sm:px-6">
             <p className="text-sm uppercase tracking-widest opacity-70 mb-2">Organizations & Related Information</p>
-            <h1 className="text-3xl md:text-5xl font-bold">운영기관 및 관련정보</h1>
+            <h1 className="text-3xl md:text-5xl font-bold">Organizations & Related Information</h1>
           </div>
         </section>
 
-        {/* 관련 기관 */}
+        {/* Related Organizations */}
         <section className="py-12 md:py-20 bg-white">
           <div className="max-w-[980px] mx-auto px-4 sm:px-6">
             <p className="text-sm uppercase tracking-widest font-medium mb-2" style={{ color: "#5889BC" }}>
               Organizations
             </p>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">관련 기관</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Related Organizations</h2>
             <p className="text-gray-500 text-sm mb-8">
-              각 기관의 최신 수집 데이터를 카드를 클릭하여 확인할 수 있습니다.
+              Click a card to see the latest collected data for each organization.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* KFI — expandable */}
               <ExpandableOrgCard
-                role="성능인증기관"
-                name="한국소방산업기술원 (KFI)"
-                desc="소방청 지정 방화포 성능인증 전담기관. 불티관통시험 등 주요 항목을 심사하고 성능인증을 발급합니다."
+                role="Certification Body"
+                name="Korea Fire Institute (KFI)"
+                desc="The organization designated by the National Fire Agency to handle fire blanket performance certification. Reviews key criteria such as the Spark Penetration Test and issues performance certifications."
                 link="https://www.kfi.or.kr"
                 linkLabel="kfi.or.kr"
                 items={kfiItems}
                 lastUpdated={kfiLastUpdated}
               />
 
-              {/* 소방청 — 정적 */}
+              {/* National Fire Agency — static */}
               <div className="flex flex-col p-6 rounded-2xl border border-gray-100 shadow-sm hover:border-[#014A99] hover:shadow-md transition-all duration-200">
                 <span className="self-start inline-block text-xs font-medium px-2.5 py-0.5 rounded-full mb-3" style={{ backgroundColor: "#e8f0fb", color: "#014A99" }}>
-                  주무부처
+                  Governing Agency
                 </span>
-                <h3 className="text-base font-bold text-gray-900 mb-2">소방청</h3>
+                <h3 className="text-base font-bold text-gray-900 mb-2">National Fire Agency</h3>
                 <p className="text-gray-500 text-sm leading-relaxed mb-3">
-                  건설현장의 화재안전기준 및 방화포 성능인증·제품검사 기술기준 고시를 관장하는 주무부처입니다.
+                  The governing agency overseeing fire safety standards for construction sites and the notices on fire blanket performance certification and product inspection technical standards.
                 </p>
                 <a
                   href="https://www.nfa.go.kr"
@@ -133,14 +133,14 @@ export default async function FireBlanketOrganizationsPage() {
                 </a>
               </div>
 
-              {/* 고용노동부 — 정적 */}
+              {/* Ministry of Employment and Labor — static */}
               <div className="flex flex-col p-6 rounded-2xl border border-gray-100 shadow-sm hover:border-[#014A99] hover:shadow-md transition-all duration-200">
                 <span className="self-start inline-block text-xs font-medium px-2.5 py-0.5 rounded-full mb-3" style={{ backgroundColor: "#e8f0fb", color: "#014A99" }}>
-                  주무부처
+                  Governing Agency
                 </span>
-                <h3 className="text-base font-bold text-gray-900 mb-2">고용노동부</h3>
+                <h3 className="text-base font-bold text-gray-900 mb-2">Ministry of Employment and Labor</h3>
                 <p className="text-gray-500 text-sm leading-relaxed mb-3">
-                  산업안전보건기준에 관한 규칙을 관장하며, 2025년 3월 개정을 통해 KFI 성능인증 방화포 의무 사용을 규정하였습니다.
+                  Oversees the Occupational Safety and Health Standards Rules, which mandated the use of KFI-certified fire blankets through the March 2025 amendment.
                 </p>
                 <a
                   href="https://www.moel.go.kr"
@@ -152,14 +152,14 @@ export default async function FireBlanketOrganizationsPage() {
                 </a>
               </div>
 
-              {/* 안전보건공단 — 정적 */}
+              {/* KOSHA — static */}
               <div className="flex flex-col p-6 rounded-2xl border border-gray-100 shadow-sm hover:border-[#014A99] hover:shadow-md transition-all duration-200">
                 <span className="self-start inline-block text-xs font-medium px-2.5 py-0.5 rounded-full mb-3" style={{ backgroundColor: "#e8f0fb", color: "#014A99" }}>
-                  지원기관
+                  Support Agency
                 </span>
-                <h3 className="text-base font-bold text-gray-900 mb-2">안전보건공단 (KOSHA)</h3>
+                <h3 className="text-base font-bold text-gray-900 mb-2">Korea Occupational Safety and Health Agency (KOSHA)</h3>
                 <p className="text-gray-500 text-sm leading-relaxed mb-3">
-                  건설현장 화재위험작업 안전지침(KOSHA GUIDE)을 발간하고 현장 안전교육을 지원합니다.
+                  Publishes safety guidelines (KOSHA GUIDE) for fire-risk work at construction sites and supports on-site safety training.
                 </p>
                 <a
                   href="https://www.kosha.or.kr"
@@ -174,13 +174,13 @@ export default async function FireBlanketOrganizationsPage() {
           </div>
         </section>
 
-        {/* 관련 법령 */}
+        {/* Related Laws */}
         <section className="py-12 md:py-20" style={{ backgroundColor: "#f8fafd" }}>
           <div className="max-w-[980px] mx-auto px-4 sm:px-6">
             <p className="text-sm uppercase tracking-widest font-medium mb-2" style={{ color: "#5889BC" }}>
               Laws & Regulations
             </p>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">관련 법령</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">Related Laws</h2>
             <div className="flex flex-col gap-4">
               {KFI_LAWS.map((law, i) => (
                 <div key={i} className="flex gap-4 p-5 rounded-2xl bg-white border border-gray-100 shadow-sm">
@@ -200,15 +200,15 @@ export default async function FireBlanketOrganizationsPage() {
           </div>
         </section>
 
-        {/* 성능인증 조회 방법 */}
+        {/* How to Check Certification */}
         <section className="py-12 md:py-20 bg-white">
           <div className="max-w-[980px] mx-auto px-4 sm:px-6">
             <p className="text-sm uppercase tracking-widest font-medium mb-2" style={{ color: "#5889BC" }}>
               How To Check
             </p>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">성능인증 현황 조회 방법</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">How to Check Certification Status</h2>
             <p className="text-gray-500 text-sm mb-8">
-              현장 반입 전 반드시 KFI 홈페이지에서 해당 제품의 성능인증 유효 여부를 확인하세요.
+              Before bringing a product on site, always verify on the KFI website whether it holds valid certification.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {howToCheck.map((item) => (
@@ -231,14 +231,14 @@ export default async function FireBlanketOrganizationsPage() {
               style={{ background: "linear-gradient(135deg, #014A99 0%, #0a5db5 100%)" }}
             >
               <div className="text-center sm:text-left">
-                <p className="text-white font-bold text-lg sm:text-xl">방화포 견적·기술 문의</p>
-                <p className="text-white opacity-75 text-sm mt-1">담당자 확인 후 신속히 회신 드리겠습니다.</p>
+                <p className="text-white font-bold text-lg sm:text-xl">Get a Fire Blanket Quote or Technical Consultation</p>
+                <p className="text-white opacity-75 text-sm mt-1">Our team will review it and respond promptly.</p>
               </div>
               <a
                 href="/contact"
                 className="w-full sm:w-auto text-center shrink-0 px-8 py-3 rounded-md font-semibold text-[#014A99] bg-white hover:bg-[#f0f5fb] transition-colors text-sm"
               >
-                문의하기 →
+                Contact Us →
               </a>
             </div>
           </div>
