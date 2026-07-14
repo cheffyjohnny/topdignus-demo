@@ -42,7 +42,7 @@ function StarRating({ value, onChange }: { value: number; onChange: (v: number) 
         <button key={n}
           onMouseEnter={() => setHovered(n)} onMouseLeave={() => setHovered(0)}
           onClick={() => onChange(n)}
-          className="cursor-pointer focus:outline-none" title={`중요도 ${n}`}>
+          className="cursor-pointer focus:outline-none" title={`Priority ${n}`}>
           <svg className={`w-4 h-4 transition-colors ${n <= (hovered || value) ? 'text-red-500 fill-red-500' : 'text-gray-300 fill-none'}`}
             stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -107,19 +107,19 @@ export default function SalesAccountsPage() {
       body: JSON.stringify({ id, priority }),
     })
     if (res.ok) {
-      toast.success(priority === 0 ? '중요도를 제거했습니다.' : `중요도 ${priority}성으로 저장했습니다.`)
+      toast.success(priority === 0 ? 'Priority removed.' : `Saved priority ${priority} star(s).`)
     } else {
-      toast.error('저장 실패')
+      toast.error('Save failed')
     }
   }
 
   async function handleDelete(id: string, name: string) {
-    if (!confirm(`"${name}" 거래처를 삭제하시겠습니까?\n연결된 영업현장의 업체 정보도 함께 해제됩니다.`)) return
+    if (!confirm(`Delete account "${name}"?\nLinked sales leads will also have their company info unlinked.`)) return
     setDeletingId(id)
     try {
       const res = await fetch(`/api/sales-accounts?id=${id}`, { method: 'DELETE' })
-      if (res.ok) { setAccounts(prev => prev.filter(a => a.id !== id)); toast.success('삭제되었습니다.') }
-      else toast.error('삭제 실패')
+      if (res.ok) { setAccounts(prev => prev.filter(a => a.id !== id)); toast.success('Deleted successfully.') }
+      else toast.error('Delete failed')
     } finally { setDeletingId(null) }
   }
 
@@ -157,20 +157,20 @@ export default function SalesAccountsPage() {
   return (
     <div className="p-4 md:p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h1 className="text-xl font-bold text-gray-900">영업 거래처</h1>
+        <h1 className="text-xl font-bold text-gray-900">Sales Accounts</h1>
         <div className="flex items-center gap-2 flex-wrap">
           {sortKey && (
             <button onClick={() => { setSortKey(null); setSortDir('asc') }} className="text-xs text-blue-500 hover:underline cursor-pointer">
-              정렬 초기화
+              Reset sort
             </button>
           )}
           <button onClick={() => { saveColWidths({ ...COL_DEFAULTS }); localStorage.removeItem(COL_KEY) }}
-            className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer">열 너비 초기화</button>
+            className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer">Reset column widths</button>
           <div className="relative w-full sm:w-auto">
             <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
             </svg>
-            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="검색..."
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..."
               className="pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-md w-full sm:w-48 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             {search && (
               <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer">
@@ -180,31 +180,31 @@ export default function SalesAccountsPage() {
           </div>
           <button onClick={() => router.push('/dashboard/sales-accounts/new')}
             className="px-4 py-2 bg-green-800 text-white text-sm font-medium rounded-md hover:bg-green-900 cursor-pointer whitespace-nowrap">
-            + 거래처 추가
+            + New Account
           </button>
         </div>
       </div>
 
       {loading ? (
-        <p className="text-sm text-gray-500">불러오는 중...</p>
+        <p className="text-sm text-gray-500">Loading...</p>
       ) : (
         <div className="overflow-x-auto border border-gray-200 rounded-lg">
           <table className="text-sm w-full">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-xs font-semibold uppercase tracking-wide">
-                <SortTh col="priority" label="중요도" />
-                <SortTh col="name" label="회사명" />
-                <SortTh col="contact_name" label="담당자" />
-                <SortTh col="contact_phone" label="연락처" />
-                <SortTh col="email" label="이메일" />
-                <SortTh col="created_at" label="등록일" />
+                <SortTh col="priority" label="Priority" />
+                <SortTh col="name" label="Company" />
+                <SortTh col="contact_name" label="Contact" />
+                <SortTh col="contact_phone" label="Phone" />
+                <SortTh col="email" label="Email" />
+                <SortTh col="created_at" label="Registered" />
                 <th className="px-4 py-3 w-10" />
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filtered.length === 0 ? (
                 <tr><td colSpan={7} className="px-4 py-12 text-center text-gray-400 text-sm">
-                  {q ? `"${search}"에 대한 결과가 없습니다.` : '등록된 거래처가 없습니다.'}
+                  {q ? `No results for "${search}".` : 'No accounts registered.'}
                 </td></tr>
               ) : filtered.map(account => (
                 <tr key={account.id} onClick={() => router.push(`/dashboard/sales-accounts/${account.id}`)}
@@ -216,18 +216,18 @@ export default function SalesAccountsPage() {
                   <td className="px-4 py-3 text-gray-600" style={{ width: colWidths.contact_name }}>{account.contact_name ?? '—'}</td>
                   <td className="px-4 py-3 text-gray-600" style={{ width: colWidths.contact_phone }}>{account.contact_phone ?? '—'}</td>
                   <td className="px-4 py-3 text-gray-600" style={{ width: colWidths.email }}>{account.email ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-500" style={{ width: colWidths.created_at }}>{new Date(account.created_at).toLocaleDateString('ko-KR')}</td>
+                  <td className="px-4 py-3 text-gray-500" style={{ width: colWidths.created_at }}>{new Date(account.created_at).toLocaleDateString('en-US')}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                       {account.priority > 0 && (
                         <button onClick={() => handlePriority(account.id, 0)}
                           className="text-xs text-gray-400 border border-gray-300 rounded-md px-2 py-0.5 hover:border-red-400 hover:text-red-500 cursor-pointer whitespace-nowrap transition-colors">
-                          중요도 제거
+                          Remove Priority
                         </button>
                       )}
                       <button onClick={() => handleDelete(account.id, account.name)}
                         disabled={deletingId === account.id}
-                        className="text-gray-400 hover:text-red-500 disabled:opacity-50 cursor-pointer" title="삭제">
+                        className="text-gray-400 hover:text-red-500 disabled:opacity-50 cursor-pointer" title="Delete">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>

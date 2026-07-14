@@ -24,7 +24,7 @@ export default function SalesAccountsNewPage() {
   }
 
   async function handleSave() {
-    if (!form.name.trim()) { toast.error('회사명을 입력해주세요.'); return }
+    if (!form.name.trim()) { toast.error('Please enter a company name.'); return }
     setSaving(true)
     try {
       const res = await fetch('/api/sales-accounts', {
@@ -33,11 +33,11 @@ export default function SalesAccountsNewPage() {
         body: JSON.stringify(form),
       })
       const d = await res.json()
-      if (!res.ok) { toast.error(d.error ?? '저장 실패'); return }
-      toast.success('거래처가 추가되었습니다.')
+      if (!res.ok) { toast.error(d.error ?? 'Save failed'); return }
+      toast.success('Account added.')
       router.push(`/dashboard/sales-accounts/${d.id}`)
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : '저장 실패')
+      toast.error(e instanceof Error ? e.message : 'Save failed')
     } finally {
       setSaving(false)
     }
@@ -46,29 +46,29 @@ export default function SalesAccountsNewPage() {
   return (
     <div className="p-6 max-w-xl">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold text-gray-900">영업 거래처 추가</h1>
+        <h1 className="text-xl font-bold text-gray-900">New Sales Account</h1>
         <button
           onClick={() => router.push('/dashboard/sales-accounts')}
           className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer"
         >
-          ← 목록으로
+          ← Back to list
         </button>
       </div>
 
       <div className="space-y-4">
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">회사명 <span className="text-red-500">*</span></label>
+          <label className="block text-xs font-medium text-gray-600 mb-1">Company Name <span className="text-red-500">*</span></label>
           <input
             value={form.name}
             onChange={e => setField('name', e.target.value)}
-            placeholder="예: 현대건설"
+            placeholder="e.g. Acme Construction"
             className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           />
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">담당자</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Contact</label>
             <input
               value={form.contact_name}
               onChange={e => setField('contact_name', e.target.value)}
@@ -76,7 +76,7 @@ export default function SalesAccountsNewPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">연락처</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Phone</label>
             <input
               value={form.contact_phone}
               onChange={e => setField('contact_phone', e.target.value)}
@@ -87,7 +87,7 @@ export default function SalesAccountsNewPage() {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">이메일</label>
+          <label className="block text-xs font-medium text-gray-600 mb-1">Email</label>
           <input
             type="email"
             value={form.email}
@@ -97,7 +97,7 @@ export default function SalesAccountsNewPage() {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">비고</label>
+          <label className="block text-xs font-medium text-gray-600 mb-1">Notes</label>
           <textarea
             value={form.notes}
             onChange={e => setField('notes', e.target.value)}
@@ -113,13 +113,13 @@ export default function SalesAccountsNewPage() {
           disabled={saving}
           className="px-6 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
-          {saving ? '저장 중...' : '저장'}
+          {saving ? 'Saving...' : 'Save'}
         </button>
         <button
           onClick={() => router.push('/dashboard/sales-accounts')}
           className="px-6 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 cursor-pointer"
         >
-          취소
+          Cancel
         </button>
       </div>
     </div>

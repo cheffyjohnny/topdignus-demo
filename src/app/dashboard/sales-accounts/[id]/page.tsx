@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-toastify'
+import { statusLabel, SALES_LEAD_STATUS_LABEL } from '@/lib/status-labels'
 
 interface SalesAccount {
   id: string
@@ -56,7 +57,7 @@ export default function SalesAccountDetailPage({ params }: { params: Promise<{ i
       fetch(`/api/sales-accounts/${id}`).then(r => r.json()),
       fetch(`/api/sales-leads?account_id=${id}`).then(r => r.json()),
     ]).then(([accountData, leadsData]) => {
-      if (accountData.error) { toast.error('찾을 수 없습니다.'); router.push('/dashboard/sales-accounts'); return }
+      if (accountData.error) { toast.error('Not found.'); router.push('/dashboard/sales-accounts'); return }
       setAccount(accountData)
       setLinkedLeads(Array.isArray(leadsData) ? leadsData.filter((l: LinkedLead & { account_id?: string }) => l.account_id === id) : [])
     }).finally(() => setLoading(false))
@@ -79,7 +80,7 @@ export default function SalesAccountDetailPage({ params }: { params: Promise<{ i
 
   async function handleSave() {
     if (!form) return
-    if (!form.name.trim()) { toast.error('회사명을 입력해주세요.'); return }
+    if (!form.name.trim()) { toast.error('Please enter a company name.'); return }
     setSaving(true)
     try {
       const res = await fetch(`/api/sales-accounts/${id}`, {
@@ -88,11 +89,11 @@ export default function SalesAccountDetailPage({ params }: { params: Promise<{ i
         body: JSON.stringify(form),
       })
       const data = await res.json()
-      if (!res.ok) { toast.error(data.error ?? '저장 실패'); return }
+      if (!res.ok) { toast.error(data.error ?? 'Save failed'); return }
       setAccount(data)
       setEditing(false)
       setForm(null)
-      toast.success('저장되었습니다.')
+      toast.success('Saved successfully.')
     } finally {
       setSaving(false)
     }
@@ -100,27 +101,27 @@ export default function SalesAccountDetailPage({ params }: { params: Promise<{ i
 
   async function handleDelete() {
     if (!account) return
-    if (!confirm(`"${account.name}" 거래처를 삭제하시겠습니까?\n연결된 영업현장의 시공사 정보도 함께 해제됩니다.`)) return
+    if (!confirm(`Delete account "${account.name}"?\nLinked sales leads will also have their contractor info unlinked.`)) return
     await fetch(`/api/sales-accounts/${id}`, { method: 'DELETE' })
-    toast.success('삭제되었습니다.')
+    toast.success('Deleted successfully.')
     router.push('/dashboard/sales-accounts')
   }
 
-  if (loading) return <div className="p-6 text-sm text-gray-500">불러오는 중...</div>
+  if (loading) return <div className="p-6 text-sm text-gray-500">Loading...</div>
   if (!account) return null
 
   const display = editing && form ? form : toForm(account)
 
   return (
     <div className="p-6 max-w-2xl">
-      {/* 헤더 */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push('/dashboard/sales-accounts')}
             className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer"
           >
-            ← 목록
+            ← List
           </button>
           <h1 className="text-xl font-bold text-gray-900">{account.name}</h1>
         </div>
@@ -132,13 +133,13 @@ export default function SalesAccountDetailPage({ params }: { params: Promise<{ i
                 disabled={saving}
                 className="px-4 py-1.5 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 disabled:opacity-50 cursor-pointer"
               >
-                {saving ? '저장 중...' : '저장'}
+                {saving ? 'Saving...' : 'Save'}
               </button>
               <button
                 onClick={handleEditCancel}
                 className="px-4 py-1.5 border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-50 cursor-pointer"
               >
-                취소
+                Cancel
               </button>
             </>
           ) : (
@@ -147,58 +148,58 @@ export default function SalesAccountDetailPage({ params }: { params: Promise<{ i
                 onClick={handleEditStart}
                 className="px-4 py-1.5 border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-50 cursor-pointer"
               >
-                편집
+                Edit
               </button>
               <button
                 onClick={handleDelete}
                 className="px-4 py-1.5 border border-red-200 text-red-600 text-sm rounded-md hover:bg-red-50 cursor-pointer"
               >
-                삭제
+                Delete
               </button>
             </>
           )}
         </div>
       </div>
 
-      {/* 거래처 정보 */}
+      {/* Account info */}
       <div className="border border-gray-200 rounded-lg overflow-hidden mb-4">
         <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">거래처 정보</span>
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Account Info</span>
         </div>
         <div className="divide-y divide-gray-100">
-          <Row label="회사명">
+          <Row label="Company">
             {editing
               ? <Input value={form!.name} onChange={v => setField('name', v)} />
               : <span className="font-medium">{display.name}</span>}
           </Row>
-          <Row label="담당자">
+          <Row label="Contact">
             {editing
               ? <Input value={form!.contact_name} onChange={v => setField('contact_name', v)} />
               : display.contact_name || '—'}
           </Row>
-          <Row label="연락처">
+          <Row label="Phone">
             {editing
               ? <Input value={form!.contact_phone} onChange={v => setField('contact_phone', v)} placeholder="010-0000-0000" />
               : display.contact_phone || '—'}
           </Row>
-          <Row label="이메일">
+          <Row label="Email">
             {editing
               ? <Input value={form!.email} onChange={v => setField('email', v)} />
               : display.email
                 ? <a href={`mailto:${display.email}`} className="text-blue-600 hover:underline">{display.email}</a>
                 : '—'}
           </Row>
-          <Row label="등록일">
-            {new Date(account.created_at).toLocaleDateString('ko-KR')}
+          <Row label="Registered">
+            {new Date(account.created_at).toLocaleDateString('en-US')}
           </Row>
         </div>
       </div>
 
-      {/* 비고 */}
+      {/* Notes */}
       {(display.notes || editing) && (
         <div className="border border-gray-200 rounded-lg overflow-hidden mb-4">
           <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">비고</span>
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Notes</span>
           </div>
           <div className="p-4">
             {editing ? (
@@ -215,14 +216,14 @@ export default function SalesAccountDetailPage({ params }: { params: Promise<{ i
         </div>
       )}
 
-      {/* 연결된 영업 현장 */}
+      {/* Linked sales leads */}
       <div className="border border-gray-200 rounded-lg overflow-hidden">
         <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex items-center justify-between">
-          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">연결된 영업 현장</span>
-          <span className="text-xs text-gray-400">{linkedLeads.length}건</span>
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Linked Sales Leads</span>
+          <span className="text-xs text-gray-400">{linkedLeads.length}</span>
         </div>
         {linkedLeads.length === 0 ? (
-          <div className="p-4 text-sm text-gray-400 text-center">연결된 현장이 없습니다.</div>
+          <div className="p-4 text-sm text-gray-400 text-center">No linked leads.</div>
         ) : (
           <div className="divide-y divide-gray-100">
             {linkedLeads.map(lead => (
@@ -232,7 +233,7 @@ export default function SalesAccountDetailPage({ params }: { params: Promise<{ i
                 className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer text-left transition-colors"
               >
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{lead.project_name || '(현장명 없음)'}</p>
+                  <p className="text-sm font-medium text-gray-900">{lead.project_name || '(No project name)'}</p>
                   {lead.address && <p className="text-xs text-gray-500 mt-0.5">{lead.address}</p>}
                 </div>
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
@@ -243,7 +244,7 @@ export default function SalesAccountDetailPage({ params }: { params: Promise<{ i
                   lead.status === '종료' ? 'bg-red-100 text-red-600' :
                   'bg-gray-100 text-gray-600'
                 }`}>
-                  {lead.status}
+                  {statusLabel(lead.status, SALES_LEAD_STATUS_LABEL)}
                 </span>
               </button>
             ))}
