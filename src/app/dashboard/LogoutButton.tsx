@@ -14,7 +14,7 @@ export function LogoutButton({ variant = 'default' }: { variant?: 'default' | 'l
       }}
       className={cls}
     >
-      로그아웃
+      Logout
     </button>
   );
 }

@@ -41,7 +41,7 @@ export default function LoginPage() {
 
     if (result?.error) {
       setLoading(false);
-      setError("아이디 또는 비밀번호가 올바르지 않습니다.");
+      setError("Incorrect username or password.");
     } else {
       const session = await getSession();
       const role = (session?.user as any)?.role;
@@ -63,7 +63,7 @@ export default function LoginPage() {
         <a href="/">
           <Image
             src="/logo-bg-white.png"
-            alt="탑디뉴스 로고"
+            alt="Topdignus logo"
             width={90}
             height={33}
             className="object-contain"
@@ -72,13 +72,13 @@ export default function LoginPage() {
         </a>
 
         <div>
-          <p className="text-sm uppercase tracking-widest opacity-60 mb-3">Topdignus 관리자</p>
+          <p className="text-sm uppercase tracking-widest opacity-60 mb-3">Topdignus Admin</p>
           <h1 className="text-3xl font-bold leading-snug mb-4">
-            내화채움 전문기업<br />탑디뉴스에 오신 것을<br />환영합니다.
+            Welcome to Topdignus,<br />the fire-resistant filling<br />specialist.
           </h1>
           <p className="text-sm opacity-70 leading-relaxed">
-            로그인 후 견적 관리, 문의 내역 등<br />
-            내부 시스템을 이용하실 수 있습니다.
+            Sign in to access quote management,<br />
+            inquiries, and other internal systems.
           </p>
         </div>
 
@@ -94,7 +94,7 @@ export default function LoginPage() {
             <a href="/">
               <Image
                 src="/logo.png"
-                alt="탑디뉴스 로고"
+                alt="Topdignus logo"
                 width={90}
                 height={33}
                 className="object-contain"
@@ -103,16 +103,16 @@ export default function LoginPage() {
           </div>
 
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-1">로그인</h2>
-            <p className="text-sm text-gray-400">계정 정보를 입력해 주세요.</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-1">Sign In</h2>
+            <p className="text-sm text-gray-400">Please enter your account details.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">아이디</label>
+              <label className="text-sm font-medium text-gray-700">Username</label>
               <input
                 type="text"
-                placeholder="아이디 입력"
+                placeholder="Enter your username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -122,9 +122,9 @@ export default function LoginPage() {
 
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">비밀번호</label>
+                <label className="text-sm font-medium text-gray-700">Password</label>
                 <a href="#" className="text-xs hover:underline" style={{ color: "#014A99" }}>
-                  비밀번호 찾기
+                  Forgot password?
                 </a>
               </div>
               <input
@@ -141,7 +141,7 @@ export default function LoginPage() {
                   <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                   </svg>
-                  Caps Lock이 켜져 있습니다.
+                  Caps Lock is on.
                 </p>
               )}
             </div>
@@ -153,7 +153,7 @@ export default function LoginPage() {
                 onChange={(e) => setRememberUsername(e.target.checked)}
                 className="w-4 h-4 rounded accent-[#014A99]"
               />
-              <span className="text-sm text-gray-500">아이디 저장</span>
+              <span className="text-sm text-gray-500">Remember username</span>
             </label>
 
             {error && (
@@ -166,16 +166,16 @@ export default function LoginPage() {
               className="w-full py-3 rounded-md text-white font-semibold text-sm transition-colors mt-2 hover:opacity-90 disabled:opacity-60"
               style={{ backgroundColor: "#014A99" }}
             >
-              {loading ? "로그인 중..." : "로그인"}
+              {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
 
           <p className="text-center text-xs text-gray-400 mt-6">
-            문의사항은{" "}
+            For inquiries, please contact{" "}
             <a href="mailto:topdi@topdignus.co.kr" className="underline" style={{ color: "#014A99" }}>
               topdi@topdignus.co.kr
             </a>
-            으로 연락해 주세요.
+            .
           </p>
         </div>
       </div>

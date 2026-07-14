@@ -27,54 +27,54 @@ const UsersIcon   = () => <svg className="w-4 h-4 flex-shrink-0" fill="none" str
 export const NAV_SECTIONS: NavSection[] = [
   {
     key: 'quote',
-    label: '견적',
+    label: 'Quotes',
     items: [
-      { href: '/dashboard/quotes/new',             label: '견적서 작성',   icon: <PlusIcon /> },
-      { href: '/dashboard/quotes',                 label: '견적서 현황',   icon: <ClipIcon /> },
+      { href: '/dashboard/quotes/new',             label: 'New Quote',   icon: <PlusIcon /> },
+      { href: '/dashboard/quotes',                 label: 'Quote List',   icon: <ClipIcon /> },
     ],
   },
   {
     key: 'order',
-    label: process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ? '수주' : '수발거인',
+    label: process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ? 'Orders' : 'Order Processing',
     items: [
-      { href: '/dashboard/orders/new',    label: '수주서 작성', icon: <PlusIcon /> },
-      { href: '/dashboard/orders',        label: '수주현황',    icon: <ClipIcon /> },
-      { href: '/dashboard/pipe-prices',   label: '배관 단가',   icon: <MoneyIcon /> },
-      { href: '/dashboard/duct-prices',   label: '덕트 단가',   icon: <MoneyIcon /> },
-      { href: '/dashboard/fire-blanket-prices', label: '방화포 단가', icon: <MoneyIcon /> },
+      { href: '/dashboard/orders/new',    label: 'New Order', icon: <PlusIcon /> },
+      { href: '/dashboard/orders',        label: 'Order List',    icon: <ClipIcon /> },
+      { href: '/dashboard/pipe-prices',   label: 'Pipe Pricing',   icon: <MoneyIcon /> },
+      { href: '/dashboard/duct-prices',   label: 'Duct Pricing',   icon: <MoneyIcon /> },
+      { href: '/dashboard/fire-blanket-prices', label: 'Fire Blanket Pricing', icon: <MoneyIcon /> },
     ],
   },
   {
     key: 'sales',
-    label: '영업',
+    label: 'Sales',
     items: [
-      { href: '/dashboard/sales-leads/new', label: '영업 추가',      icon: <PlusIcon /> },
-      { href: '/dashboard/sales-leads',     label: '영업 현장',      icon: <ClipIcon /> },
-      { href: '/dashboard/sales-accounts',  label: '영업 거래처',    icon: <UsersIcon /> },
+      { href: '/dashboard/sales-leads/new', label: 'New Lead',      icon: <PlusIcon /> },
+      { href: '/dashboard/sales-leads',     label: 'Sales Leads',      icon: <ClipIcon /> },
+      { href: '/dashboard/sales-accounts',  label: 'Sales Accounts',    icon: <UsersIcon /> },
     ],
   },
   {
     key: 'report',
-    label: '리포트',
+    label: 'Reports',
     items: [
-      { href: '/dashboard/weekly',  label: '주간 현황', icon: <ChartIcon /> },
-      { href: '/dashboard/monthly', label: '월별 현황', icon: <ChartIcon /> },
-      { href: '/dashboard/yearly',  label: '연별 현황', icon: <ChartIcon /> },
+      { href: '/dashboard/weekly',  label: 'Weekly Report', icon: <ChartIcon /> },
+      { href: '/dashboard/monthly', label: 'Monthly Report', icon: <ChartIcon /> },
+      { href: '/dashboard/yearly',  label: 'Yearly Report', icon: <ChartIcon /> },
     ],
   },
   {
     key: 'law',
-    label: '법령·인정',
+    label: 'Regulations',
     items: [
-      { href: '/dashboard/crawler',     label: '수집 데이터',  icon: <ChartIcon /> },
-      { href: '/dashboard/subscribers', label: '구독자 관리',  icon: <UsersIcon />, subscriberHide: true },
+      { href: '/dashboard/crawler',     label: 'Crawled Data',  icon: <ChartIcon /> },
+      { href: '/dashboard/subscribers', label: 'Subscribers',  icon: <UsersIcon />, subscriberHide: true },
     ],
   },
   {
     key: 'admin' as SectionKey,
-    label: '관리자',
+    label: 'Admin',
     items: [
-      { href: '/dashboard/admin', label: '관리자 도구', icon: <WrenchIcon />, subscriberHide: true },
+      { href: '/dashboard/admin', label: 'Admin Tools', icon: <WrenchIcon />, subscriberHide: true },
     ],
   },
 ]

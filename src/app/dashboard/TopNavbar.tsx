@@ -27,7 +27,7 @@ export function TopNavbar({ role, userName, userEmail, greeting, onToggleMode }:
 
       {/* 로고 */}
       <Link href="/" className="flex items-center mr-2 flex-shrink-0">
-        <Image src="/logo-bg-white.png" alt="탑디뉴스" width={50} height={18} className="object-contain" style={{ borderRadius: '3px' }} />
+        <Image src="/logo-bg-white.png" alt="Topdignus" width={50} height={18} className="object-contain" style={{ borderRadius: '3px' }} />
       </Link>
 
       {/* 홈 */}
@@ -37,7 +37,7 @@ export function TopNavbar({ role, userName, userEmail, greeting, onToggleMode }:
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
           </svg>
-          홈
+          Home
         </Link>
       )}
 
@@ -92,7 +92,7 @@ export function TopNavbar({ role, userName, userEmail, greeting, onToggleMode }:
         {/* 레이아웃 전환 버튼 */}
         <button
           onClick={onToggleMode}
-          title="사이드 메뉴로 변경"
+          title="Switch to side menu"
           className="p-1.5 text-white/50 hover:text-white hover:bg-white/10 rounded-md transition-colors cursor-pointer"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

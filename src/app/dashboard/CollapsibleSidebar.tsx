@@ -44,12 +44,12 @@ export function CollapsibleSidebar({ role, year, onToggleMode }: Props) {
       <div className={`flex items-center h-16 border-b border-white/10 px-3 flex-shrink-0 ${collapsed ? 'justify-center' : 'justify-between'}`}>
         {!collapsed && (
           <Link href="/" className="flex-1 flex items-center">
-            <Image src="/logo-bg-white.png" alt="탑디뉴스" width={55} height={20} className="object-contain" style={{ borderRadius: '4px' }} />
+            <Image src="/logo-bg-white.png" alt="Topdignus" width={55} height={20} className="object-contain" style={{ borderRadius: '4px' }} />
           </Link>
         )}
         <button
           onClick={toggle}
-          title={collapsed ? '펼치기' : '접기'}
+          title={collapsed ? 'Expand' : 'Collapse'}
           className="text-white/50 hover:text-white hover:bg-white/10 transition-colors cursor-pointer p-1.5 rounded flex-shrink-0"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,14 +65,14 @@ export function CollapsibleSidebar({ role, year, onToggleMode }: Props) {
       <nav className="flex-1 overflow-y-auto py-4 px-2 flex flex-col gap-0.5">
         {role !== 'subscriber' && (
           <>
-            <SidebarLink href="/dashboard" collapsed={collapsed} label="홈"
+            <SidebarLink href="/dashboard" collapsed={collapsed} label="Home"
               icon={
                 <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
               }
             />
-            <SidebarLink href="/dashboard/order-memos" collapsed={collapsed} label="공유사항"
+            <SidebarLink href="/dashboard/order-memos" collapsed={collapsed} label="Shared Notes"
               icon={
                 <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -87,7 +87,7 @@ export function CollapsibleSidebar({ role, year, onToggleMode }: Props) {
       {/* 설정 */}
       {role === 'admin' && (
         <div className="px-2 pb-2 flex-shrink-0">
-          <SidebarLink href="/dashboard/settings" collapsed={collapsed} label="설정"
+          <SidebarLink href="/dashboard/settings" collapsed={collapsed} label="Settings"
             icon={
               <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -102,13 +102,13 @@ export function CollapsibleSidebar({ role, year, onToggleMode }: Props) {
       <div className={`px-2 pb-1 flex-shrink-0 border-t border-white/10 pt-2 ${collapsed ? 'flex justify-center' : ''}`}>
         <button
           onClick={onToggleMode}
-          title="상단 메뉴로 변경"
+          title="Switch to top menu"
           className={`text-white/30 hover:text-white/70 hover:bg-white/5 transition-colors cursor-pointer rounded p-1.5 ${collapsed ? '' : 'w-full flex items-center gap-2 px-3 text-xs'}`}
         >
           <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
-          {!collapsed && '상단 메뉴로 변경'}
+          {!collapsed && 'Switch to top menu'}
         </button>
       </div>
 
