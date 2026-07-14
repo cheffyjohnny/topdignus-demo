@@ -3,9 +3,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "납품실적 | 탑디뉴스 - 내화채움구조 전문기업",
-  description: "탑디뉴스의 주요 납품실적. 인천공항, GIST, 국립체육박물관, 한국수출입은행, ASML, 삼성SDI, LG화학 등 공공기관 및 대기업 다수 납품.",
-  keywords: "탑디뉴스 납품실적, 내화채움 시공사례, 공공기관 내화채움, 인천공항 내화, ASML 내화채움",
+  title: "Track Record | Topdignus - Fire-Resistant Filling Specialist",
+  description: "Topdignus's major project track record, including deliveries to public institutions and large enterprises such as Incheon Airport, GIST, the National Sports Museum, the Export-Import Bank of Korea, ASML, Samsung SDI, and LG Chem.",
+  keywords: "Topdignus track record, fire-resistant filling case studies, public institution fire-resistant filling, Incheon Airport fire-resistant, ASML fire-resistant filling",
 };
 
 export default function ReferencesPage() {
@@ -19,7 +19,7 @@ export default function ReferencesPage() {
         >
           <div className="max-w-[980px] mx-auto px-4 sm:px-6">
             <p className="text-sm uppercase tracking-widest opacity-70 mb-2">Project References</p>
-            <h1 className="text-3xl md:text-5xl font-bold">납품실적</h1>
+            <h1 className="text-3xl md:text-5xl font-bold">Track Record</h1>
           </div>
         </section>
 
@@ -29,39 +29,39 @@ export default function ReferencesPage() {
               {[
                 {
                   icon: "🏭",
-                  category: "대기업 / 글로벌 기업",
+                  category: "Large & Global Enterprises",
                   items: [
-                    "ASML (동탄·화성 뉴캠퍼스)",
-                    "삼성SDI (울산공장)",
-                    "LG화학 (청주)",
-                    "경동나비엔 (서탄공장)",
-                    "롯데정밀화학",
-                    "도쿄일렉트론 (평택공장)",
-                    "신세계 본점",
-                    "KT (평택 고덕빌딩)",
+                    "ASML (Dongtan/Hwaseong New Campus)",
+                    "Samsung SDI (Ulsan Plant)",
+                    "LG Chem (Cheongju)",
+                    "Kyungdong Navien (Seotan Plant)",
+                    "Lotte Fine Chemical",
+                    "Tokyo Electron (Pyeongtaek Plant)",
+                    "Shinsegae Main Store",
+                    "KT (Pyeongtaek Godeok Building)",
                   ],
                 },
                 {
                   icon: "🏛️",
-                  category: "공공기관 / 국가시설",
+                  category: "Public Institutions & Government Facilities",
                   items: [
-                    "인천공항 T2 대한항공라운지",
-                    "광주과학기술원 (GIST)",
-                    "국립체육박물관",
-                    "한국수출입은행",
-                    "KBS 송신소",
-                    "수원지방법원 안산지원",
-                    "서울출입국외국인청",
-                    "LH (성남)",
+                    "Incheon Airport T2 Korean Air Lounge",
+                    "Gwangju Institute of Science and Technology (GIST)",
+                    "National Sports Museum",
+                    "Export-Import Bank of Korea",
+                    "KBS Transmission Center",
+                    "Suwon District Court, Ansan Branch",
+                    "Seoul Immigration & Foreigner Office",
+                    "LH (Seongnam)",
                   ],
                 },
                 {
                   icon: "🏗️",
-                  category: "대형 건설 브랜드",
+                  category: "Major Construction Brands",
                   items: [
-                    "래미안 (잠원)",
-                    "GS 자이 (과천·원주)",
-                    "롯데캐슬 (검단·부산)",
+                    "Raemian (Jamwon)",
+                    "GS Xi (Gwacheon/Wonju)",
+                    "Lotte Castle (Geomdan/Busan)",
                   ],
                 },
               ].map((group) => (
@@ -86,7 +86,7 @@ export default function ReferencesPage() {
                 className="inline-block text-sm font-semibold px-6 py-2.5 rounded-md text-white transition-colors"
                 style={{ backgroundColor: "#014A99" }}
               >
-                문의하기 →
+                Contact Us →
               </a>
             </div>
           </div>
