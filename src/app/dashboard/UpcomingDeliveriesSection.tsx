@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { statusLabel, ORDER_STATUS_LABEL } from '@/lib/status-labels'
 
 interface UpcomingItem {
   id: string
@@ -18,14 +19,14 @@ interface UpcomingItem {
 type ColKey = 'order_no' | 'type' | 'vendor' | 'project' | 'manufacturer' | 'delivery_date' | 'dday' | 'status'
 
 const COLUMNS: { key: ColKey; label: string; pinned?: boolean; align?: 'left' | 'center' }[] = [
-  { key: 'order_no',      label: '번호' },
-  { key: 'type',          label: '유형' },
-  { key: 'vendor',        label: '업체',       pinned: true },
-  { key: 'project',       label: '현장명',     pinned: true },
-  { key: 'manufacturer',  label: '제조사' },
-  { key: 'delivery_date', label: '납품예정일' },
+  { key: 'order_no',      label: 'No.' },
+  { key: 'type',          label: 'Type' },
+  { key: 'vendor',        label: 'Vendor',       pinned: true },
+  { key: 'project',       label: 'Project',     pinned: true },
+  { key: 'manufacturer',  label: 'Manufacturer' },
+  { key: 'delivery_date', label: 'Delivery Date' },
   { key: 'dday',          label: 'D-day',      align: 'center' },
-  { key: 'status',        label: '상태',       pinned: true, align: 'center' },
+  { key: 'status',        label: 'Status',       pinned: true, align: 'center' },
 ]
 const ALL_COL_KEYS = COLUMNS.map(c => c.key)
 const COL_VIS_KEY    = 'upcoming_columns'
@@ -147,7 +148,7 @@ export function UpcomingDeliveriesSection({ items }: { items: UpcomingItem[] }) 
     type: o => (
       <td key="type" className="px-4 py-3 whitespace-nowrap">
         <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${o.isDuct ? 'bg-violet-50 text-violet-600' : 'bg-indigo-50 text-indigo-600'}`}>
-          {o.isDuct ? '덕트' : '배관'}
+          {o.isDuct ? 'Duct' : 'Pipe'}
         </span>
       </td>
     ),
@@ -162,7 +163,7 @@ export function UpcomingDeliveriesSection({ items }: { items: UpcomingItem[] }) 
     ),
     status: o => (
       <td key="status" className="px-4 py-3 text-center whitespace-nowrap">
-        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[o.status]}`}>{o.status}</span>
+        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[o.status]}`}>{statusLabel(o.status, ORDER_STATUS_LABEL)}</span>
       </td>
     ),
   }
@@ -171,20 +172,20 @@ export function UpcomingDeliveriesSection({ items }: { items: UpcomingItem[] }) 
     <div>
       <div className="flex items-center justify-between gap-3 mb-3">
         <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
-          다가오는 납품일정
-          <span className="normal-case text-gray-300 font-normal ml-1">(오늘 기준 ±30일, 수주·발주 중)</span>
+          Upcoming Deliveries
+          <span className="normal-case text-gray-300 font-normal ml-1">(±30 days from today, Ordered/Purchased)</span>
         </h2>
 
-        {/* 컬럼 피커 */}
+        {/* Column picker */}
         <div className="relative" ref={colPickerRef}>
           <button onClick={() => setColPickerOpen(v => !v)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7" /></svg>
-            컬럼
+            Columns
           </button>
           {colPickerOpen && (
             <div className="absolute right-0 top-full mt-1 z-30 bg-white border border-gray-200 rounded-xl shadow-lg p-3 w-52 space-y-0.5">
-              <p className="text-xs text-gray-400 px-2 pb-1.5 border-b border-gray-100 mb-1.5">드래그로 순서 변경</p>
+              <p className="text-xs text-gray-400 px-2 pb-1.5 border-b border-gray-100 mb-1.5">Drag to reorder</p>
               {colOrder.map((key, idx) => {
                 const c = COLUMNS.find(c => c.key === key)!
                 return (
@@ -204,14 +205,14 @@ export function UpcomingDeliveriesSection({ items }: { items: UpcomingItem[] }) 
                       onChange={() => { if (!c.pinned) toggleColVis(key) }}
                       className="rounded cursor-pointer" onClick={e => e.stopPropagation()} />
                     <span className={c.pinned ? '' : 'cursor-grab'}>{c.label}</span>
-                    {c.pinned && <span className="text-gray-300 ml-auto">고정</span>}
+                    {c.pinned && <span className="text-gray-300 ml-auto">Pinned</span>}
                   </div>
                 )
               })}
               <div className="border-t border-gray-100 mt-1.5 pt-1.5">
                 <button onClick={() => { setColWidths(DEFAULT_WIDTHS); colWidthsRef.current = DEFAULT_WIDTHS; try { localStorage.removeItem(COL_WIDTHS_KEY) } catch {} }}
                   className="w-full text-xs text-gray-400 hover:text-gray-600 px-2 py-1 text-left transition-colors cursor-pointer">
-                  컬럼 너비 초기화
+                  Reset column widths
                 </button>
               </div>
             </div>
@@ -221,7 +222,7 @@ export function UpcomingDeliveriesSection({ items }: { items: UpcomingItem[] }) 
 
       {items.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 px-6 py-12 text-center text-sm text-gray-400">
-          납품 예정인 수주서가 없습니다.
+          No upcoming deliveries.
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">

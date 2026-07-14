@@ -2,9 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { statusLabel, ORDER_STATUS_LABEL } from '@/lib/status-labels'
 
 type OrderStatus = '수주' | '발주' | '납품' | '취소'
-type DateMode = '수주일' | '납품일'
+type DateMode = 'orderDate' | 'deliveryDate'
+const DATE_MODE_LABEL: Record<DateMode, string> = { orderDate: 'Order Date', deliveryDate: 'Delivery Date' }
 
 interface MonthOrder {
   id: string
@@ -64,7 +66,7 @@ function MonthOrderTable({ orders, dateMode }: { orders: MonthOrder[]; dateMode:
   const router = useRouter()
   if (orders.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-gray-400">해당 상태의 수주서가 없습니다.</p>
+      <p className="py-8 text-center text-sm text-gray-400">No orders with this status.</p>
     )
   }
   return (
@@ -72,12 +74,12 @@ function MonthOrderTable({ orders, dateMode }: { orders: MonthOrder[]; dateMode:
       <table className="w-full text-sm min-w-[580px]">
         <thead className="bg-gray-50 border-b border-gray-100 text-xs text-gray-500">
           <tr>
-            <th className="px-4 py-2.5 text-left font-medium w-16">번호</th>
-            <th className="px-4 py-2.5 text-left font-medium w-14">유형</th>
-            <th className="px-4 py-2.5 text-left font-medium">업체</th>
-            <th className="px-4 py-2.5 text-left font-medium">현장명</th>
-            <th className="px-4 py-2.5 text-left font-medium w-24">수주일</th>
-            <th className="px-4 py-2.5 text-left font-medium w-24">납품일</th>
+            <th className="px-4 py-2.5 text-left font-medium w-16">No.</th>
+            <th className="px-4 py-2.5 text-left font-medium w-14">Type</th>
+            <th className="px-4 py-2.5 text-left font-medium">Vendor</th>
+            <th className="px-4 py-2.5 text-left font-medium">Project</th>
+            <th className="px-4 py-2.5 text-left font-medium w-24">Order Date</th>
+            <th className="px-4 py-2.5 text-left font-medium w-24">Delivery Date</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
@@ -90,13 +92,13 @@ function MonthOrderTable({ orders, dateMode }: { orders: MonthOrder[]; dateMode:
               <td className="px-4 py-2.5 text-gray-400 text-xs font-mono">{o.order_no ?? '—'}</td>
               <td className="px-4 py-2.5 whitespace-nowrap">
                 <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${o.isDuct ? 'bg-violet-50 text-violet-600' : 'bg-indigo-50 text-indigo-600'}`}>
-                  {o.isDuct ? '덕트' : '배관'}
+                  {o.isDuct ? 'Duct' : 'Pipe'}
                 </span>
               </td>
               <td className="px-4 py-2.5 font-medium text-gray-800 whitespace-nowrap">{o.vendor || '—'}</td>
-              <td className="px-4 py-2.5 text-gray-600"><div className="flex items-center gap-1.5">{o.project || '—'}{o.no_invoice && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-400 border border-gray-200 whitespace-nowrap flex-shrink-0">계산서 미발행</span>}</div></td>
-              <td className={`px-4 py-2.5 whitespace-nowrap tabular-nums ${dateMode === '수주일' ? 'font-medium text-[#014A99]' : 'text-gray-500'}`}>{o.order_date?.slice(0, 10) ?? '—'}</td>
-              <td className={`px-4 py-2.5 whitespace-nowrap tabular-nums ${dateMode === '납품일' ? 'font-medium text-[#014A99]' : 'text-gray-500'}`}>{o.delivery_date?.slice(0, 10) ?? '—'}</td>
+              <td className="px-4 py-2.5 text-gray-600"><div className="flex items-center gap-1.5">{o.project || '—'}{o.no_invoice && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-400 border border-gray-200 whitespace-nowrap flex-shrink-0">No Invoice</span>}</div></td>
+              <td className={`px-4 py-2.5 whitespace-nowrap tabular-nums ${dateMode === 'orderDate' ? 'font-medium text-[#014A99]' : 'text-gray-500'}`}>{o.order_date?.slice(0, 10) ?? '—'}</td>
+              <td className={`px-4 py-2.5 whitespace-nowrap tabular-nums ${dateMode === 'deliveryDate' ? 'font-medium text-[#014A99]' : 'text-gray-500'}`}>{o.delivery_date?.slice(0, 10) ?? '—'}</td>
             </tr>
           ))}
         </tbody>
@@ -107,15 +109,15 @@ function MonthOrderTable({ orders, dateMode }: { orders: MonthOrder[]; dateMode:
 
 function fmtWon(v: number): string {
   if (v === 0) return '—'
-  return v.toLocaleString('ko-KR') + '원'
+  return '₩' + v.toLocaleString('en-US')
 }
 
 export function MonthlyStatsSection({ year, month, orderDateOrders, deliveryDateOrders, orderDateCalc, deliveryDateCalc }: Props) {
-  const [dateMode, setDateMode] = useState<DateMode>('수주일')
+  const [dateMode, setDateMode] = useState<DateMode>('orderDate')
   const [activeStatus, setActiveStatus] = useState<OrderStatus | null>(null)
 
-  const calc   = dateMode === '수주일' ? orderDateCalc   : deliveryDateCalc
-  const orders = dateMode === '수주일' ? orderDateOrders : deliveryDateOrders
+  const calc   = dateMode === 'orderDate' ? orderDateCalc   : deliveryDateCalc
+  const orders = dateMode === 'orderDate' ? orderDateOrders : deliveryDateOrders
 
   function handleCardClick(label: OrderStatus) {
     setActiveStatus(prev => prev === label ? null : label)
@@ -128,11 +130,11 @@ export function MonthlyStatsSection({ year, month, orderDateOrders, deliveryDate
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
-            {year}년 {month}월 현황
+            {month}/{year} Overview
           </h2>
-          {/* 수주일 / 납품일 토글 */}
+          {/* Order Date / Delivery Date toggle */}
           <div className="flex items-center gap-0.5 bg-gray-100 p-0.5 rounded-lg">
-            {(['수주일', '납품일'] as DateMode[]).map(m => (
+            {(['orderDate', 'deliveryDate'] as DateMode[]).map(m => (
               <button
                 key={m}
                 onClick={() => { setDateMode(m); setActiveStatus(null) }}
@@ -140,13 +142,13 @@ export function MonthlyStatsSection({ year, month, orderDateOrders, deliveryDate
                   dateMode === m ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                {m}
+                {DATE_MODE_LABEL[m]}
               </button>
             ))}
           </div>
         </div>
         <span className="text-xs text-gray-400">
-          배관 {calc.pipeCount}건 &middot; 덕트 {calc.ductCount}건
+          Pipe {calc.pipeCount} &middot; Duct {calc.ductCount}
         </span>
       </div>
 
@@ -159,13 +161,12 @@ export function MonthlyStatsSection({ year, month, orderDateOrders, deliveryDate
               onClick={() => handleCardClick(label)}
               className={`rounded-xl border ${border} ${isActive ? `${activeBg} ${ringCls}` : bg} p-3 sm:p-5 text-left transition-all duration-150 cursor-pointer hover:brightness-95`}
             >
-              <p className={`text-xs font-semibold uppercase tracking-wider ${labelCls}`}>{label}</p>
+              <p className={`text-xs font-semibold uppercase tracking-wider ${labelCls}`}>{statusLabel(label, ORDER_STATUS_LABEL)}</p>
               <p className={`text-2xl sm:text-3xl font-bold mt-2 ${numCls}`}>
                 {calc.stats[label]}
-                <span className="text-sm font-normal ml-1 opacity-70">건</span>
               </p>
               {isActive && (
-                <p className="text-xs mt-1.5 opacity-60">▲ 클릭하여 닫기</p>
+                <p className="text-xs mt-1.5 opacity-60">▲ Click to close</p>
               )}
             </button>
           )
@@ -181,16 +182,16 @@ export function MonthlyStatsSection({ year, month, orderDateOrders, deliveryDate
         return (
           <div className="mt-3 grid grid-cols-3 gap-3">
             <div className="rounded-xl border border-blue-100 bg-white px-4 py-3">
-              <p className="text-xs text-gray-400 mb-1">매출 <span className="text-gray-300">(VAT포함)</span></p>
+              <p className="text-xs text-gray-400 mb-1">Revenue <span className="text-gray-300">(incl. VAT)</span></p>
               <p className="text-lg font-bold text-blue-700">{fmtWon(sale)}</p>
             </div>
             <div className="rounded-xl border border-orange-100 bg-white px-4 py-3">
-              <p className="text-xs text-gray-400 mb-1">매입 <span className="text-gray-300">(VAT포함)</span></p>
+              <p className="text-xs text-gray-400 mb-1">Cost <span className="text-gray-300">(incl. VAT)</span></p>
               <p className="text-lg font-bold text-orange-600">{fmtWon(purchase)}</p>
             </div>
             <div className={`rounded-xl border px-4 py-3 ${profit >= 0 ? 'border-green-100 bg-white' : 'border-red-100 bg-white'}`}>
               <p className="text-xs text-gray-400 mb-1">
-                영업이익{margin !== null && <span className="ml-1 text-gray-300">({margin}%)</span>}
+                Profit{margin !== null && <span className="ml-1 text-gray-300">({margin}%)</span>}
               </p>
               <p className={`text-lg font-bold ${profit >= 0 ? 'text-green-600' : 'text-red-500'}`}>
                 {profit === 0 ? '—' : (profit > 0 ? '' : '-') + fmtWon(Math.abs(profit))}
@@ -206,16 +207,16 @@ export function MonthlyStatsSection({ year, month, orderDateOrders, deliveryDate
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <div className="flex items-center gap-2">
               <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_COLORS[activeStatus]}`}>
-                {activeStatus}
+                {statusLabel(activeStatus, ORDER_STATUS_LABEL)}
               </span>
               <span className="text-sm text-gray-600">
-                {year}년 {month}월 · {filteredOrders.length}건 ({dateMode} 기준)
+                {month}/{year} · {filteredOrders.length} orders (by {DATE_MODE_LABEL[dateMode]})
               </span>
             </div>
             <button
               onClick={() => setActiveStatus(null)}
               className="text-gray-400 hover:text-gray-600 cursor-pointer"
-              aria-label="닫기"
+              aria-label="Close"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
