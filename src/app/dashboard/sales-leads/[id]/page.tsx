@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-toastify'
+import { statusLabel, SALES_LEAD_STATUS_LABEL } from '@/lib/status-labels'
 
 type Status = '등록' | '진행중' | '착공전' | '이관' | '체결' | '종료'
 
@@ -88,7 +89,7 @@ export default function SalesLeadDetailPage({ params }: { params: Promise<{ id: 
       fetch(`/api/sales-leads/${id}`).then(r => r.json()),
       fetch('/api/sales-accounts').then(r => r.json()),
     ]).then(([leadData, accountData]) => {
-      if (leadData.error) { toast.error('찾을 수 없습니다.'); router.push('/dashboard/sales-leads'); return }
+      if (leadData.error) { toast.error('Not found.'); router.push('/dashboard/sales-leads'); return }
       setLead(leadData)
       setAccounts(Array.isArray(accountData) ? accountData : [])
     }).finally(() => setLoading(false))
@@ -122,11 +123,11 @@ export default function SalesLeadDetailPage({ params }: { params: Promise<{ id: 
         }),
       })
       const data = await res.json()
-      if (!res.ok) { toast.error(data.error ?? '저장 실패'); return }
+      if (!res.ok) { toast.error(data.error ?? 'Save failed'); return }
       setLead(data)
       setEditing(false)
       setForm(null)
-      toast.success('저장되었습니다.')
+      toast.success('Saved successfully.')
     } finally {
       setSaving(false)
     }
@@ -142,47 +143,47 @@ export default function SalesLeadDetailPage({ params }: { params: Promise<{ id: 
         body: JSON.stringify({ status }),
       })
       const data = await res.json()
-      if (!res.ok) { toast.error(data.error ?? '상태 변경 실패'); return }
+      if (!res.ok) { toast.error(data.error ?? 'Status change failed'); return }
       setLead(data)
-      toast.success(`상태가 "${status}"로 변경되었습니다.`)
+      toast.success(`Status changed to "${statusLabel(status, SALES_LEAD_STATUS_LABEL)}".`)
     } finally {
       setStatusSaving(false)
     }
   }
 
   async function handleDelete() {
-    if (!confirm('이 영업현장을 삭제하시겠습니까?')) return
+    if (!confirm('Delete this sales lead?')) return
     await fetch(`/api/sales-leads/${id}`, { method: 'DELETE' })
-    toast.success('삭제되었습니다.')
+    toast.success('Deleted successfully.')
     router.push('/dashboard/sales-leads')
   }
 
-  if (loading) return <div className="p-6 text-sm text-gray-500">불러오는 중...</div>
+  if (loading) return <div className="p-6 text-sm text-gray-500">Loading...</div>
   if (!lead) return null
 
   const display = editing && form ? form : toForm(lead)
 
-  // 현재 연결된 거래처 정보 (뷰 모드)
+  // Currently linked account info (view mode)
   const linkedAccount = editing
     ? accounts.find(a => a.id === form?.account_id) ?? null
     : lead.account
 
-  // 구 텍스트 데이터 (FK 없는 레거시)
+  // Legacy text data (no FK)
   const hasLegacyCompany = !lead.account_id && (lead.construction_company || lead.facility_company)
 
   return (
     <div className="p-6 max-w-2xl">
-      {/* 헤더 */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <button
             onClick={() => { sessionStorage.setItem('sl_from_back', '1'); router.push('/dashboard/sales-leads') }}
             className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer"
           >
-            ← 목록
+            ← List
           </button>
           <h1 className="text-xl font-bold text-gray-900">
-            {lead.project_name || '(현장명 없음)'}
+            {lead.project_name || '(No project name)'}
           </h1>
         </div>
         <div className="flex gap-2">
@@ -193,13 +194,13 @@ export default function SalesLeadDetailPage({ params }: { params: Promise<{ id: 
                 disabled={saving}
                 className="px-4 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
               >
-                {saving ? '저장 중...' : '저장'}
+                {saving ? 'Saving...' : 'Save'}
               </button>
               <button
                 onClick={handleEditCancel}
                 className="px-4 py-1.5 border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-50 cursor-pointer"
               >
-                취소
+                Cancel
               </button>
             </>
           ) : (
@@ -208,24 +209,24 @@ export default function SalesLeadDetailPage({ params }: { params: Promise<{ id: 
                 onClick={handleEditStart}
                 className="px-4 py-1.5 border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-50 cursor-pointer"
               >
-                편집
+                Edit
               </button>
               <button
                 onClick={handleDelete}
                 className="px-4 py-1.5 border border-red-200 text-red-600 text-sm rounded-md hover:bg-red-50 cursor-pointer"
               >
-                삭제
+                Delete
               </button>
             </>
           )}
         </div>
       </div>
 
-      {/* 상태 변경 */}
+      {/* Status change */}
       <div className="flex items-center gap-3 mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-        <span className="text-sm text-gray-500 font-medium">상태</span>
+        <span className="text-sm text-gray-500 font-medium">Status</span>
         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_STYLES[lead.status] ?? STATUS_STYLES['등록']}`}>
-          {lead.status}
+          {statusLabel(lead.status, SALES_LEAD_STATUS_LABEL)}
         </span>
         <span className="text-gray-300">→</span>
         <select
@@ -235,54 +236,54 @@ export default function SalesLeadDetailPage({ params }: { params: Promise<{ id: 
           className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer disabled:opacity-50"
         >
           {STATUS_OPTIONS.map(s => (
-            <option key={s} value={s}>{s}</option>
+            <option key={s} value={s}>{statusLabel(s, SALES_LEAD_STATUS_LABEL)}</option>
           ))}
         </select>
-        {statusSaving && <span className="text-xs text-gray-400">저장 중...</span>}
+        {statusSaving && <span className="text-xs text-gray-400">Saving...</span>}
       </div>
 
-      {/* 기본 정보 */}
+      {/* Basic info */}
       <div className="border border-gray-200 rounded-lg overflow-hidden mb-4">
         <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">기본 정보</span>
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Basic Info</span>
         </div>
         <div className="divide-y divide-gray-100">
-          <Row label="대리점">
+          <Row label="Dealership">
             {editing
               ? <Input value={form!.dealership} onChange={v => setField('dealership', v)} />
               : display.dealership || '—'}
           </Row>
-          <Row label="현장명">
+          <Row label="Project Name">
             {editing
               ? <Input value={form!.project_name} onChange={v => setField('project_name', v)} />
               : display.project_name || '—'}
           </Row>
-          <Row label="주소">
+          <Row label="Address">
             {editing
               ? <Input value={form!.address} onChange={v => setField('address', v)} />
               : display.address || '—'}
           </Row>
-          <Row label="규모">
+          <Row label="Scale">
             {editing
               ? <Input value={form!.scale} onChange={v => setField('scale', v)} />
               : display.scale || '—'}
           </Row>
-          <Row label="최근 수정일">
-            {lead?.last_update ? new Date(lead.last_update).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—'}
+          <Row label="Last Updated">
+            {lead?.last_update ? new Date(lead.last_update).toLocaleString('en-US', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—'}
           </Row>
         </div>
       </div>
 
-      {/* 업체명 정보 */}
+      {/* Company info */}
       <div className="border border-gray-200 rounded-lg overflow-hidden mb-4">
         <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex items-center justify-between">
-          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">업체명</span>
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Company</span>
           {!editing && linkedAccount && (
             <button
               onClick={() => router.push(`/dashboard/sales-accounts/${linkedAccount.id}`)}
               className="text-xs text-green-600 hover:underline cursor-pointer"
             >
-              거래처 상세 →
+              Account Details →
             </button>
           )}
         </div>
@@ -290,32 +291,32 @@ export default function SalesLeadDetailPage({ params }: { params: Promise<{ id: 
           {editing ? (
             <div className="space-y-3">
               <div>
-                <label className="block text-xs text-gray-500 mb-1">업체명 선택</label>
+                <label className="block text-xs text-gray-500 mb-1">Select Company</label>
                 <select
                   value={form!.account_id}
                   onChange={e => setField('account_id', e.target.value)}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white cursor-pointer"
                 >
-                  <option value="">— 선택 안 함 —</option>
+                  <option value="">— None —</option>
                   {accounts.map(a => (
                     <option key={a.id} value={a.id}>{a.name}</option>
                   ))}
                 </select>
                 {accounts.length === 0 && (
                   <p className="mt-1 text-xs text-gray-400">
-                    등록된 거래처가 없습니다.{' '}
+                    No accounts registered.{' '}
                     <button onClick={() => router.push('/dashboard/sales-accounts/new')} className="text-green-600 hover:underline cursor-pointer">
-                      거래처 추가하기 →
+                      Add an account →
                     </button>
                   </p>
                 )}
               </div>
-              {/* 선택된 거래처 미리보기 */}
+              {/* Selected account preview */}
               {linkedAccount && (
                 <div className="bg-green-100 border border-green-200 rounded-md px-3 py-2.5 text-sm space-y-1">
                   <p className="font-medium text-green-800">{linkedAccount.name}</p>
-                  {linkedAccount.contact_name && <p className="text-green-700 text-xs">담당자: {linkedAccount.contact_name}</p>}
-                  {linkedAccount.contact_phone && <p className="text-green-700 text-xs">연락처: {linkedAccount.contact_phone}</p>}
+                  {linkedAccount.contact_name && <p className="text-green-700 text-xs">Contact: {linkedAccount.contact_name}</p>}
+                  {linkedAccount.contact_phone && <p className="text-green-700 text-xs">Phone: {linkedAccount.contact_phone}</p>}
                 </div>
               )}
             </div>
@@ -323,31 +324,31 @@ export default function SalesLeadDetailPage({ params }: { params: Promise<{ id: 
             <div className="space-y-1.5">
               <p className="text-sm font-medium text-gray-900">{linkedAccount.name}</p>
               {linkedAccount.contact_name && (
-                <p className="text-sm text-gray-600">담당자: {linkedAccount.contact_name}</p>
+                <p className="text-sm text-gray-600">Contact: {linkedAccount.contact_name}</p>
               )}
               {linkedAccount.contact_phone && (
-                <p className="text-sm text-gray-600">연락처: {linkedAccount.contact_phone}</p>
+                <p className="text-sm text-gray-600">Phone: {linkedAccount.contact_phone}</p>
               )}
             </div>
           ) : hasLegacyCompany ? (
-            // 레거시 텍스트 데이터 표시
+            // Legacy text data display
             <div className="space-y-1.5">
-              {lead.construction_company && <p className="text-sm text-gray-700">건설사: {lead.construction_company}</p>}
-              {lead.facility_company && <p className="text-sm text-gray-700">설비사: {lead.facility_company}</p>}
-              {lead.contact_name && <p className="text-sm text-gray-600">담당자: {lead.contact_name}</p>}
-              {lead.contact_phone && <p className="text-sm text-gray-600">연락처: {lead.contact_phone}</p>}
-              <p className="text-xs text-gray-400 mt-2">편집하여 거래처를 연결하면 더 효과적으로 관리할 수 있습니다.</p>
+              {lead.construction_company && <p className="text-sm text-gray-700">Contractor: {lead.construction_company}</p>}
+              {lead.facility_company && <p className="text-sm text-gray-700">Facility Company: {lead.facility_company}</p>}
+              {lead.contact_name && <p className="text-sm text-gray-600">Contact: {lead.contact_name}</p>}
+              {lead.contact_phone && <p className="text-sm text-gray-600">Phone: {lead.contact_phone}</p>}
+              <p className="text-xs text-gray-400 mt-2">Edit and link an account for more effective management.</p>
             </div>
           ) : (
-            <p className="text-sm text-gray-400">연결된 업체가 없습니다.</p>
+            <p className="text-sm text-gray-400">No linked company.</p>
           )}
         </div>
       </div>
 
-      {/* 비고 */}
+      {/* Notes */}
       <div className="border border-gray-200 rounded-lg overflow-hidden mb-4">
         <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">비고</span>
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Notes</span>
         </div>
         <div className="p-4">
           {editing ? (
@@ -363,11 +364,11 @@ export default function SalesLeadDetailPage({ params }: { params: Promise<{ id: 
         </div>
       </div>
 
-      {/* 출처 URL */}
+      {/* Source URL */}
       {(display.source_url || editing) && (
         <div className="border border-gray-200 rounded-lg overflow-hidden mb-4">
           <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">링크</span>
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Link</span>
           </div>
           <div className="p-4">
             {editing ? (
@@ -386,17 +387,17 @@ export default function SalesLeadDetailPage({ params }: { params: Promise<{ id: 
         </div>
       )}
 
-      {/* 상태 변경 이력 */}
+      {/* Status change history */}
       {lead.status_history.length > 0 && (
         <div className="mt-2 border border-gray-200 rounded-lg overflow-hidden">
           <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">상태 변경 이력</span>
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Status Change History</span>
           </div>
           <div className="divide-y divide-gray-100">
             {[...lead.status_history].reverse().map((entry, i) => (
               <div key={i} className="flex items-center gap-3 px-4 py-2.5 text-sm">
                 <span className="text-xs text-gray-400 w-36 flex-shrink-0">
-                  {new Date(entry.changed_at).toLocaleString('ko-KR', {
+                  {new Date(entry.changed_at).toLocaleString('en-US', {
                     year: 'numeric', month: '2-digit', day: '2-digit',
                     hour: '2-digit', minute: '2-digit',
                   })}
@@ -404,13 +405,13 @@ export default function SalesLeadDetailPage({ params }: { params: Promise<{ id: 
                 {entry.from_status && (
                   <>
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[entry.from_status as Status] ?? 'bg-gray-100 text-gray-600'}`}>
-                      {entry.from_status}
+                      {statusLabel(entry.from_status, SALES_LEAD_STATUS_LABEL)}
                     </span>
                     <span className="text-gray-400 text-xs">→</span>
                   </>
                 )}
                 <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[entry.to_status as Status] ?? 'bg-gray-100 text-gray-600'}`}>
-                  {entry.to_status}
+                  {statusLabel(entry.to_status, SALES_LEAD_STATUS_LABEL)}
                 </span>
               </div>
             ))}
