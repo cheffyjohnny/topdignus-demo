@@ -24,7 +24,7 @@ export default function SettingsPage() {
     setResult(null)
 
     if (newPassword !== confirmPassword) {
-      setResult({ ok: false, message: '새 비밀번호가 일치하지 않습니다.' })
+      setResult({ ok: false, message: 'New passwords do not match.' })
       return
     }
 
@@ -39,13 +39,13 @@ export default function SettingsPage() {
       if (!res.ok) {
         setResult({ ok: false, message: data.error })
       } else {
-        setResult({ ok: true, message: '비밀번호가 변경되었습니다.' })
+        setResult({ ok: true, message: 'Password changed successfully.' })
         setCurrentPassword('')
         setNewPassword('')
         setConfirmPassword('')
       }
     } catch {
-      setResult({ ok: false, message: '오류가 발생했습니다.' })
+      setResult({ ok: false, message: 'An error occurred.' })
     } finally {
       setLoading(false)
     }
@@ -54,16 +54,16 @@ export default function SettingsPage() {
   return (
     <div className="max-w-md mx-auto space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-gray-900">설정</h1>
-        <p className="text-sm text-gray-500 mt-0.5">계정 설정을 관리합니다.</p>
+        <h1 className="text-xl font-bold text-gray-900">Settings</h1>
+        <p className="text-sm text-gray-500 mt-0.5">Manage your account settings.</p>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
-        <h2 className="text-sm font-semibold text-gray-700">비밀번호 변경</h2>
+        <h2 className="text-sm font-semibold text-gray-700">Change Password</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs text-gray-500">현재 비밀번호</label>
+            <label className="text-xs text-gray-500">Current Password</label>
             <input
               type="password"
               value={currentPassword}
@@ -73,7 +73,7 @@ export default function SettingsPage() {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs text-gray-500">새 비밀번호 <span className="text-gray-400">(6자 이상)</span></label>
+            <label className="text-xs text-gray-500">New Password <span className="text-gray-400">(6+ characters)</span></label>
             <input
               type="password"
               value={newPassword}
@@ -84,7 +84,7 @@ export default function SettingsPage() {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs text-gray-500">새 비밀번호 확인</label>
+            <label className="text-xs text-gray-500">Confirm New Password</label>
             <input
               type="password"
               value={confirmPassword}
@@ -106,7 +106,7 @@ export default function SettingsPage() {
             className="w-full py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-40 transition-colors"
             style={{ backgroundColor: '#014A99' }}
           >
-            {loading ? '변경 중...' : '비밀번호 변경'}
+            {loading ? 'Changing...' : 'Change Password'}
           </button>
         </form>
       </div>

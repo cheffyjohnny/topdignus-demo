@@ -31,30 +31,30 @@ type Props = {
 };
 
 const TABS = [
-  { key: "kict", label: "KICT 인정서" },
-  { key: "kfi", label: "KFI 방화포" },
-  { key: "law", label: "법령" },
+  { key: "kict", label: "KICT Certifications" },
+  { key: "kfi", label: "KFI Fire Blanket" },
+  { key: "law", label: "Laws" },
 ];
 
 function formatDate(d: string | null) {
   if (!d) return "—";
-  return new Date(d).toLocaleDateString("ko-KR", { year: "numeric", month: "short", day: "numeric" });
+  return new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 }
 
 function CrawlTable({ items }: { items: CrawlRow[] }) {
   if (items.length === 0) {
-    return <p className="text-sm text-gray-400 py-8 text-center">수집된 데이터가 없습니다.</p>;
+    return <p className="text-sm text-gray-400 py-8 text-center">No data collected yet.</p>;
   }
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-gray-100">
-            <th className="text-left py-3 px-4 font-semibold text-gray-500 w-16">구분</th>
-            <th className="text-left py-3 px-4 font-semibold text-gray-500">제목</th>
-            <th className="text-left py-3 px-4 font-semibold text-gray-500 w-32">부서</th>
-            <th className="text-left py-3 px-4 font-semibold text-gray-500 w-32">공표일</th>
-            <th className="text-left py-3 px-4 font-semibold text-gray-500 w-16">링크</th>
+            <th className="text-left py-3 px-4 font-semibold text-gray-500 w-16">Type</th>
+            <th className="text-left py-3 px-4 font-semibold text-gray-500">Title</th>
+            <th className="text-left py-3 px-4 font-semibold text-gray-500 w-32">Department</th>
+            <th className="text-left py-3 px-4 font-semibold text-gray-500 w-32">Announced</th>
+            <th className="text-left py-3 px-4 font-semibold text-gray-500 w-16">Link</th>
           </tr>
         </thead>
         <tbody>
@@ -95,11 +95,11 @@ function CrawlTable({ items }: { items: CrawlRow[] }) {
 function RunLog({ log }: { log: CrawlLog | null }) {
   if (!log) return (
     <div className="py-3 mb-4 border-b border-gray-100 text-xs text-gray-400">
-      실행 기록 없음
+      No run history
     </div>
   );
 
-  const ranAt = new Date(log.ran_at).toLocaleString("ko-KR", {
+  const ranAt = new Date(log.ran_at).toLocaleString("en-US", {
     year: "numeric", month: "short", day: "numeric",
     hour: "2-digit", minute: "2-digit",
   });
@@ -108,11 +108,11 @@ function RunLog({ log }: { log: CrawlLog | null }) {
     <div className="py-3 mb-4 border-b border-gray-100 flex items-center gap-4 text-xs text-gray-400">
       <span className={`flex items-center gap-1 font-medium ${log.status === "success" ? "text-green-600" : "text-red-500"}`}>
         <span className={`w-1.5 h-1.5 rounded-full ${log.status === "success" ? "bg-green-500" : "bg-red-500"}`} />
-        {log.status === "success" ? "성공" : "실패"}
+        {log.status === "success" ? "Success" : "Failed"}
       </span>
-      <span>마지막 실행: <span className="text-gray-600">{ranAt}</span></span>
-      <span>수집 <span className="text-gray-600">{log.items_collected}건</span></span>
-      <span>신규 <span className={`font-semibold ${log.new_items > 0 ? "text-[#014A99]" : "text-gray-600"}`}>{log.new_items}건</span></span>
+      <span>Last run: <span className="text-gray-600">{ranAt}</span></span>
+      <span>Collected <span className="text-gray-600">{log.items_collected}</span></span>
+      <span>New <span className={`font-semibold ${log.new_items > 0 ? "text-[#014A99]" : "text-gray-600"}`}>{log.new_items}</span></span>
       {log.error_message && <span className="text-red-400 truncate max-w-xs">{log.error_message}</span>}
     </div>
   );

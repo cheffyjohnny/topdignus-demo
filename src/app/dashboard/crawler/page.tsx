@@ -1,7 +1,7 @@
 import { supabaseServer } from "@/lib/supabase-server";
 import CrawlerTabs, { CrawlRow, CrawlLog } from "./CrawlerTabs";
 
-export const metadata = { title: "법령·인정 현황 | Topdignus 관리자" };
+export const metadata = { title: "Regulations & Certifications | Topdignus Admin" };
 
 async function fetchItems(source: string): Promise<CrawlRow[]> {
   const { data } = await supabaseServer
@@ -42,9 +42,9 @@ export default async function CrawlerPage({
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">법령·인정 현황</h1>
+        <h1 className="text-xl font-bold text-gray-900">Regulations & Certifications</h1>
         <p className="text-sm text-gray-500 mt-1">
-          KICT {kictItems.length}건 · KFI {kfiItems.length}건 · 법령 {lawItems.length}건
+          KICT {kictItems.length} · KFI {kfiItems.length} · Laws {lawItems.length}
         </p>
       </div>
 
