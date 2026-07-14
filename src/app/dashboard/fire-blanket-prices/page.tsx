@@ -174,11 +174,11 @@ export default function FireBlanketPricesPage() {
         }))
       }
       const results = await Promise.all(promises)
-      if (results.some(r => !r.ok)) throw new Error('저장 실패')
-      setMessage({ type: 'success', text: `${totalChanged}개 항목 저장 완료` })
+      if (results.some(r => !r.ok)) throw new Error('Save failed')
+      setMessage({ type: 'success', text: `${totalChanged} item(s) saved` })
       await load()
     } catch (e: any) {
-      setMessage({ type: 'error', text: e.message ?? '오류 발생' })
+      setMessage({ type: 'error', text: e.message ?? 'An error occurred' })
     }
     setSaving(false)
   }
@@ -192,12 +192,12 @@ export default function FireBlanketPricesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify([{ manufacturer: newMfrName.trim(), item_name: '', spec: '', roll_price: 0 }]),
       })
-      if (!res.ok) throw new Error('추가 실패')
+      if (!res.ok) throw new Error('Add failed')
       setAddingMfr(false)
       setNewMfrName('')
       await load()
     } catch {
-      setMessage({ type: 'error', text: '제조사 추가에 실패했습니다.' })
+      setMessage({ type: 'error', text: 'Failed to add manufacturer.' })
     }
     setAddingMfrLoading(false)
   }
@@ -213,14 +213,14 @@ export default function FireBlanketPricesPage() {
       })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
-        throw new Error(body.error ?? '추가 실패')
+        throw new Error(body.error ?? 'Add failed')
       }
       setAddingItemForMfr(null)
       setNewItemName('')
       setNewItemSpec('')
       await load()
     } catch (e: any) {
-      setMessage({ type: 'error', text: e.message ?? '품목 추가에 실패했습니다.' })
+      setMessage({ type: 'error', text: e.message ?? 'Failed to add item.' })
     }
     setAddingItemLoading(false)
   }
@@ -236,11 +236,11 @@ export default function FireBlanketPricesPage() {
         body: JSON.stringify({ oldName: renamingMfr, newName: renameValue.trim() }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? '변경 실패')
+      if (!res.ok) throw new Error(data.error ?? 'Rename failed')
       setRenamingMfr(null)
       await load()
     } catch (e: any) {
-      setRenameError(e.message ?? '오류 발생')
+      setRenameError(e.message ?? 'An error occurred')
     }
     setRenameSaving(false)
   }
@@ -250,11 +250,11 @@ export default function FireBlanketPricesPage() {
     setDeletingMfrLoading(true)
     try {
       const res = await fetch(`/api/fire-blanket-prices?manufacturer=${encodeURIComponent(deletingMfr)}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('삭제 실패')
+      if (!res.ok) throw new Error('Delete failed')
       setDeletingMfr(null)
       await load()
     } catch {
-      setMessage({ type: 'error', text: '제조사 삭제에 실패했습니다.' })
+      setMessage({ type: 'error', text: 'Failed to delete manufacturer.' })
     }
     setDeletingMfrLoading(false)
   }
@@ -265,17 +265,17 @@ export default function FireBlanketPricesPage() {
     try {
       const url = `/api/fire-blanket-prices?manufacturer=${encodeURIComponent(deletingRow.manufacturer)}&item_name=${encodeURIComponent(deletingRow.item_name)}`
       const res = await fetch(url, { method: 'DELETE' })
-      if (!res.ok) throw new Error('삭제 실패')
+      if (!res.ok) throw new Error('Delete failed')
       setDeletingRow(null)
       await load()
     } catch {
-      setMessage({ type: 'error', text: '품목 삭제에 실패했습니다.' })
+      setMessage({ type: 'error', text: 'Failed to delete item.' })
     }
     setDeletingRowLoading(false)
   }
 
   async function handleSaveCustomer() {
-    if (!modalName.trim()) { setModalError('업체명을 입력하세요.'); return }
+    if (!modalName.trim()) { setModalError('Please enter a company name.'); return }
     setModalSaving(true)
     setModalError('')
     try {
@@ -290,11 +290,11 @@ export default function FireBlanketPricesPage() {
         body: JSON.stringify(body),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? '저장 실패')
+      if (!res.ok) throw new Error(data.error ?? 'Save failed')
       setCustomerModal(null)
       await load()
     } catch (e: any) {
-      setModalError(e.message ?? '오류 발생')
+      setModalError(e.message ?? 'An error occurred')
     }
     setModalSaving(false)
   }
@@ -305,12 +305,12 @@ export default function FireBlanketPricesPage() {
     setModalDeleting(true)
     try {
       const res = await fetch(`/api/customers?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('삭제 실패')
+      if (!res.ok) throw new Error('Delete failed')
       setCustomerModal(null)
       setModalConfirmDelete(false)
       await load()
     } catch (e: any) {
-      setModalError(e.message ?? '삭제 오류')
+      setModalError(e.message ?? 'Delete error')
       setModalConfirmDelete(false)
     }
     setModalDeleting(false)
@@ -319,7 +319,7 @@ export default function FireBlanketPricesPage() {
   const INPUT_CLS = 'text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:border-[#014A99] w-full'
 
   if (status === 'loading' || loading) {
-    return <div className="flex items-center justify-center h-64 text-sm text-gray-400">불러오는 중...</div>
+    return <div className="flex items-center justify-center h-64 text-sm text-gray-400">Loading...</div>
   }
 
   const activeMfr = manufacturers.find(m => m === selectedMfrTab) ?? manufacturers[0] ?? ''
@@ -327,9 +327,9 @@ export default function FireBlanketPricesPage() {
 
   return (
     <div className="space-y-8">
-      {/* 헤더 */}
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">방화포 단가 관리</h1>
+        <h1 className="text-xl font-bold text-gray-900">Fire Blanket Pricing Management</h1>
         <div className="flex items-center gap-2">
           {message && (
             <span className={`text-sm ${message.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
@@ -342,23 +342,23 @@ export default function FireBlanketPricesPage() {
             className="px-4 py-2 text-sm font-semibold text-white rounded-lg disabled:opacity-40 transition-opacity cursor-pointer"
             style={{ backgroundColor: '#014A99' }}
           >
-            {saving ? '저장 중...' : `변경사항 저장${totalChanged > 0 ? ` (${totalChanged})` : ''}`}
+            {saving ? 'Saving...' : `Save Changes${totalChanged > 0 ? ` (${totalChanged})` : ''}`}
           </button>
         </div>
       </div>
 
-      {/* 매입 단가 */}
+      {/* Purchase price */}
       <div>
-        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">매입 단가 (롤당)</h2>
+        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Purchase Price (per roll)</h2>
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[600px]">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100 text-xs text-gray-500">
-                  <th className="px-4 py-2.5 text-left font-medium w-36">제조사</th>
-                  <th className="px-4 py-2.5 text-left font-medium w-40">품목명</th>
-                  <th className="px-4 py-2.5 text-left font-medium w-40">규격</th>
-                  <th className="px-4 py-2.5 text-right font-medium w-40 text-blue-600">롤당 매입가</th>
+                  <th className="px-4 py-2.5 text-left font-medium w-36">Manufacturer</th>
+                  <th className="px-4 py-2.5 text-left font-medium w-40">Item</th>
+                  <th className="px-4 py-2.5 text-left font-medium w-40">Spec</th>
+                  <th className="px-4 py-2.5 text-right font-medium w-40 text-blue-600">Cost per Roll</th>
                   <th className="px-4 py-2.5 w-10" />
                 </tr>
               </thead>
@@ -370,7 +370,7 @@ export default function FireBlanketPricesPage() {
                       key={i}
                       className={`group ${row.changed ? 'bg-amber-50' : 'hover:bg-gray-50/50'}`}
                     >
-                      {/* 제조사: 첫 행에만 표시 */}
+                      {/* Manufacturer: shown on first row only */}
                       {rowIdx === 0 ? (
                         <td className="px-4 py-2.5 font-medium text-gray-800 align-top" rowSpan={mfrEntries.length}>
                           <div className="flex items-center gap-1.5">
@@ -379,7 +379,7 @@ export default function FireBlanketPricesPage() {
                               <button
                                 onClick={() => { setRenamingMfr(mfr); setRenameValue(mfr); setRenameError('') }}
                                 className="text-gray-400 hover:text-[#014A99] cursor-pointer"
-                                title="이름 변경"
+                                title="Rename"
                               >
                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 16H9v-3z" />
@@ -388,7 +388,7 @@ export default function FireBlanketPricesPage() {
                               <button
                                 onClick={() => setDeletingMfr(mfr)}
                                 className="text-gray-400 hover:text-red-500 cursor-pointer"
-                                title="제조사 전체 삭제"
+                                title="Delete Manufacturer & All Items"
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -404,7 +404,7 @@ export default function FireBlanketPricesPage() {
                           type="text"
                           value={row.item_name}
                           onChange={e => handleItemNameChange(i, e.target.value)}
-                          placeholder="품목명"
+                          placeholder="Item name"
                           className={INPUT_CLS}
                         />
                       </td>
@@ -413,7 +413,7 @@ export default function FireBlanketPricesPage() {
                           type="text"
                           value={row.spec}
                           onChange={e => handleSpecChange(i, e.target.value)}
-                          placeholder="규격"
+                          placeholder="Spec"
                           className={INPUT_CLS}
                         />
                       </td>
@@ -428,7 +428,7 @@ export default function FireBlanketPricesPage() {
                         <button
                           onClick={() => setDeletingRow({ manufacturer: row.manufacturer, item_name: row.item_name })}
                           className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 hover:text-red-500 cursor-pointer"
-                          title="품목 삭제"
+                          title="Delete Item"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -439,7 +439,7 @@ export default function FireBlanketPricesPage() {
                   ))
                 })}
 
-                {/* 품목 추가 인라인 폼 */}
+                {/* Inline add-item form */}
                 {addingItemForMfr && (
                   <tr className="bg-blue-50/50">
                     <td className="px-4 py-2 text-xs text-gray-500 font-medium">{addingItemForMfr}</td>
@@ -450,7 +450,7 @@ export default function FireBlanketPricesPage() {
                         value={newItemName}
                         onChange={e => setNewItemName(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter') handleAddItem(addingItemForMfr); if (e.key === 'Escape') { setAddingItemForMfr(null); setNewItemName(''); setNewItemSpec('') } }}
-                        placeholder="품목명"
+                        placeholder="Item name"
                         className={INPUT_CLS}
                       />
                     </td>
@@ -460,11 +460,11 @@ export default function FireBlanketPricesPage() {
                         value={newItemSpec}
                         onChange={e => setNewItemSpec(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter') handleAddItem(addingItemForMfr); if (e.key === 'Escape') { setAddingItemForMfr(null); setNewItemName(''); setNewItemSpec('') } }}
-                        placeholder="규격"
+                        placeholder="Spec"
                         className={INPUT_CLS}
                       />
                     </td>
-                    <td className="px-3 py-2 text-xs text-gray-400 text-right">단가는 저장 후 편집</td>
+                    <td className="px-3 py-2 text-xs text-gray-400 text-right">Edit price after saving</td>
                     <td className="px-3 py-2">
                       <div className="flex items-center gap-1 justify-center">
                         <button
@@ -489,7 +489,7 @@ export default function FireBlanketPricesPage() {
                   </tr>
                 )}
 
-                {/* 제조사 추가 인라인 폼 */}
+                {/* Inline add-manufacturer form */}
                 {addingMfr && (
                   <tr className="bg-blue-50/50">
                     <td className="px-3 py-2">
@@ -499,11 +499,11 @@ export default function FireBlanketPricesPage() {
                         value={newMfrName}
                         onChange={e => setNewMfrName(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter') handleAddMfr(); if (e.key === 'Escape') { setAddingMfr(false); setNewMfrName('') } }}
-                        placeholder="제조사명"
+                        placeholder="Manufacturer name"
                         className={INPUT_CLS}
                       />
                     </td>
-                    <td className="px-3 py-2 text-xs text-gray-400 italic" colSpan={2}>품목명·규격은 저장 후 편집</td>
+                    <td className="px-3 py-2 text-xs text-gray-400 italic" colSpan={2}>Edit item name/spec after saving</td>
                     <td />
                     <td className="px-3 py-2">
                       <div className="flex items-center gap-1 justify-center">
@@ -541,21 +541,21 @@ export default function FireBlanketPricesPage() {
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                제조사 추가
+                Add Manufacturer
               </button>
             )}
           </div>
         </div>
       </div>
 
-      {/* 거래처별 판매가 */}
+      {/* Sale price by customer */}
       <div>
-        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">거래처별 판매가 (롤당)</h2>
+        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Sale Price by Customer (per roll)</h2>
         {manufacturers.length === 0 ? (
-          <p className="text-sm text-gray-400">등록된 제조사가 없습니다.</p>
+          <p className="text-sm text-gray-400">No manufacturers registered.</p>
         ) : (
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            {/* 제조사 탭 */}
+            {/* Manufacturer tabs */}
             {manufacturers.length > 1 && (
               <div className="flex border-b border-gray-200 bg-gray-50/80">
                 {manufacturers.map(mfr => {
@@ -583,14 +583,14 @@ export default function FireBlanketPricesPage() {
               </div>
             )}
 
-            {/* 선택된 제조사의 품목별 판매가 */}
+            {/* Sale price by item for selected manufacturer */}
             {customers.length > 0 && activeMfrItems.map((priceRow, idx) => (
               <div key={idx} className={idx > 0 ? 'border-t border-gray-200' : ''}>
-                {/* 품목 헤더: 품목이 2개 이상일 때만 표시 */}
+                {/* Item header: shown only when there are 2+ items */}
                 {activeMfrItems.length > 1 && (
                   <div className="px-4 py-2 bg-gray-50/60 border-b border-gray-100">
                     <span className="text-xs font-semibold text-gray-600">
-                      {priceRow.item_name || '(기본 품목)'}
+                      {priceRow.item_name || '(Default Item)'}
                       {priceRow.spec && <span className="ml-2 font-normal text-gray-400">{priceRow.spec}</span>}
                     </span>
                   </div>
@@ -599,8 +599,8 @@ export default function FireBlanketPricesPage() {
                   <table className="w-full text-sm min-w-[320px]">
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-100 text-xs text-gray-500">
-                        <th className="px-4 py-2 text-left font-medium w-36">거래처</th>
-                        <th className="px-4 py-2 text-right font-medium w-36">롤당 판매가</th>
+                        <th className="px-4 py-2 text-left font-medium w-36">Customer</th>
+                        <th className="px-4 py-2 text-right font-medium w-36">Sale Price per Roll</th>
                         <th className="w-8" />
                       </tr>
                     </thead>
@@ -622,7 +622,7 @@ export default function FireBlanketPricesPage() {
                               <button
                                 onClick={() => { setModalName(customer.name); setModalError(''); setModalConfirmDelete(false); setCustomerModal({ mode: 'edit', customer }) }}
                                 className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 hover:text-[#014A99] cursor-pointer"
-                                title="거래처 편집"
+                                title="Edit Customer"
                               >
                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828a2 2 0 01-1.414.586H9v-2a2 2 0 01.586-1.414z" />
@@ -646,18 +646,18 @@ export default function FireBlanketPricesPage() {
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                거래처 추가
+                Add Customer
               </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* 제조사 이름 변경 모달 */}
+      {/* Rename manufacturer modal */}
       {renamingMfr && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 space-y-4">
-            <h2 className="text-base font-bold text-gray-900">제조사 이름 변경</h2>
+            <h2 className="text-base font-bold text-gray-900">Rename Manufacturer</h2>
             <input
               autoFocus
               type="text"
@@ -668,21 +668,21 @@ export default function FireBlanketPricesPage() {
             />
             {renameError && <p className="text-xs text-red-500">{renameError}</p>}
             <div className="flex gap-2 justify-end">
-              <button onClick={() => setRenamingMfr(null)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">취소</button>
+              <button onClick={() => setRenamingMfr(null)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">Cancel</button>
               <button
                 onClick={handleRenameMfr}
                 disabled={renameSaving || !renameValue.trim()}
                 className="px-5 py-2 text-sm font-semibold text-white rounded-lg disabled:opacity-40 cursor-pointer"
                 style={{ backgroundColor: '#014A99' }}
               >
-                {renameSaving ? '저장 중...' : '저장'}
+                {renameSaving ? 'Saving...' : 'Save'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 제조사 삭제 확인 모달 */}
+      {/* Delete manufacturer confirmation modal */}
       {deletingMfr && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 space-y-4">
@@ -693,27 +693,27 @@ export default function FireBlanketPricesPage() {
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-bold text-gray-900">제조사 삭제</p>
+                <p className="text-sm font-bold text-gray-900">Delete Manufacturer</p>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  <span className="font-semibold text-gray-700">{deletingMfr}</span>의 모든 품목과 판매가를 삭제합니다.
+                  This will delete all items and sale prices for <span className="font-semibold text-gray-700">{deletingMfr}</span>.
                 </p>
               </div>
             </div>
             <div className="flex gap-2 justify-end">
-              <button onClick={() => setDeletingMfr(null)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">취소</button>
+              <button onClick={() => setDeletingMfr(null)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">Cancel</button>
               <button
                 onClick={handleDeleteMfr}
                 disabled={deletingMfrLoading}
                 className="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-40 cursor-pointer transition-colors"
               >
-                {deletingMfrLoading ? '삭제 중...' : '삭제'}
+                {deletingMfrLoading ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 품목 삭제 확인 모달 */}
+      {/* Delete item confirmation modal */}
       {deletingRow && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 space-y-4">
@@ -724,27 +724,27 @@ export default function FireBlanketPricesPage() {
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-bold text-gray-900">품목 삭제</p>
+                <p className="text-sm font-bold text-gray-900">Delete Item</p>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  <span className="font-semibold text-gray-700">{deletingRow.item_name || '(기본 품목)'}</span>을 삭제하시겠습니까?
+                  Delete <span className="font-semibold text-gray-700">{deletingRow.item_name || '(Default Item)'}</span>?
                 </p>
               </div>
             </div>
             <div className="flex gap-2 justify-end">
-              <button onClick={() => setDeletingRow(null)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">취소</button>
+              <button onClick={() => setDeletingRow(null)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">Cancel</button>
               <button
                 onClick={handleDeleteRow}
                 disabled={deletingRowLoading}
                 className="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-40 cursor-pointer transition-colors"
               >
-                {deletingRowLoading ? '삭제 중...' : '삭제'}
+                {deletingRowLoading ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 거래처 추가/편집 모달 */}
+      {/* Add/edit customer modal */}
       {customerModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 space-y-4">
@@ -757,38 +757,38 @@ export default function FireBlanketPricesPage() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-gray-900">거래처 삭제</p>
+                    <p className="text-sm font-bold text-gray-900">Delete Customer</p>
                     <p className="text-xs text-gray-500 mt-0.5">
-                      <span className="font-semibold text-gray-700">{modalName}</span>을(를) 삭제하시겠습니까?
+                      Delete <span className="font-semibold text-gray-700">{modalName}</span>?
                     </p>
                   </div>
                 </div>
                 {modalError && <p className="text-xs text-red-500">{modalError}</p>}
                 <div className="flex gap-2 justify-end">
-                  <button onClick={() => setModalConfirmDelete(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">취소</button>
+                  <button onClick={() => setModalConfirmDelete(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">Cancel</button>
                   <button
                     onClick={handleDeleteCustomer}
                     disabled={modalDeleting}
                     className="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-40 cursor-pointer transition-colors"
                   >
-                    {modalDeleting ? '삭제 중...' : '삭제'}
+                    {modalDeleting ? 'Deleting...' : 'Delete'}
                   </button>
                 </div>
               </>
             ) : (
               <>
                 <h2 className="text-base font-bold text-gray-900">
-                  {customerModal.mode === 'add' ? '거래처 추가' : '거래처 편집'}
+                  {customerModal.mode === 'add' ? 'Add Customer' : 'Edit Customer'}
                 </h2>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">업체명</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Company Name</label>
                   <input
                     autoFocus
                     type="text"
                     value={modalName}
                     onChange={e => setModalName(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') handleSaveCustomer() }}
-                    placeholder="업체명 입력"
+                    placeholder="Enter company name"
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#014A99]"
                   />
                 </div>
@@ -796,18 +796,18 @@ export default function FireBlanketPricesPage() {
                 <div className="flex gap-2">
                   {customerModal.mode === 'edit' && (
                     <button onClick={() => setModalConfirmDelete(true)} className="px-3 py-2 text-sm text-red-500 hover:text-red-700 cursor-pointer">
-                      삭제
+                      Delete
                     </button>
                   )}
                   <div className="flex-1" />
-                  <button onClick={() => setCustomerModal(null)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">취소</button>
+                  <button onClick={() => setCustomerModal(null)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">Cancel</button>
                   <button
                     onClick={handleSaveCustomer}
                     disabled={modalSaving}
                     className="px-5 py-2 text-sm font-semibold text-white rounded-lg disabled:opacity-40 cursor-pointer"
                     style={{ backgroundColor: '#014A99' }}
                   >
-                    {modalSaving ? '저장 중...' : '저장'}
+                    {modalSaving ? 'Saving...' : 'Save'}
                   </button>
                 </div>
               </>
