@@ -91,7 +91,7 @@ export default async function MonthlyPage({
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">월별 현황</h1>
+        <h1 className="text-xl font-bold text-gray-900">Monthly Report</h1>
         <MonthSelector year={year} month={month} />
       </div>
 
@@ -106,7 +106,7 @@ export default async function MonthlyPage({
 
       <div>
         <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
-          주문 목록
+          Order List
         </h2>
         <MonthlyTables
           orderDateOrders={orderDateOrders}

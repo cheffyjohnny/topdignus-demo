@@ -32,6 +32,13 @@ export const SUBSCRIBER_STATUS_LABEL: Record<string, string> = {
   rejected: 'Rejected',
 }
 
+// used where the Korean value also crosses into an export API / filename — keep the
+// underlying value Korean, translate only what's rendered
+export const DATE_MODE_LABEL: Record<string, string> = {
+  수주일: 'Order Date',
+  납품일: 'Delivery Date',
+}
+
 export function statusLabel(status: string, map: Record<string, string>): string {
   return map[status] ?? status
 }

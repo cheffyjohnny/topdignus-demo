@@ -18,9 +18,9 @@ function fmtRange(from: string, to: string): string {
   const t = new Date(to)
   const fYear = f.getFullYear(), fMonth = f.getMonth() + 1, fDay = f.getDate()
   const tYear = t.getFullYear(), tMonth = t.getMonth() + 1, tDay = t.getDate()
-  if (fYear === tYear && fMonth === tMonth) return `${fYear}년 ${fMonth}월 ${fDay}일 ~ ${tDay}일`
-  if (fYear === tYear) return `${fYear}년 ${fMonth}월 ${fDay}일 ~ ${tMonth}월 ${tDay}일`
-  return `${fYear}년 ${fMonth}월 ${fDay}일 ~ ${tYear}년 ${tMonth}월 ${tDay}일`
+  if (fYear === tYear && fMonth === tMonth) return `${fMonth}/${fDay} – ${tDay}, ${fYear}`
+  if (fYear === tYear) return `${fMonth}/${fDay} – ${tMonth}/${tDay}, ${fYear}`
+  return `${fMonth}/${fDay}/${fYear} – ${tMonth}/${tDay}/${tYear}`
 }
 
 export function WeekSelector({ from, to }: Props) {
