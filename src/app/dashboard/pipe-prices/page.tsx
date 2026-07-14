@@ -182,13 +182,13 @@ export default function PricesPage() {
       })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
-        throw new Error(body.error ?? '저장 실패')
+        throw new Error(body.error ?? 'Save failed')
       }
       setRows(prev => prev.map(r => ({ ...r, changed: false })))
       setEditMode(false)
-      setMessage({ type: 'success', text: `${changed.length}개 항목 저장 완료` })
+      setMessage({ type: 'success', text: `${changed.length} item(s) saved` })
     } catch (e: any) {
-      setMessage({ type: 'error', text: e.message ?? '오류 발생' })
+      setMessage({ type: 'error', text: e.message ?? 'An error occurred' })
     }
     setSaving(false)
   }
@@ -209,10 +209,10 @@ export default function PricesPage() {
       fd.append('file', file)
       const res = await fetch('/api/pipe-prices/import', { method: 'POST', body: fd })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? '파싱 실패')
+      if (!res.ok) throw new Error(data.error ?? 'Parsing failed')
       setImportPreview(data.rows.map((r: any) => ({ ...r, changed: isRowChanged(r) })))
     } catch (e: any) {
-      setMessage({ type: 'error', text: e.message ?? '파일 처리 오류' })
+      setMessage({ type: 'error', text: e.message ?? 'File processing error' })
     }
     setImporting(false)
   }
@@ -222,12 +222,12 @@ export default function PricesPage() {
     setDeleting(true)
     try {
       const res = await fetch(`/api/pipe-prices?prod_key=${encodeURIComponent(deleteTarget.prod_key)}&manufacturer=${encodeURIComponent(deleteTarget.manufacturer ?? '필립산업')}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('삭제 실패')
+      if (!res.ok) throw new Error('Delete failed')
       setRows(prev => prev.filter(r => !(r.prod_key === deleteTarget.prod_key && (r.manufacturer ?? '필립산업') === (deleteTarget.manufacturer ?? '필립산업'))))
-      setMessage({ type: 'success', text: '삭제되었습니다.' })
+      setMessage({ type: 'success', text: 'Deleted successfully.' })
       setDeleteTarget(null)
     } catch (e: any) {
-      setMessage({ type: 'error', text: e.message ?? '삭제 오류' })
+      setMessage({ type: 'error', text: e.message ?? 'Delete error' })
     }
     setDeleting(false)
   }
@@ -237,7 +237,7 @@ export default function PricesPage() {
     const changedRows = importPreview.filter(r => r.changed)
     if (changedRows.length === 0) {
       setImportPreview(null)
-      setMessage({ type: 'success', text: '변경된 항목이 없습니다.' })
+      setMessage({ type: 'success', text: 'No items changed.' })
       return
     }
     setImportSaving(true)
@@ -249,13 +249,13 @@ export default function PricesPage() {
       })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
-        throw new Error(body.error ?? '저장 실패')
+        throw new Error(body.error ?? 'Save failed')
       }
       setImportPreview(null)
-      setMessage({ type: 'success', text: `${changedRows.length}개 항목 업데이트 완료` })
+      setMessage({ type: 'success', text: `${changedRows.length} item(s) updated` })
       await loadPrices()
     } catch (e: any) {
-      setMessage({ type: 'error', text: e.message ?? '저장 오류' })
+      setMessage({ type: 'error', text: e.message ?? 'Save error' })
     }
     setImportSaving(false)
   }
@@ -263,7 +263,7 @@ export default function PricesPage() {
   async function handleSaveCustomer() {
     const pct = Number(modalPct)
     if (!modalName.trim() || isNaN(pct) || pct <= 0 || pct > 100) {
-      setModalError('업체명과 판매가 비율(1~100)을 입력하세요.')
+      setModalError('Please enter a company name and sale price % (1–100).')
       return
     }
     setModalSaving(true)
@@ -277,11 +277,11 @@ export default function PricesPage() {
         body: JSON.stringify(body),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? '저장 실패')
+      if (!res.ok) throw new Error(data.error ?? 'Save failed')
       setCustomerModal(null)
       await loadPrices()
     } catch (e: any) {
-      setModalError(e.message ?? '오류 발생')
+      setModalError(e.message ?? 'An error occurred')
     }
     setModalSaving(false)
   }
@@ -308,12 +308,12 @@ export default function PricesPage() {
     const pipeSpec = addPipeSpec.trim()
     const sleeveSpec = addSleeveSpec.trim()
     if (!internalName || !pipeSpec) {
-      setAddError('품목명과 배관 규격을 입력하세요.')
+      setAddError('Please enter an item name and pipe spec.')
       return
     }
     const prodKey = buildProdKey(internalName, pipeSpec, sleeveSpec)
     if (rows.some(r => r.prod_key === prodKey && (r.manufacturer ?? '필립산업') === mfr)) {
-      setAddError('이미 존재하는 품목입니다 (제조사 + 제품키 중복).')
+      setAddError('This item already exists (duplicate manufacturer + product key).')
       return
     }
     setAddSaving(true)
@@ -331,12 +331,12 @@ export default function PricesPage() {
           unit_price: addUnitPrice,
         }]),
       })
-      if (!res.ok) throw new Error('저장 실패')
+      if (!res.ok) throw new Error('Save failed')
       setAddItemModal(false)
-      setMessage({ type: 'success', text: '품목이 추가되었습니다.' })
+      setMessage({ type: 'success', text: 'Item added.' })
       await loadPrices()
     } catch (e: any) {
-      setAddError(e.message ?? '오류 발생')
+      setAddError(e.message ?? 'An error occurred')
     }
     setAddSaving(false)
   }
@@ -363,20 +363,20 @@ export default function PricesPage() {
     setModalDeleting(true)
     try {
       const res = await fetch(`/api/customers?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('삭제 실패')
+      if (!res.ok) throw new Error('Delete failed')
       setCustomerModal(null)
       setModalConfirmDelete(false)
       if (selectedCustomerId === id) setSelectedCustomerId('')
       await loadPrices()
     } catch (e: any) {
-      setModalError(e.message ?? '삭제 오류')
+      setModalError(e.message ?? 'Delete error')
       setModalConfirmDelete(false)
     }
     setModalDeleting(false)
   }
 
   if (status === 'loading' || loading) {
-    return <div className="flex items-center justify-center h-64 text-sm text-gray-400">불러오는 중...</div>
+    return <div className="flex items-center justify-center h-64 text-sm text-gray-400">Loading...</div>
   }
 
   const changedCount = rows.filter(r => r.changed).length
@@ -408,18 +408,18 @@ export default function PricesPage() {
 
   return (
     <div className="space-y-6">
-      {/* 헤더 */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold text-gray-900">배관 단가 관리</h1>
-          {/* 거래처 선택 드롭다운 */}
+          <h1 className="text-xl font-bold text-gray-900">Pipe Pricing Management</h1>
+          {/* Customer select dropdown */}
           <div className="flex items-center gap-2">
             <select
               value={selectedCustomerId}
               onChange={e => setSelectedCustomerId(e.target.value)}
               className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[#014A99] bg-white"
             >
-              <option value="">거래처 선택</option>
+              <option value="">Select Customer</option>
               {customers.map(c => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
@@ -427,7 +427,7 @@ export default function PricesPage() {
             <button
               onClick={openAddCustomer}
               className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-[#014A99] hover:border-[#014A99] transition-colors cursor-pointer"
-              title="거래처 추가"
+              title="Add Customer"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -436,12 +436,12 @@ export default function PricesPage() {
             {selectedCustomer && (
               <div className="flex items-center gap-1">
                 <span className="text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-600 font-medium">
-                  협가 × {selectedCustomer.sale_pct}%
+                  Negotiated × {selectedCustomer.sale_pct}%
                 </span>
                 <button
                   onClick={() => openEditCustomer(selectedCustomer)}
                   className="text-gray-300 hover:text-[#014A99] transition-colors cursor-pointer"
-                  title="거래처 편집"
+                  title="Edit Customer"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828a2 2 0 01-1.414.586H9v-2a2 2 0 01.586-1.414z" />
@@ -464,7 +464,7 @@ export default function PricesPage() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
-            내보내기
+            Export
           </button>}
           {!editMode && (
             <button
@@ -474,7 +474,7 @@ export default function PricesPage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              새 품목
+              New Item
             </button>
           )}
           <input ref={importRef} type="file" accept=".xlsx" className="hidden" onChange={handleImportFile} />
@@ -487,13 +487,13 @@ export default function PricesPage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l4-4m0 0l4 4m-4-4v12" />
               </svg>
-              {importing ? '처리 중...' : '가져오기'}
+              {importing ? 'Processing...' : 'Import'}
             </button>
           )}
           {editMode ? (
             <>
               <button onClick={cancelEdit} className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors cursor-pointer">
-                취소
+                Cancel
               </button>
               <button
                 onClick={handleSave}
@@ -501,7 +501,7 @@ export default function PricesPage() {
                 className="px-4 py-2 text-sm font-semibold text-white rounded-lg disabled:opacity-40 transition-opacity cursor-pointer"
                 style={{ backgroundColor: '#014A99' }}
               >
-                {saving ? '저장 중...' : `저장${changedCount > 0 ? ` (${changedCount})` : ''}`}
+                {saving ? 'Saving...' : `Save${changedCount > 0 ? ` (${changedCount})` : ''}`}
               </button>
             </>
           ) : (
@@ -512,13 +512,13 @@ export default function PricesPage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 16H9v-3z" />
               </svg>
-              편집
+              Edit
             </button>
           )}
         </div>
       </div>
 
-      {/* 제조사 탭 */}
+      {/* Manufacturer tabs */}
       {allManufacturers.length > 1 && (
         <div className="flex items-center gap-2 flex-wrap">
           {allManufacturers.map(mfr => (
@@ -540,11 +540,11 @@ export default function PricesPage() {
         </div>
       )}
 
-      {/* 단가 테이블 */}
+      {/* Price table */}
       {rows.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 text-sm text-gray-400 space-y-2">
-          <p>단가 데이터가 없습니다.</p>
-          <p className="text-xs">seed 스크립트를 실행하거나 엑셀 가져오기로 데이터를 추가하세요.</p>
+          <p>No pricing data.</p>
+          <p className="text-xs">Run the seed script or add data via Excel import.</p>
         </div>
       ) : (
         <div className="space-y-8">
@@ -560,7 +560,7 @@ export default function PricesPage() {
         </div>
       )}
 
-      {/* 삭제 confirmation dialog */}
+      {/* Delete confirmation dialog */}
       {deleteTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 space-y-4">
@@ -571,41 +571,41 @@ export default function PricesPage() {
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-bold text-gray-900">품목 삭제</p>
-                <p className="text-xs text-gray-500 mt-0.5">삭제 후 복구할 수 없습니다.</p>
+                <p className="text-sm font-bold text-gray-900">Delete Item</p>
+                <p className="text-xs text-gray-500 mt-0.5">This cannot be undone.</p>
               </div>
             </div>
             <div className="bg-gray-50 rounded-lg px-4 py-3 space-y-1 text-xs text-gray-700">
-              <p><span className="text-gray-400">품목명</span> {deleteTarget.internal_name}</p>
-              {deleteTarget.pipe_spec && <p><span className="text-gray-400">배관</span> {deleteTarget.pipe_spec}</p>}
-              {deleteTarget.sleeve_spec && <p><span className="text-gray-400">슬리브</span> {deleteTarget.sleeve_spec}</p>}
-              <p><span className="text-gray-400">제품키</span> <span className="font-mono text-gray-500">{deleteTarget.prod_key}</span></p>
+              <p><span className="text-gray-400">Item</span> {deleteTarget.internal_name}</p>
+              {deleteTarget.pipe_spec && <p><span className="text-gray-400">Pipe</span> {deleteTarget.pipe_spec}</p>}
+              {deleteTarget.sleeve_spec && <p><span className="text-gray-400">Sleeve</span> {deleteTarget.sleeve_spec}</p>}
+              <p><span className="text-gray-400">Product Key</span> <span className="font-mono text-gray-500">{deleteTarget.prod_key}</span></p>
             </div>
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setDeleteTarget(null)}
                 className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer"
               >
-                취소
+                Cancel
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleting}
                 className="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-40 cursor-pointer transition-colors"
               >
-                {deleting ? '삭제 중...' : '삭제'}
+                {deleting ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 가져오기 안내 dialog */}
+      {/* Import instructions dialog */}
       {showImportDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4">
             <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="text-base font-bold text-gray-900">단가 가져오기</h2>
+              <h2 className="text-base font-bold text-gray-900">Import Prices</h2>
               <button onClick={() => setShowImportDialog(false)} className="text-gray-400 hover:text-gray-600 cursor-pointer">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -614,43 +614,43 @@ export default function PricesPage() {
             </div>
 
             <div className="px-6 py-5 space-y-4">
-              {/* 진행 순서 */}
+              {/* Steps */}
               <div className="space-y-3">
                 <div className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#014A99] text-white text-xs font-bold flex items-center justify-center">1</span>
                   <div>
-                    <p className="text-sm font-semibold text-gray-800">내보내기로 현재 단가 파일 받기</p>
-                    <p className="text-xs text-gray-500 mt-0.5">위의 <span className="font-medium text-gray-700">내보내기</span> 버튼을 눌러 엑셀 파일을 다운로드 받으세요. 이 파일을 기준으로 수정해야 합니다.</p>
+                    <p className="text-sm font-semibold text-gray-800">Get the current price file via Export</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Click the <span className="font-medium text-gray-700">Export</span> button above to download the Excel file. You must base your edits on this file.</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#014A99] text-white text-xs font-bold flex items-center justify-center">2</span>
                   <div>
-                    <p className="text-sm font-semibold text-gray-800">수정할 컬럼 값 변경</p>
-                    <p className="text-xs text-gray-500 mt-0.5">단가, 차열재 종류·길이·수량·단가, 실란트 용량·단가, 비고 컬럼을 자유롭게 수정할 수 있습니다. 협가·판매가는 자동 계산됩니다.</p>
+                    <p className="text-sm font-semibold text-gray-800">Edit the columns you want to change</p>
+                    <p className="text-xs text-gray-500 mt-0.5">You can freely edit the unit price, heat insulator type/length/count/price, sealant volume/price, and note columns. Negotiated price and sale price are calculated automatically.</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#014A99] text-white text-xs font-bold flex items-center justify-center">3</span>
                   <div>
-                    <p className="text-sm font-semibold text-gray-800">수정한 파일을 저장 후 아래에 업로드</p>
-                    <p className="text-xs text-gray-500 mt-0.5">엑셀에서 저장(Ctrl+S)한 뒤 업로드하세요. 업로드 후 내용을 확인하는 미리보기 화면이 나오며, 최종 <span className="font-medium text-gray-700">저장</span> 버튼을 눌러야 실제 반영됩니다.</p>
+                    <p className="text-sm font-semibold text-gray-800">Save the edited file and upload it below</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Save in Excel (Ctrl+S), then upload. A preview screen will show the changes, and you must click the final <span className="font-medium text-gray-700">Save</span> button for them to take effect.</p>
                   </div>
                 </div>
               </div>
 
-              {/* 주의사항 */}
+              {/* Notes */}
               <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 space-y-1.5">
-                <p className="text-xs font-semibold text-amber-800">⚠ 주의사항</p>
+                <p className="text-xs font-semibold text-amber-800">⚠ Notes</p>
                 <ul className="text-xs text-amber-700 space-y-1 list-disc list-inside">
-                  <li>제품키·품목명·배관·슬리브 컬럼은 절대 수정하지 마세요. 변경 시 기존 데이터와 연결이 끊어집니다.</li>
-                  <li>협가 컬럼은 읽기 전용(자동 계산)이므로 수정하지 마세요.</li>
-                  <li>파일 안의 <span className="font-medium">단가표</span> 시트 이름을 그대로 유지하세요.</li>
-                  <li>반드시 내보내기로 받은 파일(.xlsx)을 사용하세요. 직접 만든 파일은 형식이 맞지 않을 수 있습니다.</li>
+                  <li>Never edit the product key, item name, pipe, or sleeve columns. Changing them breaks the link to existing data.</li>
+                  <li>The negotiated price column is read-only (auto-calculated) — do not edit it.</li>
+                  <li>Keep the <span className="font-medium">단가표</span> sheet name in the file unchanged.</li>
+                  <li>Only use the file (.xlsx) obtained via Export. A manually created file may not match the expected format.</li>
                 </ul>
               </div>
 
-              {/* 파일 업로드 영역 */}
+              {/* File upload area */}
               <button
                 type="button"
                 onClick={() => importRef.current?.click()}
@@ -659,21 +659,21 @@ export default function PricesPage() {
                 <svg className="w-8 h-8 text-gray-300 group-hover:text-[#014A99] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                <span className="text-sm font-semibold text-gray-500 group-hover:text-[#014A99] transition-colors">엑셀 파일 선택 (.xlsx)</span>
-                <span className="text-xs text-gray-400">클릭하여 파일을 선택하세요</span>
+                <span className="text-sm font-semibold text-gray-500 group-hover:text-[#014A99] transition-colors">Choose Excel File (.xlsx)</span>
+                <span className="text-xs text-gray-400">Click to select a file</span>
               </button>
             </div>
 
             <div className="px-6 py-4 border-t border-gray-100 flex justify-end">
               <button onClick={() => setShowImportDialog(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">
-                취소
+                Cancel
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 거래처 추가/편집 모달 */}
+      {/* Add/edit customer modal */}
       {customerModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 space-y-4">
@@ -686,55 +686,55 @@ export default function PricesPage() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-gray-900">거래처 삭제</p>
+                    <p className="text-sm font-bold text-gray-900">Delete Customer</p>
                     <p className="text-xs text-gray-500 mt-0.5">
-                      <span className="font-semibold text-gray-700">{modalName}</span>을(를) 삭제하시겠습니까?
+                      Delete <span className="font-semibold text-gray-700">{modalName}</span>?
                     </p>
                   </div>
                 </div>
                 {modalError && <p className="text-xs text-red-500">{modalError}</p>}
                 <div className="flex gap-2 justify-end">
-                  <button onClick={() => setModalConfirmDelete(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">취소</button>
+                  <button onClick={() => setModalConfirmDelete(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">Cancel</button>
                   <button
                     onClick={handleDeleteCustomer}
                     disabled={modalDeleting}
                     className="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-40 cursor-pointer transition-colors"
                   >
-                    {modalDeleting ? '삭제 중...' : '삭제'}
+                    {modalDeleting ? 'Deleting...' : 'Delete'}
                   </button>
                 </div>
               </>
             ) : (
               <>
                 <h2 className="text-base font-bold text-gray-900">
-                  {customerModal.mode === 'add' ? '거래처 추가' : '거래처 편집'}
+                  {customerModal.mode === 'add' ? 'Add Customer' : 'Edit Customer'}
                 </h2>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">업체명</label>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Company Name</label>
                     <input
                       autoFocus
                       type="text"
                       value={modalName}
                       onChange={e => setModalName(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') handleSaveCustomer() }}
-                      placeholder="업체명 입력"
+                      placeholder="Enter company name"
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#014A99]"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">판매가 비율 (%)</label>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Sale Price %</label>
                     <input
                       type="number"
                       value={modalPct}
                       onChange={e => setModalPct(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') handleSaveCustomer() }}
-                      placeholder="예: 55"
+                      placeholder="e.g. 55"
                       min={1}
                       max={100}
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#014A99]"
                     />
-                    <p className="text-xs text-gray-400 mt-1">협가 × 이 비율 = 판매가 (1~100)</p>
+                    <p className="text-xs text-gray-400 mt-1">Negotiated price × this % = sale price (1–100)</p>
                   </div>
                   {modalError && <p className="text-xs text-red-500">{modalError}</p>}
                 </div>
@@ -744,7 +744,7 @@ export default function PricesPage() {
                       onClick={() => setModalConfirmDelete(true)}
                       className="px-3 py-2 text-sm text-red-500 hover:text-red-700 cursor-pointer"
                     >
-                      삭제
+                      Delete
                     </button>
                   )}
                   <div className="flex-1" />
@@ -752,7 +752,7 @@ export default function PricesPage() {
                     onClick={() => setCustomerModal(null)}
                     className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer"
                   >
-                    취소
+                    Cancel
                   </button>
                   <button
                     onClick={handleSaveCustomer}
@@ -760,7 +760,7 @@ export default function PricesPage() {
                     className="px-5 py-2 text-sm font-semibold text-white rounded-lg disabled:opacity-40 cursor-pointer"
                     style={{ backgroundColor: '#014A99' }}
                   >
-                    {modalSaving ? '저장 중...' : '저장'}
+                    {modalSaving ? 'Saving...' : 'Save'}
                   </button>
                 </div>
               </>
@@ -769,14 +769,14 @@ export default function PricesPage() {
         </div>
       )}
 
-      {/* 신규 품목 추가 모달 */}
+      {/* Add new item modal */}
       {addItemModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 space-y-4">
-            <h2 className="text-base font-bold text-gray-900">신규 품목 추가</h2>
+            <h2 className="text-base font-bold text-gray-900">Add New Item</h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">제조사</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Manufacturer</label>
                 <select
                   value={addMfr}
                   onChange={e => setAddMfr(e.target.value)}
@@ -787,7 +787,7 @@ export default function PricesPage() {
                   )) : (
                     <option value="필립산업">필립산업</option>
                   )}
-                  <option value="__custom__">직접 입력...</option>
+                  <option value="__custom__">Enter manually...</option>
                 </select>
                 {addMfr === '__custom__' && (
                   <input
@@ -795,13 +795,13 @@ export default function PricesPage() {
                     type="text"
                     value={addMfrCustom}
                     onChange={e => setAddMfrCustom(e.target.value)}
-                    placeholder="제조사명 직접 입력"
+                    placeholder="Enter manufacturer name"
                     className="w-full mt-2 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#014A99]"
                   />
                 )}
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">품목명</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Item Name</label>
                 <select
                   value={addName}
                   onChange={e => setAddName(e.target.value)}
@@ -810,7 +810,7 @@ export default function PricesPage() {
                   {existingNames.map(name => (
                     <option key={name} value={name}>{name}</option>
                   ))}
-                  <option value="__custom__">직접 입력...</option>
+                  <option value="__custom__">Enter manually...</option>
                 </select>
                 {addName === '__custom__' && (
                   <>
@@ -819,39 +819,39 @@ export default function PricesPage() {
                       type="text"
                       value={addNameCustom}
                       onChange={e => setAddNameCustom(e.target.value)}
-                      placeholder="예: 바닥_금속관_보온_ABS고정구일체형"
+                      placeholder="e.g. 바닥_금속관_보온_ABS고정구일체형"
                       className="w-full mt-2 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#014A99]"
                     />
-                    <p className="text-xs text-amber-600 mt-1">공백 대신 _ 를 사용하세요. (예: 바닥 금속관 → 바닥_금속관)</p>
+                    <p className="text-xs text-amber-600 mt-1">Use _ instead of spaces. (e.g. 바닥 금속관 → 바닥_금속관)</p>
                   </>
                 )}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">배관 규격</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Pipe Spec</label>
                   <input
                     type="text"
                     value={addPipeSpec}
                     onChange={e => setAddPipeSpec(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') handleAddItem() }}
-                    placeholder="예: 20A"
+                    placeholder="e.g. 20A"
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#014A99]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">슬리브 규격 (선택)</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Sleeve Spec (optional)</label>
                   <input
                     type="text"
                     value={addSleeveSpec}
                     onChange={e => setAddSleeveSpec(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') handleAddItem() }}
-                    placeholder="예: 75A"
+                    placeholder="e.g. 75A"
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#014A99]"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">단가</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Unit Price</label>
                 <PriceInput
                   value={addUnitPrice}
                   onChange={setAddUnitPrice}
@@ -859,7 +859,7 @@ export default function PricesPage() {
                 />
               </div>
               <p className="text-xs text-gray-400">
-                제품키:{' '}
+                Product Key:{' '}
                 <span className="font-mono text-gray-500">
                   {buildProdKey((addName === '__custom__' ? addNameCustom : addName).trim(), addPipeSpec.trim(), addSleeveSpec.trim()) || '—'}
                 </span>
@@ -868,7 +868,7 @@ export default function PricesPage() {
             </div>
             <div className="flex gap-2 justify-end">
               <button onClick={() => setAddItemModal(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">
-                취소
+                Cancel
               </button>
               <button
                 onClick={handleAddItem}
@@ -876,24 +876,24 @@ export default function PricesPage() {
                 className="px-5 py-2 text-sm font-semibold text-white rounded-lg disabled:opacity-40 cursor-pointer"
                 style={{ backgroundColor: '#014A99' }}
               >
-                {addSaving ? '저장 중...' : '추가'}
+                {addSaving ? 'Saving...' : 'Add'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 가져오기 미리보기 모달 */}
+      {/* Import preview modal */}
       {importPreview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col mx-4">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
               <div>
-                <h2 className="text-base font-bold text-gray-900">가져오기 미리보기</h2>
+                <h2 className="text-base font-bold text-gray-900">Import Preview</h2>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  전체 {importPreview.length}개 중{' '}
-                  <span className="text-amber-600 font-medium">{importPreview.filter(r => r.changed).length}개 변경</span>
-                  {' '}감지됨. 변경된 항목만 저장됩니다.
+                  {importPreview.filter(r => r.changed).length} of {importPreview.length} total{' '}
+                  <span className="text-amber-600 font-medium">changed</span>
+                  {' '}detected. Only changed items will be saved.
                 </p>
               </div>
               <button onClick={() => setImportPreview(null)} className="text-gray-400 hover:text-gray-600 cursor-pointer">
@@ -907,21 +907,21 @@ export default function PricesPage() {
               <table className="w-full text-xs min-w-[900px]">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-100 text-gray-500">
-                    <th className="px-3 py-2 text-end font-medium w-24">제조사</th>
-                    <th className="px-3 py-2 text-end font-medium">품목명</th>
-                    <th className="px-3 py-2 text-end font-medium w-16">배관</th>
-                    <th className="px-3 py-2 text-end font-medium w-20">슬리브</th>
-                    <th className="px-3 py-2 text-end font-medium w-24 text-blue-600">단가</th>
-                    <th className="px-3 py-2 text-end font-medium w-20 text-gray-400">협가</th>
+                    <th className="px-3 py-2 text-end font-medium w-24">Manufacturer</th>
+                    <th className="px-3 py-2 text-end font-medium">Item</th>
+                    <th className="px-3 py-2 text-end font-medium w-16">Pipe</th>
+                    <th className="px-3 py-2 text-end font-medium w-20">Sleeve</th>
+                    <th className="px-3 py-2 text-end font-medium w-24 text-blue-600">Unit Price</th>
+                    <th className="px-3 py-2 text-end font-medium w-20 text-gray-400">Negotiated</th>
                     {selectedCustomer && (
                       <th className="px-3 py-2 text-end font-medium w-24 text-gray-500">
-                        판매가 ({selectedCustomer.name})
+                        Sale Price ({selectedCustomer.name})
                       </th>
                     )}
-                    <th className="px-3 py-2 text-end font-medium w-24 text-gray-400">차열재</th>
-                    <th className="px-3 py-2 text-end font-medium w-28 text-gray-400">차열재 길이(mm)</th>
-                    <th className="px-3 py-2 text-end font-medium w-20 text-gray-400">실란트</th>
-                    <th className="px-3 py-2 text-end font-medium min-w-[13rem] text-gray-400">비고</th>
+                    <th className="px-3 py-2 text-end font-medium w-24 text-gray-400">Heat Insulator</th>
+                    <th className="px-3 py-2 text-end font-medium w-28 text-gray-400">Heat Length (mm)</th>
+                    <th className="px-3 py-2 text-end font-medium w-20 text-gray-400">Sealant</th>
+                    <th className="px-3 py-2 text-end font-medium min-w-[13rem] text-gray-400">Note</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -947,7 +947,7 @@ export default function PricesPage() {
                           </td>
                         )}
                         <td className="px-3 py-1.5 text-right text-xs text-gray-400">
-                          {Array.isArray(row.heat_type) && row.heat_type.length > 0 ? row.heat_type.length + '종' : '—'}
+                          {Array.isArray(row.heat_type) && row.heat_type.length > 0 ? row.heat_type.length + ' types' : '—'}
                         </td>
                         <td className="px-2 py-1.5">
                           <input type="number" value={row.heat_length_mm ?? ''} onChange={e => handleImportChange(row.prod_key, row.manufacturer ?? '필립산업', 'heat_length_mm', e.target.value !== '' ? Number(e.target.value) : null)} className="w-16 text-xs text-end border border-gray-300 rounded px-2 py-1 focus:outline-none focus:border-[#014A99]" placeholder="—" />
@@ -967,7 +967,7 @@ export default function PricesPage() {
 
             <div className="px-6 py-4 border-t border-gray-100 flex gap-3 justify-end flex-shrink-0">
               <button onClick={() => setImportPreview(null)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">
-                취소
+                Cancel
               </button>
               <button
                 onClick={handleImportSave}
@@ -975,7 +975,7 @@ export default function PricesPage() {
                 className="px-5 py-2 text-sm font-semibold text-white rounded-lg disabled:opacity-40 cursor-pointer"
                 style={{ backgroundColor: '#014A99' }}
               >
-                {importSaving ? '저장 중...' : `저장 (${importPreview.filter(r => r.changed).length}개 변경)`}
+                {importSaving ? 'Saving...' : `Save (${importPreview.filter(r => r.changed).length} changed)`}
               </button>
             </div>
           </div>
@@ -1050,10 +1050,10 @@ function HeatComponentsModal({ row, availableHeatTypes, onClose, onSave }: HeatC
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl mx-4 flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
-        {/* 헤더 */}
+        {/* Header */}
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
           <div>
-            <p className="text-sm font-bold text-gray-900">차열재 구성 편집</p>
+            <p className="text-sm font-bold text-gray-900">Edit Heat Insulator Config</p>
             <p className="text-xs text-gray-400 mt-0.5">
               {row.internal_name} {row.pipe_spec ?? ''} {row.sleeve_spec ?? ''}
             </p>
@@ -1065,9 +1065,9 @@ function HeatComponentsModal({ row, availableHeatTypes, onClose, onSave }: HeatC
           </button>
         </div>
 
-        {/* 공통 길이 입력 */}
+        {/* Shared length input */}
         <div className="px-5 pt-4 flex items-center gap-3 flex-shrink-0">
-          <span className="text-xs font-medium text-gray-600 shrink-0">개소당 길이 (공통)</span>
+          <span className="text-xs font-medium text-gray-600 shrink-0">Length per spot (shared)</span>
           <input
             type="number"
             value={sharedLength || ''}
@@ -1078,16 +1078,16 @@ function HeatComponentsModal({ row, availableHeatTypes, onClose, onSave }: HeatC
           />
           <span className="text-xs text-gray-400">mm</span>
           {typeCounts.size > 0 && sharedLength > 0 && (
-            <span className="text-xs text-gray-400 ml-auto">모든 종류에 공통 적용</span>
+            <span className="text-xs text-gray-400 ml-auto">Applied to all types</span>
           )}
         </div>
 
-        {/* 본문 — 차열재 종류 목록 */}
+        {/* Body — heat insulator type list */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-2">
           {filteredHeatTypes.length === 0 ? (
             <p className="text-sm text-gray-400 text-center py-8">
-              {mfr} 차열재 데이터가 없습니다.<br/>
-              배관 단가에 internal_name=&apos;차열재&apos; 항목을 먼저 등록해 주세요.
+              No heat insulator data for {mfr}.<br/>
+              Please register an internal_name=&apos;차열재&apos; item in pipe pricing first.
             </p>
           ) : (
             filteredHeatTypes.map(({ type, price }) => {
@@ -1109,7 +1109,7 @@ function HeatComponentsModal({ row, availableHeatTypes, onClose, onSave }: HeatC
                     />
                     <div className="flex-1 min-w-0">
                       <span className="text-xs font-medium text-gray-700">{type}</span>
-                      <span className="text-xs text-gray-400 ml-2">{price.toLocaleString()}원/롤 · 롤길이 {rollLen.toLocaleString()}mm</span>
+                      <span className="text-xs text-gray-400 ml-2">₩{price.toLocaleString()}/roll · roll length {rollLen.toLocaleString()}mm</span>
                     </div>
                     {isChecked && (
                       <div className="flex items-center gap-1.5 shrink-0" onClick={e => e.preventDefault()}>
@@ -1121,10 +1121,10 @@ function HeatComponentsModal({ row, availableHeatTypes, onClose, onSave }: HeatC
                           className="w-14 text-xs text-center border border-orange-200 rounded px-2 py-1 focus:outline-none focus:border-orange-400"
                           min={1}
                         />
-                        <span className="text-xs text-gray-400">개</span>
+                        <span className="text-xs text-gray-400">pcs</span>
                         {perCost !== null && (
                           <span className="text-xs text-orange-600 tabular-nums font-medium w-20 text-right">
-                            ≈ {Math.round(perCost).toLocaleString()}원
+                            ≈ ₩{Math.round(perCost).toLocaleString()}
                           </span>
                         )}
                       </div>
@@ -1136,7 +1136,7 @@ function HeatComponentsModal({ row, availableHeatTypes, onClose, onSave }: HeatC
           )}
         </div>
 
-        {/* 계산 미리보기 + 하단 버튼 */}
+        {/* Calculation preview + footer buttons */}
         <div className="px-5 py-4 border-t border-gray-100 flex-shrink-0 space-y-3">
           {typeCounts.size > 0 && totalCost > 0 && (
             <div className="bg-orange-50 rounded-lg px-4 py-3 space-y-1">
@@ -1146,14 +1146,14 @@ function HeatComponentsModal({ row, availableHeatTypes, onClose, onSave }: HeatC
                 const cost = sharedLength > 0 ? (price * sharedLength / rollLen) * count : 0
                 return (
                   <div key={type} className="flex justify-between text-xs text-gray-600">
-                    <span>{type}: {price.toLocaleString()} × {sharedLength}/{rollLen} × {count}개</span>
-                    <span className="tabular-nums">{Math.round(cost).toLocaleString()}원</span>
+                    <span>{type}: {price.toLocaleString()} × {sharedLength}/{rollLen} × {count} pcs</span>
+                    <span className="tabular-nums">₩{Math.round(cost).toLocaleString()}</span>
                   </div>
                 )
               })}
               <div className="flex justify-between text-xs font-bold text-orange-700 pt-1 border-t border-orange-200">
-                <span>합계</span>
-                <span className="tabular-nums">{Math.round(totalCost).toLocaleString()}원</span>
+                <span>Total</span>
+                <span className="tabular-nums">₩{Math.round(totalCost).toLocaleString()}</span>
               </div>
             </div>
           )}
@@ -1163,18 +1163,18 @@ function HeatComponentsModal({ row, availableHeatTypes, onClose, onSave }: HeatC
                 onClick={() => setTypeCounts(new Map())}
                 className="px-3 py-2 text-xs text-gray-400 hover:text-red-500 cursor-pointer"
               >
-                초기화
+                Reset
               </button>
             )}
             <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">
-              취소
+              Cancel
             </button>
             <button
               onClick={handleSave}
               className="px-5 py-2 text-sm font-semibold text-white rounded-lg cursor-pointer"
               style={{ backgroundColor: '#014A99' }}
             >
-              저장
+              Save
             </button>
           </div>
         </div>
@@ -1183,10 +1183,10 @@ function HeatComponentsModal({ row, availableHeatTypes, onClose, onSave }: HeatC
   )
 }
 
-// ── heatTypeLabel — 배열 → 레이블 텍스트 ─────────────────────────────────────
+// ── heatTypeLabel — array → label text ─────────────────────────────────────
 
 function heatTypeLabel(row: PriceRow): string {
-  if (!Array.isArray(row.heat_type) || row.heat_type.length === 0) return '— 없음'
+  if (!Array.isArray(row.heat_type) || row.heat_type.length === 0) return '— None'
   const counts = new Map<string, number>()
   for (const t of row.heat_type) counts.set(t, (counts.get(t) ?? 0) + 1)
   const lengthSuffix = row.heat_length_mm ? ` · ${row.heat_length_mm}mm` : ''
@@ -1195,17 +1195,17 @@ function heatTypeLabel(row: PriceRow): string {
     return count === 1 ? `${type}${lengthSuffix}` : `${type} ×${count}${lengthSuffix}`
   }
   const summary = Array.from(counts).map(([t, c]) => `${t}×${c}`).join(', ')
-  return `복합 ${counts.size}종${lengthSuffix} (${summary})`
+  return `Mixed ${counts.size} types${lengthSuffix} (${summary})`
 }
 
-// ── 실란트 레이블 ─────────────────────────────────────────────────────────────
+// ── Sealant label ─────────────────────────────────────────────────────────────
 
 function sealantLabel(row: PriceRow): string {
-  if (!row.sealant_volume) return '— 없음'
-  return `×${row.sealant_volume}개`
+  if (!row.sealant_volume) return '— None'
+  return `×${row.sealant_volume} units`
 }
 
-// ── 실란트 모달 ──────────────────────────────────────────────────────────────
+// ── Sealant modal ──────────────────────────────────────────────────────────────
 
 function SealantModal({ row, sealantPrice, onClose, onSave }: {
   row: PriceRow
@@ -1222,7 +1222,7 @@ function SealantModal({ row, sealantPrice, onClose, onSave }: {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
           <div>
-            <p className="text-sm font-bold text-gray-900">실란트 구성 편집</p>
+            <p className="text-sm font-bold text-gray-900">Edit Sealant Config</p>
             <p className="text-xs text-gray-400 mt-0.5">
               {row.internal_name} {row.pipe_spec ?? ''} {row.sleeve_spec ?? ''}
             </p>
@@ -1237,12 +1237,12 @@ function SealantModal({ row, sealantPrice, onClose, onSave }: {
         <div className="px-5 py-5 space-y-4">
           {!sealantPrice && (
             <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
-              실란트 단가 행이 없습니다. 단가표에 &ldquo;실란트&rdquo; 품목을 먼저 추가하세요.
+              No sealant price row found. Add a &ldquo;실란트&rdquo; item to the price table first.
             </p>
           )}
 
           <div className="flex items-center gap-3">
-            <span className="text-xs font-medium text-gray-600 shrink-0">개소당 사용량</span>
+            <span className="text-xs font-medium text-gray-600 shrink-0">Amount used per spot</span>
             <input
               autoFocus
               type="number"
@@ -1254,18 +1254,18 @@ function SealantModal({ row, sealantPrice, onClose, onSave }: {
               min={0}
               step="0.1"
             />
-            <span className="text-xs text-gray-400 shrink-0">개</span>
+            <span className="text-xs text-gray-400 shrink-0">units</span>
           </div>
 
           {cost !== null && (
             <div className="bg-amber-50 rounded-lg px-4 py-3 space-y-1.5">
               <div className="flex justify-between text-xs text-gray-500">
-                <span>{sealantPrice.toLocaleString()}원/개 × {vol}개</span>
-                <span className="tabular-nums">{Math.round(cost).toLocaleString()}원</span>
+                <span>₩{sealantPrice.toLocaleString()}/unit × {vol}</span>
+                <span className="tabular-nums">₩{Math.round(cost).toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-xs font-bold text-amber-700 border-t border-amber-200 pt-1.5">
-                <span>개소당 실란트 비용</span>
-                <span className="tabular-nums">{Math.round(cost).toLocaleString()}원</span>
+                <span>Sealant cost per spot</span>
+                <span className="tabular-nums">₩{Math.round(cost).toLocaleString()}</span>
               </div>
             </div>
           )}
@@ -1277,16 +1277,16 @@ function SealantModal({ row, sealantPrice, onClose, onSave }: {
               onClick={() => { onSave(null); onClose() }}
               className="px-3 py-2 text-xs text-gray-400 hover:text-red-500 cursor-pointer"
             >
-              초기화
+              Reset
             </button>
           )}
-          <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">취소</button>
+          <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">Cancel</button>
           <button
             onClick={() => { onSave(volume || null); onClose() }}
             className="px-5 py-2 text-sm font-semibold text-white rounded-lg cursor-pointer"
             style={{ backgroundColor: '#014A99' }}
           >
-            저장
+            Save
           </button>
         </div>
       </div>
@@ -1386,19 +1386,19 @@ function PriceGroup({
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100 text-xs text-gray-500">
-                <th className="relative group/th px-3 py-2.5 text-end font-medium" style={{ width: colW.name }}>품목명{rh('name')}</th>
-                <th className="relative group/th px-3 py-2.5 text-end font-medium" style={{ width: colW.pipe }}>배관{rh('pipe')}</th>
-                <th className="relative group/th px-3 py-2.5 text-end font-medium" style={{ width: colW.sleeve }}>슬리브{rh('sleeve')}</th>
-                <th className="relative group/th px-3 py-2.5 text-end font-medium text-blue-600" style={{ width: colW.price }}>단가{rh('price')}</th>
-                <th className="relative group/th px-3 py-2.5 text-end font-medium text-gray-400" style={{ width: colW.nego }}>협가{rh('nego')}</th>
-                <th className="relative group/th px-3 py-2.5 text-end font-medium text-gray-600" style={{ width: colW.sale }}>판매가{rh('sale')}</th>
-                <th className="relative group/th px-3 py-2.5 text-end font-medium text-orange-500" style={{ width: colW.ilwi }}>일위대가{rh('ilwi')}</th>
+                <th className="relative group/th px-3 py-2.5 text-end font-medium" style={{ width: colW.name }}>Item{rh('name')}</th>
+                <th className="relative group/th px-3 py-2.5 text-end font-medium" style={{ width: colW.pipe }}>Pipe{rh('pipe')}</th>
+                <th className="relative group/th px-3 py-2.5 text-end font-medium" style={{ width: colW.sleeve }}>Sleeve{rh('sleeve')}</th>
+                <th className="relative group/th px-3 py-2.5 text-end font-medium text-blue-600" style={{ width: colW.price }}>Unit Price{rh('price')}</th>
+                <th className="relative group/th px-3 py-2.5 text-end font-medium text-gray-400" style={{ width: colW.nego }}>Negotiated{rh('nego')}</th>
+                <th className="relative group/th px-3 py-2.5 text-end font-medium text-gray-600" style={{ width: colW.sale }}>Sale Price{rh('sale')}</th>
+                <th className="relative group/th px-3 py-2.5 text-end font-medium text-orange-500" style={{ width: colW.ilwi }}>Unit Cost{rh('ilwi')}</th>
                 {selectedPct != null && (
-                  <th className="relative group/th px-3 py-2.5 text-end font-medium text-orange-600" style={{ width: colW.ilwi_sale }}>일위대가(판매){rh('ilwi_sale')}</th>
+                  <th className="relative group/th px-3 py-2.5 text-end font-medium text-orange-600" style={{ width: colW.ilwi_sale }}>Unit Cost (Sale){rh('ilwi_sale')}</th>
                 )}
-                <th className="relative group/th px-3 py-2.5 text-end font-medium text-gray-400" style={{ width: colW.heat }}>차열재 구성{rh('heat')}</th>
-                <th className="relative group/th px-3 py-2.5 text-end font-medium text-gray-400" style={{ width: colW.sealant }}>실란트{rh('sealant')}</th>
-                <th className="relative group/th px-3 py-2.5 text-end font-medium" style={{ width: colW.note }}>비고{rh('note')}</th>
+                <th className="relative group/th px-3 py-2.5 text-end font-medium text-gray-400" style={{ width: colW.heat }}>Heat Insulator{rh('heat')}</th>
+                <th className="relative group/th px-3 py-2.5 text-end font-medium text-gray-400" style={{ width: colW.sealant }}>Sealant{rh('sealant')}</th>
+                <th className="relative group/th px-3 py-2.5 text-end font-medium" style={{ width: colW.note }}>Note{rh('note')}</th>
                 <th className="px-3 py-2.5 w-8"></th>
               </tr>
             </thead>
