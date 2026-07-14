@@ -1,26 +1,26 @@
 const infoCards = [
   {
-    tag: "개념 안내",
-    title: "내화채움구조란?",
-    description: "방화구획 관통부에 화염·연기의 확산을 차단하는 내화충전 시스템입니다. 법적 근거부터 관통부 종류까지 한눈에 확인하세요.",
+    tag: "Overview",
+    title: "What is Fire-Resistant Filling?",
+    description: "A fire-stopping system that blocks the spread of flame and smoke through penetrations in fire compartments. See the legal basis and penetration types at a glance.",
     href: "/fire-resistance",
-    cta: "자세히 보기",
+    cta: "Learn More",
     accent: "#014A99",
   },
   {
-    tag: "제조사 정보",
-    title: "국내 주요 제조사",
-    description: "배관·사각덕트 관통부 내화채움구조 품질인정을 보유한 국내 주요 제조사 목록을 한눈에 확인하세요.",
+    tag: "Manufacturer Info",
+    title: "Major Domestic Manufacturers",
+    description: "See the major domestic manufacturers holding quality certification for fire-resistant filling of pipe and rectangular duct penetrations at a glance.",
     href: "/fire-resistance#manufacturers",
-    cta: "제조사 보기",
+    cta: "View Manufacturers",
     accent: "#014A99",
   },
   {
-    tag: "제도 안내",
-    title: "운영기관 및 법령",
-    description: "2021년 품질인정제도 전환 이후 달라진 기준, 운영기관, 세움터 조회 방법까지 시공 전 꼭 확인해야 할 정보를 제공합니다.",
+    tag: "Regulatory Info",
+    title: "Organizations & Regulations",
+    description: "Everything you need to check before construction — the standards, organizations, and Seum-teo lookup process that changed after the 2021 quality certification system transition.",
     href: "/fire-resistance/organizations",
-    cta: "확인하기",
+    cta: "Check It Out",
     accent: "#014A99",
   },
 ];
@@ -34,7 +34,7 @@ export default function Products() {
           <p className="text-sm uppercase tracking-widest font-medium mb-2" style={{ color: "#5889BC" }}>
             What We Do
           </p>
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">내화채움구조 안내</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">About Fire-Resistant Filling</h2>
           <div className="w-10 h-0.5" style={{ backgroundColor: "#014A99" }} />
         </div>
 

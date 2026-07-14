@@ -13,7 +13,7 @@ export default function Navbar() {
         <a href="/" className="flex items-center">
           <Image
             src="/logo.png"
-            alt="탑디뉴스 로고"
+            alt="Topdignus logo"
             width={98}
             height={35}
             className="w-[56px] md:w-[78px] h-auto object-contain"
@@ -25,7 +25,7 @@ export default function Navbar() {
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
           <div className="relative group">
             <a href="/about" className="hover:text-[#014A99] transition-colors flex items-center gap-1">
-              회사소개
+              Company
               <svg className="w-3 h-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
@@ -33,7 +33,7 @@ export default function Navbar() {
             <div className="absolute top-full left-0 mt-2 w-36 bg-white rounded-md shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
               {[
                 { label: "About us", href: "/about" },
-                { label: "납품실적", href: "/about/references" },
+                { label: "Track Record", href: "/about/references" },
               ].map((item) => (
                 <a
                   key={item.label}
@@ -53,15 +53,15 @@ export default function Navbar() {
           </div> */}
           <div className="relative group">
             <a href="/fire-resistance" className="hover:text-[#014A99] transition-colors flex items-center gap-1">
-              내화채움구조
+              Fire-Resistant Filling
               <svg className="w-3 h-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </a>
             <div className="absolute top-full left-0 mt-2 w-52 bg-white rounded-md shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
               {[
-                { label: "내화채움구조란?", href: "/fire-resistance" },
-                { label: "운영기관 및 관련정보", href: "/fire-resistance/organizations" },
+                { label: "What is Fire-Resistant Filling?", href: "/fire-resistance" },
+                { label: "Organizations & Resources", href: "/fire-resistance/organizations" },
               ].map((item) => (
                 <a
                   key={item.label}
@@ -75,15 +75,15 @@ export default function Navbar() {
           </div>
           <div className="relative group">
             <a href="/fire-blanket" className="hover:text-[#014A99] transition-colors flex items-center gap-1">
-              방화포
+              Fire Blanket
               <svg className="w-3 h-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </a>
             <div className="absolute top-full left-0 mt-2 w-52 bg-white rounded-md shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
               {[
-                { label: "방화포란?", href: "/fire-blanket" },
-                { label: "운영기관 및 관련정보", href: "/fire-blanket/organizations" },
+                { label: "What is a Fire Blanket?", href: "/fire-blanket" },
+                { label: "Organizations & Resources", href: "/fire-blanket/organizations" },
               ].map((item) => (
                 <a
                   key={item.label}
@@ -96,10 +96,10 @@ export default function Navbar() {
             </div>
           </div>
           <a href="/partnership" className="hover:text-[#014A99] transition-colors">
-            파트너십
+            Partnership
           </a>
           <a href="/contact" className="hover:text-[#014A99] transition-colors">
-            문의하기
+            Contact Us
           </a>
         </nav>
 
@@ -108,7 +108,7 @@ export default function Navbar() {
         <button
           className="md:hidden flex flex-col gap-1.5 p-2"
           onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="메뉴 열기"
+          aria-label="Open menu"
         >
           <span className={`block w-6 h-0.5 bg-gray-700 transition-transform ${menuOpen ? "rotate-45 translate-y-2" : ""}`} />
           <span className={`block w-6 h-0.5 bg-gray-700 transition-opacity ${menuOpen ? "opacity-0" : ""}`} />
@@ -120,26 +120,26 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-gray-100 px-6 py-4 flex flex-col gap-4 text-sm font-medium text-gray-600">
           <div className="flex flex-col gap-2">
-            <p className="text-gray-400 text-xs uppercase tracking-widest">회사소개</p>
+            <p className="text-gray-400 text-xs uppercase tracking-widest">Company</p>
             <a href="/about" className="pl-2 hover:text-[#014A99] transition-colors" onClick={() => setMenuOpen(false)}>About us</a>
-            <a href="/about/references" className="pl-2 hover:text-[#014A99] transition-colors" onClick={() => setMenuOpen(false)}>납품실적</a>
+            <a href="/about/references" className="pl-2 hover:text-[#014A99] transition-colors" onClick={() => setMenuOpen(false)}>Track Record</a>
           </div>
-          {/* 제품소개 숨김 */}
+          {/* Product intro hidden */}
           <div className="flex flex-col gap-2">
-            <p className="text-gray-400 text-xs uppercase tracking-widest">내화채움구조</p>
-            <a href="/fire-resistance" className="pl-2 hover:text-[#014A99] transition-colors" onClick={() => setMenuOpen(false)}>내화채움구조란?</a>
-            <a href="/fire-resistance/organizations" className="pl-2 hover:text-[#014A99] transition-colors" onClick={() => setMenuOpen(false)}>운영기관 및 관련정보</a>
+            <p className="text-gray-400 text-xs uppercase tracking-widest">Fire-Resistant Filling</p>
+            <a href="/fire-resistance" className="pl-2 hover:text-[#014A99] transition-colors" onClick={() => setMenuOpen(false)}>What is Fire-Resistant Filling?</a>
+            <a href="/fire-resistance/organizations" className="pl-2 hover:text-[#014A99] transition-colors" onClick={() => setMenuOpen(false)}>Organizations & Resources</a>
           </div>
           <div className="flex flex-col gap-2">
-            <p className="text-gray-400 text-xs uppercase tracking-widest">방화포</p>
-            <a href="/fire-blanket" className="pl-2 hover:text-[#014A99] transition-colors" onClick={() => setMenuOpen(false)}>방화포란?</a>
-            <a href="/fire-blanket/organizations" className="pl-2 hover:text-[#014A99] transition-colors" onClick={() => setMenuOpen(false)}>운영기관 및 관련정보</a>
+            <p className="text-gray-400 text-xs uppercase tracking-widest">Fire Blanket</p>
+            <a href="/fire-blanket" className="pl-2 hover:text-[#014A99] transition-colors" onClick={() => setMenuOpen(false)}>What is a Fire Blanket?</a>
+            <a href="/fire-blanket/organizations" className="pl-2 hover:text-[#014A99] transition-colors" onClick={() => setMenuOpen(false)}>Organizations & Resources</a>
           </div>
           <a href="/partnership" className="hover:text-[#014A99] transition-colors" onClick={() => setMenuOpen(false)}>
-            파트너십
+            Partnership
           </a>
           <a href="/contact" className="hover:text-[#014A99] transition-colors" onClick={() => setMenuOpen(false)}>
-            문의하기
+            Contact Us
           </a>
         </div>
       )}

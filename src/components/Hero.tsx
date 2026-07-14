@@ -16,18 +16,18 @@ export default function Hero() {
               <span style={{ color: "#E63946" }}>O</span>f fire
               <span style={{ color: "#E63946" }}>P</span>roof Material
             </p>
-            <p className="text-[0.6rem] sm:text-xs md:text-sm tracking-wide">내화채움구조 정보 포털</p>
+            <p className="text-[0.6rem] sm:text-xs md:text-sm tracking-wide">Fire-Resistant Filling Information Portal</p>
           </div>
 
           {/* Main heading */}
           <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight mb-3">
-            올바른 시공을 위한<br className="sm:hidden" /> 내화채움구조 가이드.
+            A Guide to Fire-Resistant Filling<br className="sm:hidden" /> for Proper Construction.
           </h1>
 
           {/* Description */}
           <p className="text-[0.65rem] sm:text-xs md:text-sm lg:text-base opacity-80 w-full mb-6 leading-relaxed max-w-[700px]">
-            기준에 맞는 시공을 위해, 개념·법령·인정 제품 정보를{" "}
-            <strong className="font-bold text-white">탑디뉴스</strong>가 정리했습니다.
+            For construction that meets code, {" "}
+            <strong className="font-bold text-white">Topdignus</strong> has organized the concepts, regulations, and certified product information.
           </p>
 
           {/* CTA buttons */}
@@ -36,13 +36,13 @@ export default function Hero() {
               href="/fire-resistance"
               className="px-5 py-2 rounded-md font-semibold text-[#014A99] bg-white hover:bg-gray-100 transition-colors text-center text-xs md:text-sm"
             >
-              내화채움구조란?
+              What is Fire-Resistant Filling?
             </a>
             <a
               href="#contact"
               className="px-5 py-2 rounded-md font-semibold text-white border border-white hover:bg-white hover:text-[#014A99] transition-colors text-center text-xs md:text-sm"
             >
-              문의하기
+              Contact Us
             </a>
           </div>
         </div>

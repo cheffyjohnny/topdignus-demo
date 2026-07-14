@@ -1,18 +1,18 @@
 const highlights = [
-  "ASML (동탄·화성)",
-  "삼성SDI (울산)",
-  "LG화학 (청주)",
-  "경동나비엔",
-  "도쿄일렉트론 (평택)",
-  "신세계 본점",
-  "인천공항 T2",
-  "광주과학기술원 (GIST)",
-  "국립체육박물관",
-  "한국수출입은행",
-  "수원지방법원 안산지원",
-  "래미안 (잠원)",
-  "GS 자이 (과천·원주)",
-  "롯데캐슬 (검단·부산)",
+  "ASML (Dongtan/Hwaseong)",
+  "Samsung SDI (Ulsan)",
+  "LG Chem (Cheongju)",
+  "Kyungdong Navien",
+  "Tokyo Electron (Pyeongtaek)",
+  "Shinsegae Main Store",
+  "Incheon Airport T2",
+  "Gwangju Institute of Science and Technology (GIST)",
+  "National Sports Museum",
+  "Export-Import Bank of Korea",
+  "Suwon District Court, Ansan Branch",
+  "Raemian (Jamwon)",
+  "GS Xi (Gwacheon/Wonju)",
+  "Lotte Castle (Geomdan/Busan)",
 ];
 
 export default function References() {
@@ -24,13 +24,13 @@ export default function References() {
             <p className="text-sm uppercase tracking-widest font-medium mb-2" style={{ color: "#5889BC" }}>
               References
             </p>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">납품실적</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Track Record</h2>
           </div>
           <a
             href="/about/references"
             className="shrink-0 text-sm font-semibold text-[#014A99] hover:underline"
           >
-            전체 보기 →
+            View All →
           </a>
         </div>
 

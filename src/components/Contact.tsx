@@ -57,7 +57,7 @@ export default function Contact() {
       setTimer(0);
       // 실시간 이메일 형식 검사
       if (value.trim() && !isEmailValid(value)) {
-        setErrors((prev) => ({ ...prev, email: "올바른 이메일 주소를 입력해 주세요." }));
+        setErrors((prev) => ({ ...prev, email: "Please enter a valid email address." }));
       } else {
         setErrors((prev) => ({ ...prev, email: "" }));
       }
@@ -67,11 +67,11 @@ export default function Contact() {
   const handleSendOtp = async () => {
     const email = form.email.trim();
     if (!email) {
-      setErrors((prev) => ({ ...prev, email: "이메일을 입력해 주세요." }));
+      setErrors((prev) => ({ ...prev, email: "Please enter your email." }));
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setErrors((prev) => ({ ...prev, email: "올바른 이메일 주소를 입력해 주세요." }));
+      setErrors((prev) => ({ ...prev, email: "Please enter a valid email address." }));
       return;
     }
 
@@ -91,17 +91,17 @@ export default function Contact() {
       setEmailVerified(false);
       startTimer();
     } else {
-      setOtpError(data.error || "이메일 발송에 실패했습니다.");
+      setOtpError(data.error || "Failed to send email.");
     }
   };
 
   const handleVerifyOtp = async () => {
     if (!otpValue.trim()) {
-      setOtpError("인증번호를 입력해 주세요.");
+      setOtpError("Please enter the verification code.");
       return;
     }
     if (timer === 0) {
-      setOtpError("인증번호가 만료되었습니다. 다시 요청해 주세요.");
+      setOtpError("The verification code has expired. Please request again.");
       return;
     }
 
@@ -121,20 +121,20 @@ export default function Contact() {
       if (timerRef.current) clearInterval(timerRef.current);
       setErrors((prev) => ({ ...prev, email: "" }));
     } else {
-      setOtpError(data.error || "인증에 실패했습니다.");
+      setOtpError(data.error || "Verification failed.");
     }
   };
 
   const validate = () => {
     const newErrors: typeof errors = {};
-    if (!form.name.trim()) newErrors.name = "성함을 입력해 주세요.";
-    if (!form.company.trim()) newErrors.company = "회사명을 입력해 주세요.";
-    if (!form.phone.trim()) newErrors.phone = "연락처를 입력해 주세요.";
-    else if (!/^[0-9+\-\s()]{7,20}$/.test(form.phone.trim())) newErrors.phone = "올바른 전화번호를 입력해 주세요.";
-    if (!form.email.trim()) newErrors.email = "이메일을 입력해 주세요.";
-    else if (!emailVerified) newErrors.email = "이메일 인증을 완료해 주세요.";
-    if (!form.message.trim()) newErrors.message = "문의 내용을 입력해 주세요.";
-    if (!agreed) newErrors.agreed = "개인정보 수집·이용에 동의해 주세요.";
+    if (!form.name.trim()) newErrors.name = "Please enter your name.";
+    if (!form.company.trim()) newErrors.company = "Please enter your company name.";
+    if (!form.phone.trim()) newErrors.phone = "Please enter your phone number.";
+    else if (!/^[0-9+\-\s()]{7,20}$/.test(form.phone.trim())) newErrors.phone = "Please enter a valid phone number.";
+    if (!form.email.trim()) newErrors.email = "Please enter your email.";
+    else if (!emailVerified) newErrors.email = "Please complete email verification.";
+    if (!form.message.trim()) newErrors.message = "Please enter your inquiry.";
+    if (!agreed) newErrors.agreed = "Please agree to the collection and use of personal information.";
     return newErrors;
   };
 
@@ -174,12 +174,12 @@ export default function Contact() {
             <div className="md:w-1/2">
               <p className="text-sm uppercase tracking-widest font-medium mb-4" style={{ color: "#5889BC" }}>Contact Us</p>
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 leading-snug">
-                <span style={{ color: "#014A99" }}>신규견적 및 기술문의</span>를 온라인으로<br />
-                간편하게 문의해보세요.
+                Submit a <span style={{ color: "#014A99" }}>new quote or technical inquiry</span><br />
+                easily online.
               </h2>
               <p className="text-sm text-gray-500 leading-relaxed">
-                내화채움구조 관련 견적 및 기술 문의 사항을 남겨주시면,<br />
-                담당자 확인 후 신속히 회신 드리겠습니다.
+                Leave your fire-resistant filling quote or technical inquiry,<br />
+                and our team will review it and respond promptly.
               </p>
             </div>
 
@@ -192,13 +192,13 @@ export default function Contact() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <p className="text-gray-800 font-semibold text-lg">문의가 접수되었습니다.</p>
-                  <p className="text-gray-500 text-sm">담당자 확인 후 신속히 회신 드리겠습니다.</p>
+                  <p className="text-gray-800 font-semibold text-lg">Your inquiry has been received.</p>
+                  <p className="text-gray-500 text-sm">Our team will review it and respond promptly.</p>
                   <button
                     onClick={() => setStatus("idle")}
                     className="mt-4 text-sm text-[#014A99] underline"
                   >
-                    다시 문의하기
+                    Submit Another Inquiry
                   </button>
                 </div>
               ) : (
@@ -210,7 +210,7 @@ export default function Contact() {
                         name="name"
                         value={form.name}
                         onChange={handleChange}
-                        placeholder="성함"
+                        placeholder="Name"
                         className={`border rounded-md px-4 py-3 text-sm focus:outline-none focus:border-[#014A99] transition-colors ${errors.name ? "border-red-400" : "border-gray-200"}`}
                       />
                       {errors.name && <p className="text-red-500 text-xs">{errors.name}</p>}
@@ -221,7 +221,7 @@ export default function Contact() {
                         name="company"
                         value={form.company}
                         onChange={handleChange}
-                        placeholder="회사명"
+                        placeholder="Company"
                         className={`border rounded-md px-4 py-3 text-sm focus:outline-none focus:border-[#014A99] transition-colors ${errors.company ? "border-red-400" : "border-gray-200"}`}
                       />
                       {errors.company && <p className="text-red-500 text-xs">{errors.company}</p>}
@@ -235,7 +235,7 @@ export default function Contact() {
                       name="phone"
                       value={form.phone}
                       onChange={handleChange}
-                      placeholder="연락처"
+                      placeholder="Phone"
                       className={`border rounded-md px-4 py-3 text-sm focus:outline-none focus:border-[#014A99] transition-colors ${errors.phone ? "border-red-400" : "border-gray-200"}`}
                     />
                     {errors.phone && <p className="text-red-500 text-xs">{errors.phone}</p>}
@@ -250,7 +250,7 @@ export default function Contact() {
                           name="email"
                           value={form.email}
                           onChange={handleChange}
-                          placeholder="이메일"
+                          placeholder="Email"
                           disabled={emailVerified}
                           className={`w-full border rounded-md px-4 py-3 text-sm focus:outline-none focus:border-[#014A99] transition-colors ${errors.email ? "border-red-400" : emailVerified ? "border-green-400 bg-green-50" : "border-gray-200"} disabled:cursor-not-allowed`}
                         />
@@ -269,7 +269,7 @@ export default function Contact() {
                           disabled={otpLoading || !form.email.trim() || !isEmailValid(form.email)}
                           className="shrink-0 px-4 py-3 rounded-md text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[#014A99] hover:bg-[#5889BC]"
                         >
-                          {otpLoading ? "발송 중..." : otpSent ? "재발송" : "인증번호 받기"}
+                          {otpLoading ? "Sending..." : otpSent ? "Resend" : "Get Verification Code"}
                         </button>
                       )}
                       {emailVerified && (
@@ -284,13 +284,13 @@ export default function Contact() {
                           }}
                           className="shrink-0 px-4 py-3 rounded-md text-sm font-medium text-gray-500 border border-gray-200 hover:bg-gray-100 transition-colors"
                         >
-                          변경
+                          Change
                         </button>
                       )}
                     </div>
 
                     {errors.email && <p className="text-red-500 text-xs">{errors.email}</p>}
-                    {emailVerified && <p className="text-green-600 text-xs font-medium">이메일 인증이 완료되었습니다.</p>}
+                    {emailVerified && <p className="text-green-600 text-xs font-medium">Email verified.</p>}
 
                     {/* OTP 입력 영역 */}
                     {otpSent && !emailVerified && (
@@ -301,7 +301,7 @@ export default function Contact() {
                               type="text"
                               value={otpValue}
                               onChange={(e) => { setOtpValue(e.target.value.replace(/\D/g, "").slice(0, 6)); setOtpError(""); }}
-                              placeholder="인증번호 6자리"
+                              placeholder="6-digit code"
                               maxLength={6}
                               className={`w-full border rounded-md px-4 py-3 text-sm focus:outline-none focus:border-[#014A99] transition-colors ${otpError ? "border-red-400" : "border-gray-200"}`}
                             />
@@ -317,11 +317,11 @@ export default function Contact() {
                             disabled={verifyLoading || timer === 0}
                             className="shrink-0 px-4 py-3 rounded-md text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[#014A99] hover:bg-[#5889BC]"
                           >
-                            {verifyLoading ? "확인 중..." : "확인"}
+                            {verifyLoading ? "Verifying..." : "Verify"}
                           </button>
                         </div>
                         {otpError && <p className="text-red-500 text-xs">{otpError}</p>}
-                        {timer === 0 && <p className="text-red-500 text-xs">인증번호가 만료되었습니다. 재발송 버튼을 눌러주세요.</p>}
+                        {timer === 0 && <p className="text-red-500 text-xs">The verification code has expired. Please click Resend.</p>}
                       </div>
                     )}
 
@@ -334,7 +334,7 @@ export default function Contact() {
                       name="message"
                       value={form.message}
                       onChange={handleChange}
-                      placeholder="문의 내용을 입력해 주세요."
+                      placeholder="Please enter your inquiry."
                       className={`border rounded-md px-4 py-3 text-sm focus:outline-none focus:border-[#014A99] transition-colors resize-none ${errors.message ? "border-red-400" : "border-gray-200"}`}
                     />
                     {errors.message && <p className="text-red-500 text-xs">{errors.message}</p>}
@@ -349,20 +349,20 @@ export default function Contact() {
                         className="mt-0.5 accent-[#014A99]"
                       />
                       <label htmlFor="privacy">
-                        <span className="text-gray-700 font-medium">개인정보 수집·이용</span>에 동의합니다. <span className="text-xs">(필수)</span>
+                        I agree to the <span className="text-gray-700 font-medium">collection and use of personal information</span>. <span className="text-xs">(Required)</span>
                       </label>
                     </div>
                     {errors.agreed && <p className="text-red-500 text-xs">{errors.agreed}</p>}
                   </div>
                   {status === "error" && (
-                    <p className="text-red-500 text-sm">오류가 발생했습니다. 다시 시도해 주세요.</p>
+                    <p className="text-red-500 text-sm">An error occurred. Please try again.</p>
                   )}
                   <button
                     type="submit"
                     disabled={status === "loading" || !agreed || !emailVerified}
                     className="w-full py-3 rounded-md text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer bg-[#014A99] hover:bg-[#5889BC]"
                   >
-                    {status === "loading" ? "전송 중..." : "문의 보내기"}
+                    {status === "loading" ? "Sending..." : "Send Inquiry"}
                   </button>
                 </form>
               )}
