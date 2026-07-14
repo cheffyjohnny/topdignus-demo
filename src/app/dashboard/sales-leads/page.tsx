@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-toastify'
+import { statusLabel, SALES_LEAD_STATUS_LABEL } from '@/lib/status-labels'
 
 type Status = '등록' | '진행중' | '착공전' | '이관' | '체결' | '종료'
 type SortDir = 'asc' | 'desc'
@@ -24,21 +25,23 @@ const STATUS_STYLES: Record<Status, string> = {
   체결: 'bg-green-100 text-green-700', 종료: 'bg-red-100 text-red-600',
 }
 
-const TABS: ('전체' | Status)[] = ['전체', '등록', '진행중', '착공전', '이관', '체결', '종료']
+const ALL = 'All'
+const TABS: (typeof ALL | Status)[] = [ALL, '등록', '진행중', '착공전', '이관', '체결', '종료']
+function tabLabel(t: typeof ALL | Status): string { return t === ALL ? ALL : statusLabel(t, SALES_LEAD_STATUS_LABEL) }
 
 const COLUMNS: { key: ColKey; label: string; pinned?: boolean }[] = [
-  { key: 'status',               label: '상태',         pinned: true },
-  { key: 'dealership',           label: '대리점' },
-  { key: 'project_name',         label: '현장명',       pinned: true },
-  { key: 'address',              label: '주소' },
-  { key: 'last_update',          label: '최근 수정일' },
-  { key: 'construction_company', label: '업체명' },
-  { key: 'contact_name',         label: '담당자' },
-  { key: 'contact_phone',        label: '담당자 연락처' },
-  { key: 'scale',                label: '규모' },
-  { key: 'notes',                label: '비고' },
-  { key: 'source_url',           label: '링크' },
-  { key: 'created_at',           label: '작성일' },
+  { key: 'status',               label: 'Status',         pinned: true },
+  { key: 'dealership',           label: 'Dealership' },
+  { key: 'project_name',         label: 'Project',       pinned: true },
+  { key: 'address',              label: 'Address' },
+  { key: 'last_update',          label: 'Last Updated' },
+  { key: 'construction_company', label: 'Company' },
+  { key: 'contact_name',         label: 'Contact' },
+  { key: 'contact_phone',        label: 'Contact Phone' },
+  { key: 'scale',                label: 'Scale' },
+  { key: 'notes',                label: 'Notes' },
+  { key: 'source_url',           label: 'Link' },
+  { key: 'created_at',           label: 'Created' },
 ]
 
 const DEFAULT_WIDTHS: Record<ColKey, number> = {
@@ -68,7 +71,7 @@ export default function SalesLeadsPage() {
   const [leads, setLeads]           = useState<(SalesLead & { account?: { id: string; name: string } | null })[]>([])
   const [loading, setLoading]       = useState(true)
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [activeTab, setActiveTab]   = useState<'전체' | Status>('전체')
+  const [activeTab, setActiveTab]   = useState<typeof ALL | Status>(ALL)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortKey, setSortKey]       = useState<SortKey | null>(null)
   const [sortDir, setSortDir]       = useState<SortDir>('asc')
@@ -205,12 +208,12 @@ export default function SalesLeadsPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('이 영업현장을 삭제하시겠습니까?')) return
+    if (!confirm('Delete this sales lead?')) return
     setDeletingId(id)
     try {
       const res = await fetch(`/api/sales-leads?id=${id}`, { method: 'DELETE' })
-      if (res.ok) { setLeads(prev => prev.filter(l => l.id !== id)); toast.success('삭제되었습니다.') }
-      else toast.error('삭제 실패')
+      if (res.ok) { setLeads(prev => prev.filter(l => l.id !== id)); toast.success('Deleted successfully.') }
+      else toast.error('Delete failed')
     } finally { setDeletingId(null) }
   }
 
@@ -219,7 +222,7 @@ export default function SalesLeadsPage() {
     ? leads.filter(l => [l.project_name, l.address, l.construction_company, l.facility_company, l.contact_name, l.dealership, l.notes, l.scale].some(v => v?.toLowerCase().includes(q)))
     : leads
 
-  const tabFiltered = activeTab === '전체' ? searched : searched.filter(l => l.status === activeTab)
+  const tabFiltered = activeTab === ALL ? searched : searched.filter(l => l.status === activeTab)
 
   const filtered = sortKey
     ? [...tabFiltered].sort((a, b) => {
@@ -230,20 +233,20 @@ export default function SalesLeadsPage() {
       })
     : tabFiltered
 
-  const tabCount = (tab: '전체' | Status) =>
-    tab === '전체' ? searched.length : searched.filter(l => l.status === tab).length
+  const tabCount = (tab: typeof ALL | Status) =>
+    tab === ALL ? searched.length : searched.filter(l => l.status === tab).length
 
   // column renderer
   const colRender: Record<ColKey, (lead: SalesLead) => React.ReactNode> = {
     status: l => (
       <td key="status" className="px-3 py-2.5 overflow-hidden whitespace-nowrap">
-        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[l.status] ?? STATUS_STYLES['등록']}`}>{l.status}</span>
+        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[l.status] ?? STATUS_STYLES['등록']}`}>{statusLabel(l.status, SALES_LEAD_STATUS_LABEL)}</span>
       </td>
     ),
     dealership: l => <td key="dealership" className="px-3 py-2.5 overflow-hidden whitespace-nowrap">{l.dealership ?? '—'}</td>,
     project_name: l => <td key="project_name" className="px-3 py-2.5 overflow-hidden whitespace-nowrap font-medium text-gray-900">{l.project_name ?? '—'}</td>,
     address: l => <td key="address" className="px-3 py-2.5 overflow-hidden whitespace-nowrap text-gray-600">{l.address ?? '—'}</td>,
-    last_update: l => <td key="last_update" className="px-3 py-2.5 overflow-hidden whitespace-nowrap text-gray-600">{l.last_update ? new Date(l.last_update).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' }) : '—'}</td>,
+    last_update: l => <td key="last_update" className="px-3 py-2.5 overflow-hidden whitespace-nowrap text-gray-600">{l.last_update ? new Date(l.last_update).toLocaleDateString('en-US', { timeZone: 'Asia/Seoul' }) : '—'}</td>,
     construction_company: l => <td key="construction_company" className="px-3 py-2.5 overflow-hidden whitespace-nowrap">{(l as { account?: { name: string } | null }).account?.name ?? l.construction_company ?? '—'}</td>,
     facility_company: l => <td key="facility_company" className="px-3 py-2.5 overflow-hidden whitespace-nowrap">{l.facility_company ?? '—'}</td>,
     contact_name: l => <td key="contact_name" className="px-3 py-2.5 overflow-hidden whitespace-nowrap">{l.contact_name ?? '—'}</td>,
@@ -253,25 +256,25 @@ export default function SalesLeadsPage() {
     source_url: l => (
       <td key="source_url" className="px-3 py-2.5 overflow-hidden whitespace-nowrap">
         {l.source_url
-          ? <a href={l.source_url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-blue-600 hover:underline text-xs cursor-pointer">링크</a>
+          ? <a href={l.source_url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-blue-600 hover:underline text-xs cursor-pointer">Link</a>
           : <span className="text-gray-400 text-xs">—</span>}
       </td>
     ),
-    created_at: l => <td key="created_at" className="px-3 py-2.5 overflow-hidden whitespace-nowrap text-gray-500">{new Date(l.created_at).toLocaleDateString('ko-KR')}</td>,
+    created_at: l => <td key="created_at" className="px-3 py-2.5 overflow-hidden whitespace-nowrap text-gray-500">{new Date(l.created_at).toLocaleDateString('en-US')}</td>,
   }
 
   return (
     <div className="p-4 md:p-6">
-      {/* 헤더 */}
+      {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-        <h1 className="text-xl font-bold text-gray-900">영업현장 현황</h1>
+        <h1 className="text-xl font-bold text-gray-900">Sales Leads</h1>
         <div className="flex items-center gap-2 flex-wrap">
           <div className="relative w-full sm:w-auto">
             <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
             </svg>
             <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-              placeholder="현장명, 주소, 건설사, 담당자..."
+              placeholder="Project, address, company, contact..."
               className="pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-md w-full sm:w-64 focus:outline-none focus:ring-1 focus:ring-blue-500" />
             {searchQuery && (
               <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer">
@@ -280,36 +283,36 @@ export default function SalesLeadsPage() {
             )}
           </div>
           <a href="/api/sales-leads/export" download className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>엑셀
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>Excel
           </a>
           <Link href="/dashboard/sales-leads/new?step=form" className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 cursor-pointer">
-            + 영업 추가
+            + New Lead
           </Link>
         </div>
       </div>
 
-      {/* 탭 */}
+      {/* Tabs */}
       <div className="flex items-end border-b border-gray-200 mb-2">
         {TABS.map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)}
             className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer ${activeTab === tab ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
-            {tab}
+            {tabLabel(tab)}
             <span className={`ml-1.5 text-xs px-1.5 py-0.5 rounded-full ${activeTab === tab ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>{tabCount(tab)}</span>
           </button>
         ))}
       </div>
 
-      {/* 컬럼 설정 */}
+      {/* Column settings */}
       <div className="flex justify-end mb-3">
         <div className="relative" ref={colPickerRef}>
           <button onClick={() => setColPickerOpen(v => !v)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7" /></svg>
-            컬럼
+            Columns
           </button>
           {colPickerOpen && (
             <div className="absolute right-0 top-full mt-1 w-52 bg-white border border-gray-200 rounded-xl shadow-lg z-20 p-3 space-y-0.5">
-              <p className="text-xs text-gray-400 px-2 pb-1.5 border-b border-gray-100 mb-1.5">드래그로 순서 변경</p>
+              <p className="text-xs text-gray-400 px-2 pb-1.5 border-b border-gray-100 mb-1.5">Drag to reorder</p>
               {colOrder.map((key, idx) => {
                 const c = COLUMNS.find(c => c.key === key)!
                 return (
@@ -330,14 +333,14 @@ export default function SalesLeadsPage() {
                       onClick={e => e.stopPropagation()}
                       className="rounded cursor-pointer accent-blue-600" />
                     <span className={c.pinned ? '' : 'cursor-grab'}>{c.label}</span>
-                    {c.pinned && <span className="text-gray-300 ml-auto">고정</span>}
+                    {c.pinned && <span className="text-gray-300 ml-auto">Pinned</span>}
                   </div>
                 )
               })}
               <div className="border-t border-gray-100 mt-1.5 pt-1.5">
                 <button onClick={() => { setColWidths(DEFAULT_WIDTHS); colWidthsRef.current = DEFAULT_WIDTHS; try { localStorage.removeItem(COL_WIDTHS_KEY) } catch {} }}
                   className="w-full text-xs text-gray-400 hover:text-gray-600 px-2 py-1 text-left transition-colors cursor-pointer">
-                  컬럼 너비 초기화
+                  Reset column widths
                 </button>
               </div>
             </div>
@@ -345,14 +348,14 @@ export default function SalesLeadsPage() {
         </div>
       </div>
 
-      {/* 테이블 */}
+      {/* Table */}
       {loading ? (
-        <p className="text-sm text-gray-500">불러오는 중...</p>
+        <p className="text-sm text-gray-500">Loading...</p>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
           {q
-            ? <p className="text-sm">'{searchQuery}'에 대한 검색 결과가 없습니다.</p>
-            : <><p className="text-sm">등록된 영업현장이 없습니다.</p><Link href="/dashboard/sales-leads/new" className="mt-2 inline-block text-sm text-blue-600 hover:underline cursor-pointer">영업현장 추가하기</Link></>}
+            ? <p className="text-sm">No results for &apos;{searchQuery}&apos;.</p>
+            : <><p className="text-sm">No sales leads registered.</p><Link href="/dashboard/sales-leads/new" className="mt-2 inline-block text-sm text-blue-600 hover:underline cursor-pointer">Add a sales lead</Link></>}
         </div>
       ) : (
         <div className="overflow-x-auto border border-gray-200 rounded-lg">
@@ -364,7 +367,7 @@ export default function SalesLeadsPage() {
             </colgroup>
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                {/* NO 컬럼 — 항상 고정 */}
+                {/* NO column — always fixed */}
                 <th onClick={() => handleSort('seq')}
                   className={`px-3 py-2.5 text-left font-medium cursor-pointer select-none hover:bg-gray-100 transition-colors overflow-hidden whitespace-nowrap relative ${sortKey === 'seq' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'}`}>
                   <span className="flex items-center gap-1">NO <SortIcon active={sortKey === 'seq'} dir={sortDir} /></span>
@@ -405,7 +408,7 @@ export default function SalesLeadsPage() {
                   <td className="px-3 py-2.5">
                     <button onClick={e => { e.stopPropagation(); handleDelete(lead.id) }}
                       disabled={deletingId === lead.id}
-                      className="text-gray-400 hover:text-red-500 disabled:opacity-50 cursor-pointer" title="삭제">
+                      className="text-gray-400 hover:text-red-500 disabled:opacity-50 cursor-pointer" title="Delete">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                     </button>
                   </td>
