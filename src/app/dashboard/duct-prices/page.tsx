@@ -193,11 +193,11 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
         }))
       }
       const results = await Promise.all(promises)
-      if (results.some(r => !r.ok)) throw new Error('저장 실패')
-      setMessage({ type: 'success', text: `${totalChanged}개 항목 저장 완료` })
+      if (results.some(r => !r.ok)) throw new Error('Save failed')
+      setMessage({ type: 'success', text: `${totalChanged} item(s) saved` })
       await load()
     } catch (e: any) {
-      setMessage({ type: 'error', text: e.message ?? '오류 발생' })
+      setMessage({ type: 'error', text: e.message ?? 'An error occurred' })
     }
     setSaving(false)
   }
@@ -211,13 +211,13 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify([{ manufacturer: newMfrName.trim(), price_type: newMfrType, riser_price: 0, wall_price: 0 }]),
       })
-      if (!res.ok) throw new Error('추가 실패')
+      if (!res.ok) throw new Error('Add failed')
       setAddingMfr(false)
       setNewMfrName('')
       setNewMfrType('per_m')
       await load()
     } catch {
-      setMessage({ type: 'error', text: '제조사 추가에 실패했습니다.' })
+      setMessage({ type: 'error', text: 'Failed to add manufacturer.' })
     }
     setAddingMfrLoading(false)
   }
@@ -233,11 +233,11 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
         body: JSON.stringify({ oldName: renamingMfr, newName: renameValue.trim() }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? '변경 실패')
+      if (!res.ok) throw new Error(data.error ?? 'Rename failed')
       setRenamingMfr(null)
       await load()
     } catch (e: any) {
-      setRenameError(e.message ?? '오류 발생')
+      setRenameError(e.message ?? 'An error occurred')
     }
     setRenameSaving(false)
   }
@@ -247,18 +247,18 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
     setDeletingMfrLoading(true)
     try {
       const res = await fetch(`/api/duct-prices?manufacturer=${encodeURIComponent(deletingMfr)}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('삭제 실패')
+      if (!res.ok) throw new Error('Delete failed')
       setDeletingMfr(null)
       await load()
     } catch {
-      setMessage({ type: 'error', text: '제조사 삭제에 실패했습니다.' })
+      setMessage({ type: 'error', text: 'Failed to delete manufacturer.' })
     }
     setDeletingMfrLoading(false)
   }
 
   async function handleSaveCustomer() {
     if (!modalName.trim()) {
-      setModalError('업체명을 입력하세요.')
+      setModalError('Please enter a company name.')
       return
     }
     setModalSaving(true)
@@ -275,11 +275,11 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
         body: JSON.stringify(body),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? '저장 실패')
+      if (!res.ok) throw new Error(data.error ?? 'Save failed')
       setCustomerModal(null)
       await load()
     } catch (e: any) {
-      setModalError(e.message ?? '오류 발생')
+      setModalError(e.message ?? 'An error occurred')
     }
     setModalSaving(false)
   }
@@ -304,26 +304,26 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
     setModalDeleting(true)
     try {
       const res = await fetch(`/api/customers?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('삭제 실패')
+      if (!res.ok) throw new Error('Delete failed')
       setCustomerModal(null)
       setModalConfirmDelete(false)
       await load()
     } catch (e: any) {
-      setModalError(e.message ?? '삭제 오류')
+      setModalError(e.message ?? 'Delete error')
       setModalConfirmDelete(false)
     }
     setModalDeleting(false)
   }
 
   if (status === 'loading' || loading) {
-    return <div className="flex items-center justify-center h-64 text-sm text-gray-400">불러오는 중...</div>
+    return <div className="flex items-center justify-center h-64 text-sm text-gray-400">Loading...</div>
   }
 
   return (
     <div className="space-y-8">
-      {/* 헤더 */}
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">덕트 단가 관리</h1>
+        <h1 className="text-xl font-bold text-gray-900">Duct Pricing Management</h1>
         <div className="flex items-center gap-2">
           {message && (
             <span className={`text-sm ${message.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
@@ -336,24 +336,24 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
             className="px-4 py-2 text-sm font-semibold text-white rounded-lg disabled:opacity-40 transition-opacity cursor-pointer"
             style={{ backgroundColor: '#014A99' }}
           >
-            {saving ? '저장 중...' : `변경사항 저장${totalChanged > 0 ? ` (${totalChanged})` : ''}`}
+            {saving ? 'Saving...' : `Save Changes${totalChanged > 0 ? ` (${totalChanged})` : ''}`}
           </button>
         </div>
       </div>
 
-      {/* 매입 단가 */}
+      {/* Purchase price */}
       <div>
-        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">매입 단가</h2>
+        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Purchase Price</h2>
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[550px]">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100 text-xs text-gray-500">
                 <th className="px-2 py-2.5 w-8" />
-                <th className="px-4 py-2.5 text-left font-medium w-36">제조사</th>
-                <th className="px-4 py-2.5 text-center font-medium w-28">가격 방식</th>
-                <th className="px-4 py-2.5 text-right font-medium w-40 text-blue-600">입상 매입가</th>
-                <th className="px-4 py-2.5 text-right font-medium w-40 text-blue-600">벽체 매입가</th>
+                <th className="px-4 py-2.5 text-left font-medium w-36">Manufacturer</th>
+                <th className="px-4 py-2.5 text-center font-medium w-28">Price Type</th>
+                <th className="px-4 py-2.5 text-right font-medium w-40 text-blue-600">Riser Cost</th>
+                <th className="px-4 py-2.5 text-right font-medium w-40 text-blue-600">Wall Cost</th>
                 <th className="px-4 py-2.5 w-10" />
               </tr>
             </thead>
@@ -378,7 +378,7 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
                   <td className="px-4 py-2.5 font-medium text-gray-800">{row.manufacturer}</td>
                   <td className="px-4 py-2.5 text-center">
                     <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
-                      {row.price_type === 'per_m' ? '미터당 (m)' : '개당 (ea)'}
+                      {row.price_type === 'per_m' ? 'Per meter (m)' : 'Per unit (ea)'}
                     </span>
                   </td>
                   <td className="px-3 py-2 text-right">
@@ -400,7 +400,7 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
                       <button
                         onClick={() => { setRenamingMfr(row.manufacturer); setRenameValue(row.manufacturer); setRenameError('') }}
                         className="text-gray-400 hover:text-[#014A99] cursor-pointer"
-                        title="이름 변경"
+                        title="Rename"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 16H9v-3z" />
@@ -409,7 +409,7 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
                       <button
                         onClick={() => setDeletingMfr(row.manufacturer)}
                         className="text-gray-400 hover:text-red-500 cursor-pointer"
-                        title="제조사 삭제"
+                        title="Delete Manufacturer"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -420,7 +420,7 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
                 </tr>
               ))}
 
-              {/* 제조사 추가 인라인 폼 */}
+              {/* Inline add-manufacturer form */}
               {addingMfr && (
                 <tr className="bg-blue-50/50">
                   <td className="px-2 py-2" />
@@ -431,7 +431,7 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
                       value={newMfrName}
                       onChange={e => setNewMfrName(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') handleAddMfr(); if (e.key === 'Escape') setAddingMfr(false) }}
-                      placeholder="제조사명"
+                      placeholder="Manufacturer name"
                       className="w-full text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:border-[#014A99]"
                     />
                   </td>
@@ -441,11 +441,11 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
                       onChange={e => setNewMfrType(e.target.value as 'per_m' | 'per_item')}
                       className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:border-[#014A99] cursor-pointer"
                     >
-                      <option value="per_m">미터당 (m)</option>
-                      <option value="per_item">개당 (ea)</option>
+                      <option value="per_m">Per meter (m)</option>
+                      <option value="per_item">Per unit (ea)</option>
                     </select>
                   </td>
-                  <td colSpan={2} className="px-3 py-2 text-xs text-gray-400">단가는 저장 후 편집</td>
+                  <td colSpan={2} className="px-3 py-2 text-xs text-gray-400">Edit price after saving</td>
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-1 justify-center">
                       <button
@@ -482,24 +482,24 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                제조사 추가
+                Add Manufacturer
               </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* 차열재 매입 단가 */}
+      {/* Heat insulator purchase price */}
       <div>
-        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">차열재 매입 단가</h2>
+        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Heat Insulator Purchase Price</h2>
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[450px]">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100 text-xs text-gray-500">
-                <th className="px-4 py-2.5 text-left font-medium w-36">제조사</th>
-                <th className="px-4 py-2.5 text-right font-medium w-52 text-orange-600">50T×400×3.6M (원/롤)</th>
-                <th className="px-4 py-2.5 text-right font-medium w-52 text-orange-600">25T×400×7.2M (원/롤)</th>
+                <th className="px-4 py-2.5 text-left font-medium w-36">Manufacturer</th>
+                <th className="px-4 py-2.5 text-right font-medium w-52 text-orange-600">50T×400×3.6M (₩/roll)</th>
+                <th className="px-4 py-2.5 text-right font-medium w-52 text-orange-600">25T×400×7.2M (₩/roll)</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -524,7 +524,7 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
               ))}
               {ductPrices.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="px-4 py-4 text-xs text-gray-400 text-center">등록된 제조사가 없습니다.</td>
+                  <td colSpan={3} className="px-4 py-4 text-xs text-gray-400 text-center">No manufacturers registered.</td>
                 </tr>
               )}
             </tbody>
@@ -533,16 +533,16 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
         </div>
       </div>
 
-      {/* 거래처별 판매가 */}
+      {/* Sale price by customer */}
       <div>
-        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">거래처별 판매가</h2>
+        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Sale Price by Customer</h2>
         {ductPrices.length === 0 ? (
-          <p className="text-sm text-gray-400">등록된 제조사가 없습니다.</p>
+          <p className="text-sm text-gray-400">No manufacturers registered.</p>
         ) : (() => {
           const activeMfr = ductPrices.find(d => d.manufacturer === selectedMfrTab) ?? ductPrices[0]
           return (
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-              {/* 제조사 탭 */}
+              {/* Manufacturer tabs */}
               {ductPrices.length > 1 && (
                 <div className="flex border-b border-gray-200 bg-gray-50/80">
                   {ductPrices.map(mfr => {
@@ -568,21 +568,21 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
                 </div>
               )}
 
-              {/* 선택된 제조사 테이블 */}
+              {/* Selected manufacturer table */}
               {customers.length > 0 && (
                 <div className="overflow-x-auto">
                 <table className="w-full text-sm min-w-[550px]">
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-100 text-xs text-gray-500">
-                      <th className="px-4 py-2.5 text-left font-medium w-36">거래처</th>
+                      <th className="px-4 py-2.5 text-left font-medium w-36">Customer</th>
                       <th className="px-4 py-2.5 text-right font-medium w-36">
-                        입상 {activeMfr.price_type === 'per_m' ? '(m)' : '(ea)'}
+                        Riser {activeMfr.price_type === 'per_m' ? '(m)' : '(ea)'}
                       </th>
                       <th className="px-4 py-2.5 text-right font-medium w-36">
-                        벽체 {activeMfr.price_type === 'per_m' ? '(m)' : '(ea)'}
+                        Wall {activeMfr.price_type === 'per_m' ? '(m)' : '(ea)'}
                       </th>
-                      <th className="px-4 py-2.5 text-right font-medium w-36 text-orange-500">50T (롤)</th>
-                      <th className="px-4 py-2.5 text-right font-medium w-36 text-orange-500">25T (롤)</th>
+                      <th className="px-4 py-2.5 text-right font-medium w-36 text-orange-500">50T (roll)</th>
+                      <th className="px-4 py-2.5 text-right font-medium w-36 text-orange-500">25T (roll)</th>
                       <th className="w-8" />
                     </tr>
                   </thead>
@@ -625,7 +625,7 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
                             <button
                               onClick={() => openEditCustomer(customer)}
                               className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 hover:text-[#014A99] cursor-pointer"
-                              title="거래처 편집"
+                              title="Edit Customer"
                             >
                               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828a2 2 0 01-1.414.586H9v-2a2 2 0 01.586-1.414z" />
@@ -648,7 +648,7 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
-                  거래처 추가
+                  Add Customer
                 </button>
               </div>
             </div>
@@ -656,7 +656,7 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
         })()}
       </div>
 
-      {/* 거래처 추가/편집 모달 */}
+      {/* Add/edit customer modal */}
       {customerModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 space-y-4">
@@ -669,39 +669,39 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
                     </svg>
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-gray-900">거래처 삭제</p>
+                    <p className="text-sm font-bold text-gray-900">Delete Customer</p>
                     <p className="text-xs text-gray-500 mt-0.5">
-                      <span className="font-semibold text-gray-700">{modalName}</span>을(를) 삭제하시겠습니까?
+                      Delete <span className="font-semibold text-gray-700">{modalName}</span>?
                     </p>
                   </div>
                 </div>
                 {modalError && <p className="text-xs text-red-500">{modalError}</p>}
                 <div className="flex gap-2 justify-end">
-                  <button onClick={() => setModalConfirmDelete(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">취소</button>
+                  <button onClick={() => setModalConfirmDelete(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">Cancel</button>
                   <button
                     onClick={handleDeleteCustomer}
                     disabled={modalDeleting}
                     className="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-40 cursor-pointer transition-colors"
                   >
-                    {modalDeleting ? '삭제 중...' : '삭제'}
+                    {modalDeleting ? 'Deleting...' : 'Delete'}
                   </button>
                 </div>
               </>
             ) : (
               <>
                 <h2 className="text-base font-bold text-gray-900">
-                  {customerModal.mode === 'add' ? '거래처 추가' : '거래처 편집'}
+                  {customerModal.mode === 'add' ? 'Add Customer' : 'Edit Customer'}
                 </h2>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">업체명</label>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Company Name</label>
                     <input
                       autoFocus
                       type="text"
                       value={modalName}
                       onChange={e => setModalName(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') handleSaveCustomer() }}
-                      placeholder="업체명 입력"
+                      placeholder="Enter company name"
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#014A99]"
                     />
                   </div>
@@ -713,7 +713,7 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
                       onClick={() => setModalConfirmDelete(true)}
                       className="px-3 py-2 text-sm text-red-500 hover:text-red-700 cursor-pointer"
                     >
-                      삭제
+                      Delete
                     </button>
                   )}
                   <div className="flex-1" />
@@ -721,7 +721,7 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
                     onClick={() => setCustomerModal(null)}
                     className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer"
                   >
-                    취소
+                    Cancel
                   </button>
                   <button
                     onClick={handleSaveCustomer}
@@ -729,7 +729,7 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
                     className="px-5 py-2 text-sm font-semibold text-white rounded-lg disabled:opacity-40 cursor-pointer"
                     style={{ backgroundColor: '#014A99' }}
                   >
-                    {modalSaving ? '저장 중...' : '저장'}
+                    {modalSaving ? 'Saving...' : 'Save'}
                   </button>
                 </div>
               </>
@@ -738,17 +738,17 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
         </div>
       )}
 
-      {/* 제조사 이름 변경 모달 */}
+      {/* Rename manufacturer modal */}
       {renamingMfr && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={e => { if (e.target === e.currentTarget) setRenamingMfr(null) }}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 space-y-4">
-            <h2 className="text-base font-bold text-gray-900">제조사 이름 변경</h2>
+            <h2 className="text-base font-bold text-gray-900">Rename Manufacturer</h2>
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-gray-500">현재 이름</label>
+              <label className="block text-xs font-medium text-gray-500">Current Name</label>
               <p className="text-sm font-semibold text-gray-700">{renamingMfr}</p>
             </div>
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-gray-500">새 이름</label>
+              <label className="block text-xs font-medium text-gray-500">New Name</label>
               <input
                 autoFocus
                 type="text"
@@ -760,42 +760,42 @@ function handleSalePriceChange(manufacturer: string, customerId: string, field: 
               {renameError && <p className="text-xs text-red-500">{renameError}</p>}
             </div>
             <div className="flex gap-2 justify-end">
-              <button onClick={() => setRenamingMfr(null)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">취소</button>
+              <button onClick={() => setRenamingMfr(null)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">Cancel</button>
               <button
                 onClick={handleRenameMfr}
                 disabled={renameSaving || !renameValue.trim() || renameValue.trim() === renamingMfr}
                 className="px-5 py-2 text-sm font-semibold text-white rounded-lg disabled:opacity-40 cursor-pointer"
                 style={{ backgroundColor: '#014A99' }}
               >
-                {renameSaving ? '변경 중...' : '변경'}
+                {renameSaving ? 'Renaming...' : 'Rename'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 제조사 삭제 확인 다이얼로그 */}
+      {/* Delete manufacturer confirmation dialog */}
       {deletingMfr && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-xl p-6 w-80 space-y-4">
-            <h3 className="font-bold text-gray-900">제조사 삭제</h3>
+            <h3 className="font-bold text-gray-900">Delete Manufacturer</h3>
             <p className="text-sm text-gray-600">
-              <span className="font-semibold">{deletingMfr}</span>을(를) 삭제하시겠습니까?<br />
-              <span className="text-red-500">관련 판매가 데이터도 모두 삭제됩니다.</span>
+              Delete <span className="font-semibold">{deletingMfr}</span>?<br />
+              <span className="text-red-500">All related sale price data will also be deleted.</span>
             </p>
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setDeletingMfr(null)}
                 className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer"
               >
-                취소
+                Cancel
               </button>
               <button
                 onClick={handleDeleteMfr}
                 disabled={deletingMfrLoading}
                 className="px-4 py-2 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg disabled:opacity-50 cursor-pointer"
               >
-                {deletingMfrLoading ? '삭제 중...' : '삭제'}
+                {deletingMfrLoading ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>
