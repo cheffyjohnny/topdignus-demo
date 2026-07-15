@@ -38,6 +38,10 @@ interface FireBlanketSalePrice { manufacturer: string; item_name: string; custom
 
 const STATUS_OPTIONS: QuoteStatus[] = ['검토중', '견적제출', '수주', '취소']
 
+const STATUS_LABEL: Record<QuoteStatus, string> = {
+  '검토중': 'In Review', '견적제출': 'Quoted', '수주': 'Ordered', '취소': 'Cancelled',
+}
+
 const STATUS_STYLE: Record<QuoteStatus, string> = {
   '검토중':  'bg-gray-100 text-gray-600',
   '견적제출': 'bg-blue-100 text-blue-700',
@@ -91,11 +95,11 @@ export default function FireBlanketQuoteDetailPage() {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
     })
-    if (!res.ok) { toast.error('상태 변경 실패'); return }
+    if (!res.ok) { toast.error('Failed to change status'); return }
     const updated: Quote = await res.json()
     setQuote(updated)
     setEditData(updated)
-    toast.success(`상태가 "${status}"로 변경되었습니다.`)
+    toast.success(`Status changed to "${STATUS_LABEL[status]}".`)
   }
 
   async function doSave() {
@@ -125,13 +129,13 @@ export default function FireBlanketQuoteDetailPage() {
           })),
         }),
       })
-      if (!res.ok) { toast.error('저장 실패'); return }
+      if (!res.ok) { toast.error('Save failed'); return }
       const updated: Quote = await res.json()
       setQuote(updated)
       setEditData(updated)
       setEditItems(Array.isArray(updated.items) ? updated.items.map((it, i) => ({ ...it, id: it.id ?? i + 1 })) : [])
       setEditing(false)
-      toast.success('견적서가 수정되었습니다.')
+      toast.success('Quote updated.')
     } finally {
       setSaving(false)
     }
@@ -139,19 +143,19 @@ export default function FireBlanketQuoteDetailPage() {
 
   async function doDelete() {
     const res = await fetch(`/api/fire-blanket-quotes/${id}`, { method: 'DELETE' })
-    if (!res.ok) { toast.error('삭제 실패'); return }
-    toast.success('견적서가 삭제되었습니다.')
+    if (!res.ok) { toast.error('Delete failed'); return }
+    toast.success('Quote deleted.')
     router.push('/dashboard/fire-blanket-quotes')
   }
 
-  if (loading) return <div className="flex items-center justify-center h-64 text-gray-400 text-sm">불러오는 중...</div>
+  if (loading) return <div className="flex items-center justify-center h-64 text-gray-400 text-sm">Loading...</div>
   if (!quote) return null
 
   const saleVat = Math.round((quote.sale_amount || 0) * 1.1)
 
   return (
     <div className="w-full space-y-6">
-      {/* 헤더 */}
+      {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           <button onClick={() => router.push('/dashboard/fire-blanket-quotes')} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer flex-shrink-0">
@@ -159,42 +163,42 @@ export default function FireBlanketQuoteDetailPage() {
           </button>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl font-bold text-gray-900">방화포 견적서</h1>
+              <h1 className="text-xl font-bold text-gray-900">Fire Blanket Quote</h1>
               {quote.customer_name && (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">{quote.customer_name}</span>
               )}
             </div>
-            <p className="text-sm text-gray-500 mt-0.5">{quote.project ?? '현장명 없음'}</p>
+            <p className="text-sm text-gray-500 mt-0.5">{quote.project ?? 'No project name'}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
           {!editing ? (
             <>
               <button onClick={() => setEditing(true)} className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">
-                편집
+                Edit
               </button>
               <button onClick={() => setShowDelete(true)} className="px-4 py-2 rounded-md text-sm font-medium text-red-500 border border-red-200 hover:bg-red-50 transition-colors cursor-pointer">
-                삭제
+                Delete
               </button>
             </>
           ) : (
             <>
               <button onClick={() => { setEditing(false); setVendorMode('existing'); setEditData(quote); setEditItems(Array.isArray(quote.items) ? quote.items.map((it, i) => ({ ...it, id: it.id ?? i + 1 })) : []) }} className="px-4 py-2 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">
-                취소
+                Cancel
               </button>
               <button onClick={doSave} disabled={saving} className="px-5 py-2 rounded-md text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60 transition-colors cursor-pointer" style={{ backgroundColor: '#014A99' }}>
-                {saving ? '저장 중...' : '저장'}
+                {saving ? 'Saving...' : 'Save'}
               </button>
             </>
           )}
         </div>
       </div>
 
-      {/* 상태 + 금액 카드 */}
+      {/* Status + amount cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* 상태 */}
+        {/* Status */}
         <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <p className="text-xs text-gray-500 mb-2">상태</p>
+          <p className="text-xs text-gray-500 mb-2">Status</p>
           <div className="flex flex-wrap gap-1.5">
             {STATUS_OPTIONS.map(s => (
               <button
@@ -204,35 +208,35 @@ export default function FireBlanketQuoteDetailPage() {
                   quote.status === s ? STATUS_STYLE[s] + ' ring-1 ring-current' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
                 }`}
               >
-                {s}
+                {STATUS_LABEL[s]}
               </button>
             ))}
           </div>
         </div>
 
-        {/* 공급가액 */}
+        {/* Supply amount */}
         <div className="bg-blue-50/60 rounded-lg border border-blue-100 p-4">
-          <p className="text-xs text-gray-500 mb-1">공급가액</p>
-          <p className="text-xl font-bold text-blue-700 tabular-nums">{fmt(quote.sale_amount)}원</p>
+          <p className="text-xs text-gray-500 mb-1">Supply Amount</p>
+          <p className="text-xl font-bold text-blue-700 tabular-nums">{fmt(quote.sale_amount)} KRW</p>
         </div>
 
-        {/* 매출(VAT) */}
+        {/* Sales (VAT) */}
         <div className="bg-blue-50/60 rounded-lg border border-blue-100 p-4">
-          <p className="text-xs text-gray-500 mb-1">매출 (VAT 포함)</p>
-          <p className="text-xl font-bold text-blue-700 tabular-nums">{fmt(saleVat)}원</p>
+          <p className="text-xs text-gray-500 mb-1">Sales (VAT incl.)</p>
+          <p className="text-xl font-bold text-blue-700 tabular-nums">{fmt(saleVat)} KRW</p>
         </div>
       </div>
 
-      {/* 견적 정보 */}
+      {/* Quote info */}
       <div className="bg-white rounded-lg border border-gray-200">
         <div className="px-5 py-3.5 border-b border-gray-200 flex items-center gap-2">
           <span className="w-1 h-4 rounded-full flex-shrink-0 bg-[#014A99]" />
-          <h2 className="font-semibold text-gray-800 text-sm">견적 정보</h2>
+          <h2 className="font-semibold text-gray-800 text-sm">Quote Info</h2>
         </div>
         <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {editing ? (
             <>
-              <InfoFieldEdit label="발주의뢰처">
+              <InfoFieldEdit label="Requesting Party">
                 <select
                   value={vendorMode === 'new' ? '__new__' : (editData.customer_name ?? '')}
                   onChange={e => {
@@ -242,68 +246,68 @@ export default function FireBlanketQuoteDetailPage() {
                   }}
                   className={INPUT_CLS + ' cursor-pointer'}
                 >
-                  <option value="">-- 거래처 선택 --</option>
+                  <option value="">-- Select Vendor --</option>
                   {customers.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-                  <option value="__new__">직접입력 (신규 업체)</option>
+                  <option value="__new__">Enter Manually (New Vendor)</option>
                 </select>
                 {vendorMode === 'new' && (
                   <input
                     value={editData.customer_name ?? ''}
                     onChange={e => setEditData(p => ({ ...p, customer_name: e.target.value }))}
-                    placeholder="신규 업체명 입력"
+                    placeholder="Enter new vendor name"
                     className={INPUT_CLS + ' mt-2'}
                   />
                 )}
               </InfoFieldEdit>
-              <InfoFieldEdit label="현장명">
+              <InfoFieldEdit label="Project">
                 <input value={editData.project ?? ''} onChange={e => setEditData(p => ({ ...p, project: e.target.value }))} className={INPUT_CLS} />
               </InfoFieldEdit>
-              <InfoFieldEdit label="견적일">
+              <InfoFieldEdit label="Quote Date">
                 <input type="date" value={editData.order_date ?? ''} onChange={e => setEditData(p => ({ ...p, order_date: e.target.value }))} className={INPUT_CLS} />
               </InfoFieldEdit>
-              <InfoFieldEdit label="납품희망일">
+              <InfoFieldEdit label="Requested Delivery Date">
                 <input type="date" value={editData.delivery_date ?? ''} onChange={e => setEditData(p => ({ ...p, delivery_date: e.target.value }))} className={INPUT_CLS} />
               </InfoFieldEdit>
-              <InfoFieldEdit label="작성자">
+              <InfoFieldEdit label="Author">
                 <select value={editData.author ?? ''} onChange={e => setEditData(p => ({ ...p, author: e.target.value }))} className={INPUT_CLS}>
-                  <option value="">-- 선택 --</option>
+                  <option value="">-- Select --</option>
                   {['이주헌', '이주선', '이주송', '이민수'].map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
               </InfoFieldEdit>
-              <InfoFieldEdit label="납품처">
+              <InfoFieldEdit label="Delivery Recipient">
                 <input value={editData.delivery_dest ?? ''} onChange={e => setEditData(p => ({ ...p, delivery_dest: e.target.value }))} className={INPUT_CLS} />
               </InfoFieldEdit>
-              <InfoFieldEdit label="인수자">
+              <InfoFieldEdit label="Contact Person">
                 <input value={editData.contact_name ?? ''} onChange={e => setEditData(p => ({ ...p, contact_name: e.target.value }))} className={INPUT_CLS} />
               </InfoFieldEdit>
-              <InfoFieldEdit label="인수자 연락처">
+              <InfoFieldEdit label="Contact Phone">
                 <input value={editData.contact_phone ?? ''} onChange={e => setEditData(p => ({ ...p, contact_phone: e.target.value }))} className={INPUT_CLS} />
               </InfoFieldEdit>
-              <InfoFieldEdit label="납품장소">
+              <InfoFieldEdit label="Delivery Location">
                 <input value={editData.delivery_location ?? ''} onChange={e => setEditData(p => ({ ...p, delivery_location: e.target.value }))} className={INPUT_CLS} />
               </InfoFieldEdit>
-              <InfoFieldEdit label="주소">
+              <InfoFieldEdit label="Address">
                 <input value={editData.address ?? ''} onChange={e => setEditData(p => ({ ...p, address: e.target.value }))} className={INPUT_CLS} />
               </InfoFieldEdit>
-              <InfoFieldEdit label="비고" className="col-span-2">
+              <InfoFieldEdit label="Notes" className="col-span-2">
                 <textarea value={editData.notes ?? ''} onChange={e => setEditData(p => ({ ...p, notes: e.target.value }))} rows={3} className={INPUT_CLS + ' resize-y'} />
               </InfoFieldEdit>
             </>
           ) : (
             <>
-              <InfoField label="발주의뢰처" value={quote.customer_name} />
-              <InfoField label="현장명" value={quote.project} />
-              <InfoField label="견적일" value={quote.order_date} />
-              <InfoField label="납품희망일" value={quote.delivery_date} />
-              <InfoField label="작성자" value={quote.author} />
-              <InfoField label="납품처" value={quote.delivery_dest} />
-              <InfoField label="인수자" value={quote.contact_name} />
-              <InfoField label="인수자 연락처" value={quote.contact_phone} />
-              <InfoField label="납품장소" value={quote.delivery_location} />
-              <InfoField label="주소" value={quote.address} />
+              <InfoField label="Requesting Party" value={quote.customer_name} />
+              <InfoField label="Project" value={quote.project} />
+              <InfoField label="Quote Date" value={quote.order_date} />
+              <InfoField label="Requested Delivery Date" value={quote.delivery_date} />
+              <InfoField label="Author" value={quote.author} />
+              <InfoField label="Delivery Recipient" value={quote.delivery_dest} />
+              <InfoField label="Contact Person" value={quote.contact_name} />
+              <InfoField label="Contact Phone" value={quote.contact_phone} />
+              <InfoField label="Delivery Location" value={quote.delivery_location} />
+              <InfoField label="Address" value={quote.address} />
               {quote.notes && (
                 <div className="col-span-2">
-                  <p className="text-xs font-medium text-gray-500 mb-1">비고</p>
+                  <p className="text-xs font-medium text-gray-500 mb-1">Notes</p>
                   <p className="text-sm text-gray-700 whitespace-pre-line">{quote.notes}</p>
                 </div>
               )}
@@ -312,7 +316,7 @@ export default function FireBlanketQuoteDetailPage() {
         </div>
       </div>
 
-      {/* 첨부파일 */}
+      {/* Attachments */}
       {(() => {
         const effectiveUrls = (quote.file_urls && quote.file_urls.length > 0)
           ? quote.file_urls
@@ -322,7 +326,7 @@ export default function FireBlanketQuoteDetailPage() {
           <div className="bg-white rounded-lg border border-gray-200">
             <div className="px-5 py-3.5 border-b border-gray-200 flex items-center gap-2">
               <span className="w-1 h-4 rounded-full flex-shrink-0 bg-[#014A99]" />
-              <h2 className="font-semibold text-gray-800 text-sm">첨부파일 <span className="text-gray-400 font-normal text-xs">({effectiveUrls.length}개)</span></h2>
+              <h2 className="font-semibold text-gray-800 text-sm">Attachments <span className="text-gray-400 font-normal text-xs">({effectiveUrls.length})</span></h2>
             </div>
             <div className="p-5">
               <div className="flex flex-wrap gap-3">
@@ -338,7 +342,7 @@ export default function FireBlanketQuoteDetailPage() {
                           <span className="text-xs text-red-500 font-medium">PDF</span>
                         </div>
                       ) : (
-                        <img src={url} alt={`첨부 ${i + 1}`} className="w-24 h-24 rounded-lg object-cover border border-gray-200 hover:opacity-80 transition-opacity cursor-pointer" />
+                        <img src={url} alt={`Attachment ${i + 1}`} className="w-24 h-24 rounded-lg object-cover border border-gray-200 hover:opacity-80 transition-opacity cursor-pointer" />
                       )}
                     </a>
                   )
@@ -349,7 +353,7 @@ export default function FireBlanketQuoteDetailPage() {
         )
       })()}
 
-      {/* 품목 목록 */}
+      {/* Item list */}
       {editing ? (
         <FireBlanketItemsTable
           items={editItems}
@@ -363,19 +367,19 @@ export default function FireBlanketQuoteDetailPage() {
         <div className="bg-white rounded-lg border border-gray-200">
           <div className="px-5 py-3.5 border-b border-gray-200 flex items-center gap-2">
             <span className="w-1 h-4 rounded-full flex-shrink-0 bg-[#014A99]" />
-            <h2 className="font-semibold text-gray-800 text-sm">품목 목록</h2>
+            <h2 className="font-semibold text-gray-800 text-sm">Item List</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[600px]">
               <thead className="bg-gray-50 text-xs text-gray-500 border-b border-gray-200">
                 <tr>
-                  <th className="px-4 py-2.5 text-left">제조사</th>
-                  <th className="px-4 py-2.5 text-left">품명</th>
-                  <th className="px-4 py-2.5 text-left">규격</th>
-                  <th className="px-4 py-2.5 text-right">수량 (롤)</th>
-                  <th className="px-4 py-2.5 text-right">단가</th>
-                  <th className="px-4 py-2.5 text-right">금액</th>
-                  <th className="px-4 py-2.5 text-left">비고</th>
+                  <th className="px-4 py-2.5 text-left">Manufacturer</th>
+                  <th className="px-4 py-2.5 text-left">Item Name</th>
+                  <th className="px-4 py-2.5 text-left">Spec</th>
+                  <th className="px-4 py-2.5 text-right">Qty (rolls)</th>
+                  <th className="px-4 py-2.5 text-right">Unit Price</th>
+                  <th className="px-4 py-2.5 text-right">Amount</th>
+                  <th className="px-4 py-2.5 text-left">Note</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -397,7 +401,7 @@ export default function FireBlanketQuoteDetailPage() {
               {quote.sale_amount > 0 && (
                 <tfoot className="bg-gray-50 border-t border-gray-200">
                   <tr className="text-xs font-semibold text-gray-700">
-                    <td colSpan={5} className="px-4 py-3 text-right">공급가액 합계</td>
+                    <td colSpan={5} className="px-4 py-3 text-right">Supply Amount Total</td>
                     <td className="px-4 py-3 text-right tabular-nums">{fmt(quote.sale_amount)}</td>
                     <td />
                   </tr>
@@ -408,19 +412,19 @@ export default function FireBlanketQuoteDetailPage() {
         </div>
       )}
 
-      {/* 상태 이력 */}
+      {/* Status history */}
       {Array.isArray(quote.status_history) && quote.status_history.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200">
           <div className="px-5 py-3.5 border-b border-gray-200 flex items-center gap-2">
             <span className="w-1 h-4 rounded-full flex-shrink-0 bg-gray-300" />
-            <h2 className="font-semibold text-gray-800 text-sm">상태 이력</h2>
+            <h2 className="font-semibold text-gray-800 text-sm">Status History</h2>
           </div>
           <div className="p-5">
             <ol className="space-y-2">
               {[...quote.status_history].reverse().map((h, i) => (
                 <li key={i} className="flex items-center gap-3 text-sm">
                   <span className="w-2 h-2 rounded-full bg-gray-300 flex-shrink-0" />
-                  <span className={`font-medium ${STATUS_STYLE[h.status as QuoteStatus] ?? 'text-gray-600'} px-2 py-0.5 rounded-full text-xs`}>{h.status}</span>
+                  <span className={`font-medium ${STATUS_STYLE[h.status as QuoteStatus] ?? 'text-gray-600'} px-2 py-0.5 rounded-full text-xs`}>{STATUS_LABEL[h.status as QuoteStatus] ?? h.status}</span>
                   <span className="text-gray-400 text-xs">{new Date(h.changed_at).toLocaleString('ko-KR')}</span>
                 </li>
               ))}
@@ -429,18 +433,18 @@ export default function FireBlanketQuoteDetailPage() {
         </div>
       )}
 
-      {/* 삭제 확인 모달 */}
+      {/* Delete confirmation modal */}
       {showDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4">
-            <h2 className="font-bold text-gray-900 text-lg mb-2">견적서 삭제</h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-2">Delete Quote</h2>
             <p className="text-sm text-gray-600 mb-1">
               <span className="font-semibold">{quote.customer_name}</span>{quote.project ? ` · ${quote.project}` : ''}
             </p>
-            <p className="text-sm text-gray-500 mb-6">이 견적서를 삭제하시겠습니까? 되돌릴 수 없습니다.</p>
+            <p className="text-sm text-gray-500 mb-6">Delete this quote? This cannot be undone.</p>
             <div className="flex justify-end gap-3">
-              <button onClick={() => setShowDelete(false)} className="px-4 py-2 text-sm text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer">취소</button>
-              <button onClick={doDelete} className="px-5 py-2 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-md cursor-pointer">삭제</button>
+              <button onClick={() => setShowDelete(false)} className="px-4 py-2 text-sm text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer">Cancel</button>
+              <button onClick={doDelete} className="px-5 py-2 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-md cursor-pointer">Delete</button>
             </div>
           </div>
         </div>
