@@ -133,7 +133,7 @@ export default function ParserPage() {
         deliveryDest: h.companyName ?? '',
       }))
     } catch (e) {
-      setError(e instanceof Error ? e.message : '오류가 발생했습니다.')
+      setError(e instanceof Error ? e.message : 'An error occurred.')
     } finally {
       setLoading(false)
     }
@@ -170,18 +170,18 @@ export default function ParserPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      toast.success('수주서가 저장되었습니다.')
+      toast.success('Order saved.')
       if (data.ecount === 'ok') {
-        toast.success('ECOUNT 주문서 등록 완료', { autoClose: 3000 })
+        toast.success('ECOUNT sale order registered', { autoClose: 3000 })
       } else if (data.ecount === 'skipped') {
-        toast.info('ECOUNT 품목코드가 없어 주문서 등록을 건너뛰었습니다.')
+        toast.info('Skipped ECOUNT sale order registration — no matching item code.')
       } else {
-        toast.error(`ECOUNT 주문서 등록 실패 (수주서는 저장됨)${data.ecountError ? `\n${data.ecountError}` : ''}`, { autoClose: false })
+        toast.error(`ECOUNT sale order registration failed (order was still saved)${data.ecountError ? `\n${data.ecountError}` : ''}`, { autoClose: false })
       }
       setShowModal(false)
       router.push(`/dashboard/orders/${data.id}`)
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : '오류가 발생했습니다.')
+      toast.error(e instanceof Error ? e.message : 'An error occurred.')
     } finally {
       setSubmitting(false)
     }
@@ -192,17 +192,17 @@ export default function ParserPage() {
   return (
     <div className="w-full space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-gray-900">수주서 파싱</h1>
-        <p className="text-sm text-gray-500 mt-1">발주서 이미지를 업로드하면 OCR로 품목을 자동 추출합니다. 결과 확인 후 수정하여 사용하세요.</p>
+        <h1 className="text-xl font-bold text-gray-900">Order Parser</h1>
+        <p className="text-sm text-gray-500 mt-1">Upload an order image to automatically extract items via OCR. Review and edit the results before use.</p>
       </div>
 
-      {/* Step 1: 품목 유형 선택 */}
+      {/* Step 1: item type selection */}
       <div className="flex items-center gap-6">
-        <p className="text-sm font-medium text-gray-700 shrink-0">품목 유형</p>
+        <p className="text-sm font-medium text-gray-700 shrink-0">Item Type</p>
         <div className="flex gap-5">
           {([
-            { value: 'pipe', label: '배관', disabled: false },
-            { value: 'duct', label: '사각덕트', disabled: true },
+            { value: 'pipe', label: 'Pipe', disabled: false },
+            { value: 'duct', label: 'Rectangular Duct', disabled: true },
           ] as const).map(({ value, label, disabled }) => (
             <label
               key={value}
@@ -218,16 +218,16 @@ export default function ParserPage() {
                 className="accent-[#014A99]"
               />
               {label}
-              {disabled && <span className="text-xs text-gray-400">(준비 중)</span>}
+              {disabled && <span className="text-xs text-gray-400">(Coming soon)</span>}
             </label>
           ))}
         </div>
       </div>
 
-      {/* Step 2: 업체 선택 */}
+      {/* Step 2: vendor selection */}
       {orderType === 'pipe' && (
         <div className="flex items-center gap-3">
-          <label className="text-sm font-medium text-gray-700 shrink-0">업체 선택</label>
+          <label className="text-sm font-medium text-gray-700 shrink-0">Select Vendor</label>
           <select
             value={vendor}
             onChange={e => {
@@ -239,30 +239,30 @@ export default function ParserPage() {
             }}
             className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#014A99] bg-white"
           >
-            <option value="" disabled>-- 업체를 선택하세요 --</option>
+            <option value="" disabled>-- Select a vendor --</option>
             {customers.map(c => (
               <option key={c.id} value={c.name}>{c.name}</option>
             ))}
           </select>
           {vendorChosen && vendor && (
             <span className="text-xs text-green-600 font-medium">
-              매핑 적용됨
-              {pct != null && <span className="ml-2 px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-600">협가 × {pct}%</span>}
+              Mapping applied
+              {pct != null && <span className="ml-2 px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-600">Negotiated price × {pct}%</span>}
             </span>
           )}
-          {vendorChosen && !vendor && <span className="text-xs text-gray-400">품목명 자동 매핑 없음</span>}
+          {vendorChosen && !vendor && <span className="text-xs text-gray-400">No automatic item-name mapping</span>}
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Step 3: 업로드 영역 (업체 선택 후 표시) */}
+        {/* Step 3: upload area (shown after vendor selection) */}
         <div className="space-y-4">
           {!vendorChosen ? (
             <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center text-gray-300">
               <svg className="w-10 h-10 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <p className="text-sm">업체 선택 후 업로드할 수 있습니다</p>
+              <p className="text-sm">Select a vendor before uploading</p>
             </div>
           ) : (
           <div
@@ -276,15 +276,15 @@ export default function ParserPage() {
               <div className="space-y-2">
                 {preview && <img src={preview} alt="preview" className="max-h-56 mx-auto rounded-lg object-contain" />}
                 <p className="text-sm font-medium text-gray-700">{file.name}</p>
-                <p className="text-xs text-gray-400">{(file.size / 1024).toFixed(1)} KB — 클릭하여 변경</p>
+                <p className="text-xs text-gray-400">{(file.size / 1024).toFixed(1)} KB — Click to change</p>
               </div>
             ) : (
               <div className="space-y-2 text-gray-400">
                 <svg className="w-10 h-10 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <p className="text-sm">이미지 또는 PDF 드래그 또는 클릭</p>
-                <p className="text-xs">JPG · PNG · PDF 지원</p>
+                <p className="text-sm">Drag or click to upload an image or PDF</p>
+                <p className="text-xs">JPG · PNG · PDF supported</p>
               </div>
             )}
           </div>
@@ -297,7 +297,7 @@ export default function ParserPage() {
               className="w-full py-3 rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#014A99' }}
             >
-              {loading ? 'OCR 처리 중...' : 'OCR 파싱 시작'}
+              {loading ? 'Processing OCR...' : 'Start OCR Parsing'}
             </button>
           )}
 
@@ -306,53 +306,53 @@ export default function ParserPage() {
           )}
         </div>
 
-        {/* 발주서 정보 — 편집 가능 */}
+        {/* Order info — editable */}
         {parsed && (
           <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-2.5 text-sm">
-            <p className="font-semibold text-gray-700 mb-3">발주서 정보</p>
+            <p className="font-semibold text-gray-700 mb-3">Order Info</p>
             {parsed.header.serialNo && (
               <div className="flex gap-2 items-center">
-                <span className="text-gray-400 w-20 shrink-0 text-xs">일련번호</span>
+                <span className="text-gray-400 w-20 shrink-0 text-xs">Serial No.</span>
                 <span className="text-gray-600 text-xs">{parsed.header.serialNo}</span>
               </div>
             )}
             {parsed.header.businessNo && (
               <div className="flex gap-2 items-center">
-                <span className="text-gray-400 w-20 shrink-0 text-xs">사업자번호</span>
+                <span className="text-gray-400 w-20 shrink-0 text-xs">Business No.</span>
                 <span className="text-gray-600 text-xs">{parsed.header.businessNo}</span>
               </div>
             )}
             <div className="flex gap-2 items-center">
-              <span className="text-gray-400 w-20 shrink-0 text-xs">작성자 <span className="text-red-500">*</span></span>
+              <span className="text-gray-400 w-20 shrink-0 text-xs">Author <span className="text-red-500">*</span></span>
               <select
                 value={form.author}
                 onChange={e => setForm(p => ({ ...p, author: e.target.value }))}
                 className="flex-1 bg-white border border-gray-200 rounded-md px-2 py-1 text-xs focus:outline-none focus:border-[#014A99] text-gray-800 cursor-pointer"
               >
-                <option value="">-- 선택 --</option>
+                <option value="">-- Select --</option>
                 {['이주헌', '이주선', '이주송', '이민수'].map(n => <option key={n} value={n}>{n}</option>)}
               </select>
             </div>
             <div className="flex gap-2 items-center">
-              <span className="text-gray-400 w-20 shrink-0 text-xs">발주의뢰처</span>
+              <span className="text-gray-400 w-20 shrink-0 text-xs">Requesting Party</span>
               <input
                 type="text"
-                placeholder="의뢰 회사명"
+                placeholder="Requesting company name"
                 value={form.orderClient}
                 onChange={e => setForm(p => ({ ...p, orderClient: e.target.value }))}
                 className="flex-1 bg-white border border-gray-200 rounded-md px-2 py-1 text-xs focus:outline-none focus:border-[#014A99] text-gray-800"
               />
             </div>
             {[
-              { label: '수주일', key: 'orderDate' as const, type: 'date' },
-              { label: '납품처', key: 'deliveryDest' as const },
-              { label: '인수자', key: 'contactName' as const },
-              { label: '연락처', key: 'contactPhone' as const },
-              { label: '납기일자', key: 'deliveryDate' as const, type: 'date' },
-              { label: '현장명', key: 'project' as const },
-              { label: '납품장소', key: 'deliveryLocation' as const },
-              { label: '주소', key: 'address' as const },
-              { label: '비고', key: 'notes' as const },
+              { label: 'Order Date', key: 'orderDate' as const, type: 'date' },
+              { label: 'Delivery Recipient', key: 'deliveryDest' as const },
+              { label: 'Contact Person', key: 'contactName' as const },
+              { label: 'Phone', key: 'contactPhone' as const },
+              { label: 'Delivery Date', key: 'deliveryDate' as const, type: 'date' },
+              { label: 'Project', key: 'project' as const },
+              { label: 'Delivery Location', key: 'deliveryLocation' as const },
+              { label: 'Address', key: 'address' as const },
+              { label: 'Notes', key: 'notes' as const },
             ].map(({ label, key, type }) => (
               <div key={key} className="flex gap-2 items-center">
                 <span className="text-gray-400 w-20 shrink-0 text-xs">{label}</span>
@@ -368,7 +368,7 @@ export default function ParserPage() {
         )}
       </div>
 
-      {/* 결과 탭 */}
+      {/* Result tabs */}
       {hasResult && (
         <div className="space-y-3">
           <div className="flex gap-1 border-b border-gray-200">
@@ -378,7 +378,7 @@ export default function ParserPage() {
                 onClick={() => setTab(t)}
                 className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === t ? 'border-[#014A99] text-[#014A99]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
               >
-                {t === 'parsed' ? `품목 목록 (${items.length}건)` : 'OCR 원문'}
+                {t === 'parsed' ? `Item List (${items.length})` : 'OCR Raw Text'}
               </button>
             ))}
           </div>
@@ -389,7 +389,7 @@ export default function ParserPage() {
                 <svg className="w-4 h-4 mt-0.5 shrink-0 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                 </svg>
-                <span>OCR 자동 추출 결과입니다. 품목명·규격·수량을 원본 발주서와 반드시 대조 후 사용하세요.</span>
+                <span>These items were extracted automatically by OCR. Be sure to cross-check the item names, specs, and quantities against the original order before use.</span>
               </div>
             <div className="rounded-xl border border-gray-200 overflow-hidden">
               <PipeItemsTable
@@ -407,7 +407,7 @@ export default function ParserPage() {
                       className="px-6 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
                       style={{ backgroundColor: '#014A99' }}
                     >
-                      수주서 작성하기
+                      Create Order
                     </button>
                   ) : undefined
                 }
@@ -425,14 +425,14 @@ export default function ParserPage() {
         </div>
       )}
 
-      {/* 최종 확인 모달 */}
+      {/* Final confirmation modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-start justify-between">
               <div>
-                <h2 className="text-base font-bold text-gray-900">작성 전 최종 확인</h2>
-                <p className="text-xs text-gray-400 mt-0.5">내용을 확인하고 이상이 없으면 작성하기를 눌러주세요.</p>
+                <h2 className="text-base font-bold text-gray-900">Final Confirmation</h2>
+                <p className="text-xs text-gray-400 mt-0.5">Review the details, then click Create when ready.</p>
               </div>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 mt-0.5">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -447,36 +447,36 @@ export default function ParserPage() {
                   <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                   </svg>
-                  {!form.author.trim() ? '발주서 정보에서 작성자를 입력해주세요.' : '발주서 정보에서 발주의뢰처를 입력해주세요.'}
+                  {!form.author.trim() ? 'Please enter the author in the order info.' : 'Please enter the requesting party in the order info.'}
                 </div>
               )}
 
               <div className="divide-y divide-gray-100">
                 {[
-                  { label: '작성자', value: form.author, required: true },
-                  { label: '발주의뢰처', value: form.orderClient, required: true },
-                  { label: '수주일', value: form.orderDate },
-                  { label: '납품희망일', value: form.deliveryDate },
-                  { label: '납품처', value: form.deliveryDest },
-                  { label: '현장명', value: form.project },
-                  { label: '납품장소', value: form.deliveryLocation },
-                  { label: '주소', value: form.address },
-                  { label: '인수자', value: form.contactName },
-                  { label: '연락처', value: form.contactPhone },
-                  { label: '비고', value: form.notes },
+                  { label: 'Author', value: form.author, required: true },
+                  { label: 'Requesting Party', value: form.orderClient, required: true },
+                  { label: 'Order Date', value: form.orderDate },
+                  { label: 'Requested Delivery Date', value: form.deliveryDate },
+                  { label: 'Delivery Recipient', value: form.deliveryDest },
+                  { label: 'Project', value: form.project },
+                  { label: 'Delivery Location', value: form.deliveryLocation },
+                  { label: 'Address', value: form.address },
+                  { label: 'Contact Person', value: form.contactName },
+                  { label: 'Phone', value: form.contactPhone },
+                  { label: 'Notes', value: form.notes },
                 ].map(({ label, value, required = false }) => (
                   <div key={label} className="flex gap-3 py-2.5">
                     <span className="text-gray-400 text-xs w-20 shrink-0 mt-0.5">
                       {label}{required && <span className="text-red-500 ml-0.5">*</span>}
                     </span>
                     <span className={`text-xs flex-1 leading-relaxed ${!value && required ? 'text-red-400 font-medium' : value ? 'text-gray-800' : 'text-gray-300'}`}>
-                      {value || (required ? '미입력' : '—')}
+                      {value || (required ? 'Not entered' : '—')}
                     </span>
                   </div>
                 ))}
                 <div className="flex gap-3 py-2.5">
-                  <span className="text-gray-400 text-xs w-20 shrink-0">품목</span>
-                  <span className="text-xs text-gray-800 font-medium">{items.length}건</span>
+                  <span className="text-gray-400 text-xs w-20 shrink-0">Items</span>
+                  <span className="text-xs text-gray-800 font-medium">{items.length}</span>
                 </div>
               </div>
             </div>
@@ -486,7 +486,7 @@ export default function ParserPage() {
                 onClick={() => setShowModal(false)}
                 className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
               >
-                돌아가기
+                Back
               </button>
               <button
                 onClick={handleCreateOrder}
@@ -494,7 +494,7 @@ export default function ParserPage() {
                 className="px-5 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 style={{ backgroundColor: '#014A99' }}
               >
-                {submitting ? '작성 중...' : '작성하기'}
+                {submitting ? 'Creating...' : 'Create'}
               </button>
             </div>
           </div>
