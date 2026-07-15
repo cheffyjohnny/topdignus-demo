@@ -94,7 +94,7 @@ export default function NewGroupOrderPage() {
         deliveryLocation, address, deliveryDest, notes,
         pipeItems, ductItems, insul50Qty, insul25Qty, activeTab,
       }))
-      toast.success('임시저장되었습니다.')
+      toast.success('Draft saved.')
     } catch {}
   }
 
@@ -122,7 +122,7 @@ export default function NewGroupOrderPage() {
       if (d.activeTab) setActiveTab(d.activeTab)
       setHasDraft(false)
       localStorage.removeItem(DRAFT_KEY)
-      toast.success('임시저장 내용을 불러왔습니다.')
+      toast.success('Draft restored.')
     } catch {}
   }
 
@@ -132,19 +132,19 @@ export default function NewGroupOrderPage() {
   }
 
   async function handleSave() {
-    if (!vendor.trim()) { setError('업체를 선택해 주세요.'); return }
-    if (!author.trim()) { setError('작성자를 입력해 주세요.'); return }
-    if (!deliveryDate) { setError('납품희망일을 입력해 주세요.'); return }
+    if (!vendor.trim()) { setError('Please select a vendor.'); return }
+    if (!author.trim()) { setError('Please select the author.'); return }
+    if (!deliveryDate) { setError('Please enter the requested delivery date.'); return }
 
     const filledPipe = pipeItems.filter(it => it.name.trim() || (it as any).internalName?.trim())
     if (filledPipe.length === 0 && ductItems.length === 0) {
-      setError('배관 또는 덕트 품목을 1개 이상 입력해 주세요.'); return
+      setError('Please enter at least one pipe or duct item.'); return
     }
     if (ductItems.some(it => it.type !== '수기 금액 추가' && (it.width <= 0 || it.height <= 0))) {
-      setError('덕트 품목의 가로/세로 치수를 입력해 주세요.'); return
+      setError('Please enter width/height for the duct items.'); return
     }
     if (filledPipe.some(it => it.internalName !== '수기 금액 추가' && !it.spec?.trim())) {
-      setError('배관 품목의 규격을 모두 입력해 주세요.'); return
+      setError('Please enter the spec for all pipe items.'); return
     }
 
     setError('')
@@ -228,11 +228,11 @@ export default function NewGroupOrderPage() {
         })
       }
 
-      toast.success('그룹 수주서가 저장되었습니다.')
+      toast.success('Group order saved.')
       localStorage.removeItem(DRAFT_KEY)
       router.push(`/dashboard/orders/groups/${groupId}`)
     } catch (e: any) {
-      setError(e.message ?? '저장 중 오류가 발생했습니다.')
+      setError(e.message ?? 'An error occurred while saving.')
       setSaving(false)
     }
   }
@@ -241,22 +241,22 @@ export default function NewGroupOrderPage() {
 
   return (
     <div className="w-full space-y-5">
-      {/* 헤더 */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button onClick={() => router.push('/dashboard/orders')} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </button>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">배관 + 사각덕트 수주서 작성</h1>
-            <span className="text-xs text-gray-400">배관·덕트를 하나의 수주서로 관리합니다.</span>
+            <h1 className="text-xl font-bold text-gray-900">New Pipe + Duct Order</h1>
+            <span className="text-xs text-gray-400">Manage pipe and duct items as a single order.</span>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={saveDraft} className="px-4 py-2.5 rounded-md text-sm font-medium text-amber-600 border border-amber-300 hover:bg-amber-50 transition-colors cursor-pointer">임시저장</button>
-          <button onClick={() => router.back()} className="px-4 py-2.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">취소</button>
+          <button onClick={saveDraft} className="px-4 py-2.5 rounded-md text-sm font-medium text-amber-600 border border-amber-300 hover:bg-amber-50 transition-colors cursor-pointer">Save Draft</button>
+          <button onClick={() => router.back()} className="px-4 py-2.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
           <button onClick={() => setShowConfirm(true)} disabled={saving} className="px-5 py-2.5 rounded-md text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60 transition-colors cursor-pointer bg-purple-600">
-            저장
+            Save
           </button>
         </div>
       </div>
@@ -269,70 +269,70 @@ export default function NewGroupOrderPage() {
             <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-amber-800 font-medium">임시저장된 내용이 있습니다.</span>
+            <span className="text-amber-800 font-medium">You have a saved draft.</span>
           </div>
           <div className="flex items-center gap-4">
-            <button onClick={restoreDraft} className="text-[#014A99] text-sm font-medium hover:underline cursor-pointer">불러오기</button>
-            <button onClick={clearDraft} className="text-gray-400 text-sm hover:text-gray-600 cursor-pointer">무시</button>
+            <button onClick={restoreDraft} className="text-[#014A99] text-sm font-medium hover:underline cursor-pointer">Restore</button>
+            <button onClick={clearDraft} className="text-gray-400 text-sm hover:text-gray-600 cursor-pointer">Dismiss</button>
           </div>
         </div>
       )}
 
-      {/* 공통 정보 */}
+      {/* Common info */}
       <div className="bg-white rounded-lg border border-gray-200">
         <div className="px-5 py-3.5 border-b border-gray-200 flex items-center gap-2">
           <span className="w-1 h-4 rounded-full bg-purple-500 shrink-0" />
-          <h2 className="font-semibold text-gray-800 text-sm">공통 정보</h2>
+          <h2 className="font-semibold text-gray-800 text-sm">Common Info</h2>
         </div>
         <div className="p-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="발주의뢰처" required>
+          <Field label="Requesting Party" required>
             <select value={vendor} onChange={e => { setVendor(e.target.value); setPct(customers.find(c => c.name === e.target.value)?.sale_pct ?? null) }} className={INPUT_CLS}>
-              <option value="">-- 선택 --</option>
+              <option value="">-- Select --</option>
               {customers.map(c => <option key={c.id} value={c.name}>{c.name} ({c.sale_pct}%)</option>)}
             </select>
           </Field>
-          <Field label="현장명" required>
-            <input value={project} onChange={e => setProject(e.target.value)} placeholder="예) 강남구 논현동 공동주택" className={INPUT_CLS} />
+          <Field label="Project" required>
+            <input value={project} onChange={e => setProject(e.target.value)} placeholder="e.g. Apartment complex, Nonhyeon-dong, Gangnam-gu" className={INPUT_CLS} />
           </Field>
-          <Field label="수주일">
+          <Field label="Order Date">
             <input type="date" value={orderDate} onChange={e => setOrderDate(e.target.value)} className={INPUT_CLS} />
           </Field>
-          <Field label="납품희망일" required>
+          <Field label="Requested Delivery Date" required>
             <input type="date" value={deliveryDate} onChange={e => setDeliveryDate(e.target.value)} className={INPUT_CLS} />
           </Field>
-          <Field label="작성자" required>
+          <Field label="Author" required>
             <select value={author} onChange={e => setAuthor(e.target.value)} className={INPUT_CLS}>
-              <option value="">-- 선택 --</option>
+              <option value="">-- Select --</option>
               {['이주헌', '이주선', '이주송', '이민수'].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </Field>
-          <Field label="인수자">
-            <input value={contactName} onChange={e => setContactName(e.target.value)} placeholder="인수자 성명" className={INPUT_CLS} />
+          <Field label="Contact Person">
+            <input value={contactName} onChange={e => setContactName(e.target.value)} placeholder="Contact person's name" className={INPUT_CLS} />
           </Field>
-          <Field label="인수자 연락처">
+          <Field label="Contact Phone">
             <input value={contactPhone} onChange={e => setContactPhone(e.target.value)} placeholder="010-0000-0000" className={INPUT_CLS} />
           </Field>
-          <Field label="납품처">
-            <input value={deliveryDest} onChange={e => setDeliveryDest(e.target.value)} placeholder="납품처" className={INPUT_CLS} />
+          <Field label="Delivery Recipient">
+            <input value={deliveryDest} onChange={e => setDeliveryDest(e.target.value)} placeholder="Delivery recipient" className={INPUT_CLS} />
           </Field>
-          <Field label="납품장소">
-            <input value={deliveryLocation} onChange={e => setDeliveryLocation(e.target.value)} placeholder="납품 장소" className={INPUT_CLS} />
+          <Field label="Delivery Location">
+            <input value={deliveryLocation} onChange={e => setDeliveryLocation(e.target.value)} placeholder="Delivery location" className={INPUT_CLS} />
           </Field>
-          <Field label="주소">
-            <input value={address} onChange={e => setAddress(e.target.value)} placeholder="현장 주소" className={INPUT_CLS} />
+          <Field label="Address">
+            <input value={address} onChange={e => setAddress(e.target.value)} placeholder="Site address" className={INPUT_CLS} />
           </Field>
-          <Field label="비고" className="col-span-2">
-            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="비고" className={INPUT_CLS + ' resize-none'} />
+          <Field label="Notes" className="col-span-2">
+            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="Notes" className={INPUT_CLS + ' resize-none'} />
           </Field>
         </div>
       </div>
 
-      {/* 품목 목록 탭 */}
+      {/* Item list tabs */}
       <div className="bg-white rounded-lg border border-gray-200">
         <div className="px-5 py-3.5 border-b border-gray-200 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="w-1 h-4 rounded-full bg-purple-500 shrink-0" />
-            <h2 className="font-semibold text-gray-800 text-sm">품목 목록</h2>
+            <h2 className="font-semibold text-gray-800 text-sm">Item List</h2>
           </div>
         </div>
 
@@ -340,8 +340,8 @@ export default function NewGroupOrderPage() {
           {(['배관', '덕트'] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
               className={`px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer ${activeTab === tab ? (tab === '배관' ? 'border-[#014A99] text-[#014A99]' : 'border-orange-500 text-orange-600') : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
-              <span className={`text-xs px-2 py-0.5 rounded-full mr-1.5 ${tab === '배관' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-600'}`}>{tab}</span>
-              {tab === '배관' ? pipeItems.filter(it => it.name.trim() || (it as any).internalName?.trim()).length : ductItems.length}건
+              <span className={`text-xs px-2 py-0.5 rounded-full mr-1.5 ${tab === '배관' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-600'}`}>{tab === '배관' ? 'Pipe' : 'Duct'}</span>
+              {tab === '배관' ? pipeItems.filter(it => it.name.trim() || (it as any).internalName?.trim()).length : ductItems.length}
             </button>
           ))}
         </div>
@@ -366,8 +366,8 @@ export default function NewGroupOrderPage() {
             />
             {pipeSaleTotal > 0 && (
               <div className="border-t border-gray-100 px-4 py-3 flex items-center justify-end gap-2 bg-gray-50/50">
-                <span className="text-xs text-gray-400">합계</span>
-                <span className="text-sm font-bold text-gray-800">{pipeSaleTotal.toLocaleString()}원</span>
+                <span className="text-xs text-gray-400">Total</span>
+                <span className="text-sm font-bold text-gray-800">{pipeSaleTotal.toLocaleString()} KRW</span>
               </div>
             )}
           </>
@@ -387,34 +387,34 @@ export default function NewGroupOrderPage() {
         )}
       </div>
 
-      {/* 하단 버튼 */}
+      {/* Bottom buttons */}
       <div className="flex items-center justify-end gap-3 pb-8">
         {error && <span className="text-sm text-red-500">{error}</span>}
-        <button onClick={() => router.back()} className="px-5 py-2.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">취소</button>
+        <button onClick={() => router.back()} className="px-5 py-2.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
         <button onClick={() => setShowConfirm(true)} disabled={saving} className="px-6 py-2.5 rounded-md text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60 transition-colors cursor-pointer bg-purple-600">
-          저장
+          Save
         </button>
       </div>
 
-      {/* 저장 확인 모달 */}
+      {/* Save confirmation modal */}
       {showConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4">
-            <h2 className="font-bold text-gray-900 text-lg mb-1">수주서 저장</h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-1">Save Order</h2>
             <p className="text-sm text-gray-600 mb-5">
               {vendor && <><span className="font-medium">{vendor}</span> · </>}
-              {project ? <span className="font-medium">{project}</span> : <span className="text-gray-400">현장명 없음</span>}
+              {project ? <span className="font-medium">{project}</span> : <span className="text-gray-400">No project name</span>}
               <br />
-              배관 {filledPipeForConfirm.length}건 · 덕트 {ductItems.length}건 — 저장하시겠습니까?
+              Pipe {filledPipeForConfirm.length} item(s) · Duct {ductItems.length} item(s) — Save this order?
             </p>
             <div className="flex gap-3 justify-end">
-              <button onClick={() => setShowConfirm(false)} className="px-4 py-2 text-sm text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer">취소</button>
+              <button onClick={() => setShowConfirm(false)} className="px-4 py-2 text-sm text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer">Cancel</button>
               <button
                 onClick={() => { setShowConfirm(false); handleSave() }}
                 disabled={saving}
                 className="px-5 py-2 text-sm font-semibold text-white rounded-md hover:opacity-90 disabled:opacity-60 cursor-pointer bg-purple-600"
               >
-                {saving ? '저장 중...' : '확인'}
+                {saving ? 'Saving...' : 'Confirm'}
               </button>
             </div>
           </div>
