@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { statusLabel, ORDER_STATUS_LABEL } from '@/lib/status-labels'
 
 type OrderStatus = '수주' | '발주' | '납품' | '취소'
 type StatusTab = '전체' | OrderStatus
@@ -25,6 +26,7 @@ interface FireBlanketOrder {
 }
 
 const STATUS_TABS: StatusTab[] = ['전체', '수주', '발주', '납품', '취소']
+const STATUS_TAB_LABEL: Record<StatusTab, string> = { '전체': 'All', '수주': 'Ordered', '발주': 'Purchased', '납품': 'Delivered', '취소': 'Cancelled' }
 const STATUS_COLORS: Record<OrderStatus, string> = {
   '수주': 'bg-blue-50 text-blue-700 border-blue-200',
   '발주': 'bg-amber-50 text-amber-700 border-amber-200',
@@ -83,8 +85,8 @@ export default function FireBlanketOrdersPage() {
     <div className="w-full">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">방화포 수주현황</h1>
-          <p className="text-sm text-gray-400 mt-0.5">방화포 수주서 목록</p>
+          <h1 className="text-xl font-bold text-gray-900">Fire Blanket Order List</h1>
+          <p className="text-sm text-gray-400 mt-0.5">List of fire blanket orders</p>
         </div>
         <button
           onClick={() => router.push('/dashboard/fire-blanket-orders/new')}
@@ -93,11 +95,11 @@ export default function FireBlanketOrdersPage() {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          방화포 수주서 작성
+          New Fire Blanket Order
         </button>
       </div>
 
-      {/* 상태 탭 */}
+      {/* Status tabs */}
       <div className="flex gap-1 mb-4">
         {STATUS_TABS.map(tab => (
           <button
@@ -109,42 +111,42 @@ export default function FireBlanketOrdersPage() {
                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
             }`}
           >
-            {tab}
+            {STATUS_TAB_LABEL[tab]}
             {counts[tab] ? <span className="ml-1 text-xs opacity-70">({counts[tab]})</span> : null}
           </button>
         ))}
       </div>
 
       {loading ? (
-        <div className="text-center py-20 text-gray-400 text-sm">불러오는 중...</div>
+        <div className="text-center py-20 text-gray-400 text-sm">Loading...</div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-20 text-gray-400 text-sm">수주서가 없습니다.</div>
+        <div className="text-center py-20 text-gray-400 text-sm">No orders.</div>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-gray-200">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="px-4 py-3 text-left font-medium text-gray-500 whitespace-nowrap">수주서 번호</th>
+                <th className="px-4 py-3 text-left font-medium text-gray-500 whitespace-nowrap">Order No.</th>
                 <th
                   className="px-4 py-3 text-left font-medium text-gray-500 whitespace-nowrap cursor-pointer hover:text-gray-700"
                   onClick={() => toggleSort('order_date')}
                 >
-                  수주일 <SortIcon col="order_date" />
+                  Order Date <SortIcon col="order_date" />
                 </th>
                 <th
                   className="px-4 py-3 text-left font-medium text-gray-500 whitespace-nowrap cursor-pointer hover:text-gray-700"
                   onClick={() => toggleSort('delivery_date')}
                 >
-                  납품일 <SortIcon col="delivery_date" />
+                  Delivery Date <SortIcon col="delivery_date" />
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500 whitespace-nowrap">발주의뢰처</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500 whitespace-nowrap">현장명</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500 whitespace-nowrap">제조사</th>
-                <th className="px-4 py-3 text-right font-medium text-gray-500 whitespace-nowrap">공급가액</th>
-                <th className="px-4 py-3 text-right font-medium text-gray-500 whitespace-nowrap">매출(VAT)</th>
-                <th className="px-4 py-3 text-right font-medium text-gray-500 whitespace-nowrap">매입(VAT)</th>
-                <th className="px-4 py-3 text-right font-medium text-gray-500 whitespace-nowrap">영업이익</th>
-                <th className="px-4 py-3 text-center font-medium text-gray-500 whitespace-nowrap">상태</th>
+                <th className="px-4 py-3 text-left font-medium text-gray-500 whitespace-nowrap">Requesting Party</th>
+                <th className="px-4 py-3 text-left font-medium text-gray-500 whitespace-nowrap">Project</th>
+                <th className="px-4 py-3 text-left font-medium text-gray-500 whitespace-nowrap">Manufacturer</th>
+                <th className="px-4 py-3 text-right font-medium text-gray-500 whitespace-nowrap">Supply Amount</th>
+                <th className="px-4 py-3 text-right font-medium text-gray-500 whitespace-nowrap">Sales (VAT)</th>
+                <th className="px-4 py-3 text-right font-medium text-gray-500 whitespace-nowrap">Cost (VAT)</th>
+                <th className="px-4 py-3 text-right font-medium text-gray-500 whitespace-nowrap">Profit</th>
+                <th className="px-4 py-3 text-center font-medium text-gray-500 whitespace-nowrap">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -162,7 +164,7 @@ export default function FireBlanketOrdersPage() {
                     <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{fmtDate(order.order_date)}</td>
                     <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{fmtDate(order.delivery_date)}</td>
                     <td className="px-4 py-3 font-medium text-gray-800">{order.customer_name ?? '-'}</td>
-                    <td className="px-4 py-3 text-gray-600"><div className="flex items-center gap-1.5">{order.project ?? '-'}{order.no_invoice && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-400 border border-gray-200 whitespace-nowrap flex-shrink-0">계산서 미발행</span>}</div></td>
+                    <td className="px-4 py-3 text-gray-600"><div className="flex items-center gap-1.5">{order.project ?? '-'}{order.no_invoice && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-400 border border-gray-200 whitespace-nowrap flex-shrink-0">No Invoice</span>}</div></td>
                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{order.manufacturer ?? '-'}</td>
                     <td className="px-4 py-3 text-right text-gray-700">{order.no_invoice ? '—' : fmtNum(order.sale_amount)}</td>
                     <td className="px-4 py-3 text-right text-gray-700">{order.no_invoice ? '—' : fmtNum(saleVat)}</td>
@@ -172,7 +174,7 @@ export default function FireBlanketOrdersPage() {
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span className={`inline-block px-2 py-0.5 text-xs font-medium rounded-full border ${STATUS_COLORS[order.status] ?? 'bg-gray-50 text-gray-500 border-gray-200'}`}>
-                        {order.status}
+                        {statusLabel(order.status, ORDER_STATUS_LABEL)}
                       </span>
                     </td>
                   </tr>
@@ -181,7 +183,7 @@ export default function FireBlanketOrdersPage() {
             </tbody>
             <tfoot>
               <tr className="bg-gray-50 border-t border-gray-200 font-medium text-gray-700">
-                <td colSpan={6} className="px-4 py-3 text-sm text-gray-500">합계 ({filtered.length}건)</td>
+                <td colSpan={6} className="px-4 py-3 text-sm text-gray-500">Total ({filtered.length})</td>
                 <td className="px-4 py-3 text-right">{fmtNum(totalSale)}</td>
                 <td className="px-4 py-3 text-right">{fmtNum(vatOf(totalSale))}</td>
                 <td className="px-4 py-3 text-right">{fmtNum(vatOf(totalBuy))}</td>
