@@ -156,7 +156,7 @@ export default function NewOrderPage() {
         vendor, vendorMode, pct, project, orderDate, deliveryDate, author,
         contactName, contactPhone, deliveryLocation, address, deliveryDest, notes, items,
       }))
-      toast.success('임시저장되었습니다.')
+      toast.success('Draft saved.')
     } catch {}
   }
 
@@ -182,7 +182,7 @@ export default function NewOrderPage() {
       setHasDraft(false)
       localStorage.removeItem(DRAFT_KEY)
       router.push('/dashboard/orders/new?step=form')
-      toast.success('임시저장 내용을 불러왔습니다.')
+      toast.success('Draft restored.')
     } catch {}
   }
 
@@ -219,12 +219,12 @@ export default function NewOrderPage() {
       fd.append('file', parseFile)
       const res = await fetch('/api/quotes/parse-image', { method: 'POST', body: fd })
       const data = await res.json()
-      if (!res.ok) { toast.error(data.error ?? '파싱 실패'); return }
+      if (!res.ok) { toast.error(data.error ?? 'Parsing failed'); return }
       const items = data.parsed?.items ?? []
-      if (items.length === 0) { toast.warning('파싱된 품목이 없습니다.'); return }
+      if (items.length === 0) { toast.warning('No items were parsed.'); return }
       setParsedItems(items)
       setHeaderDraft(buildHeaderDraft(data.parsed?.header ?? {}, orderDate))
-    } catch { toast.error('파싱 중 오류가 발생했습니다.') }
+    } catch { toast.error('An error occurred while parsing.') }
     finally { setParseParsing(false) }
   }
 
@@ -257,7 +257,7 @@ export default function NewOrderPage() {
       if (h.deliveryDest) setDeliveryDest(h.deliveryDest)
     }
 
-    toast.success(`${parsedItems.length}개 품목이 적용되었습니다. 내부 품명을 직접 선택해 주세요.`)
+    toast.success(`${parsedItems.length} item(s) applied. Please select the internal name manually.`)
     setParseOpen(false)
     resetParseModal()
   }
@@ -269,13 +269,13 @@ export default function NewOrderPage() {
   }
 
   async function handleSave() {
-    if (!vendor.trim()) { setError('발주의뢰처를 입력해 주세요.'); return }
-    if (!project.trim()) { setError('현장명을 입력해 주세요.'); return }
-    if (!author.trim()) { setError('작성자를 입력해 주세요.'); return }
+    if (!vendor.trim()) { setError('Please enter the requesting party.'); return }
+    if (!project.trim()) { setError('Please enter the project name.'); return }
+    if (!author.trim()) { setError('Please select the author.'); return }
 
     const filledItems = items.filter(it => it.name.trim() || it.internalName?.trim())
-    if (filledItems.length === 0) { setError('품목을 1개 이상 입력해 주세요.'); return }
-    if (filledItems.some(it => it.internalName !== '수기 금액 추가' && !it.spec?.trim())) { setError('품목의 규격을 모두 입력해 주세요.'); return }
+    if (filledItems.length === 0) { setError('Please enter at least one item.'); return }
+    if (filledItems.some(it => it.internalName !== '수기 금액 추가' && !it.spec?.trim())) { setError('Please enter the spec for all items.'); return }
 
     setError('')
     setSaving(true)
@@ -285,7 +285,7 @@ export default function NewOrderPage() {
       const fd = new FormData(); fd.append('file', f)
       const imgRes = await fetch('/api/orders/image', { method: 'POST', body: fd })
       const imgData = await imgRes.json()
-      if (!imgRes.ok) { setError(imgData.error ?? '이미지 업로드 실패'); setSaving(false); return }
+      if (!imgRes.ok) { setError(imgData.error ?? 'Image upload failed'); setSaving(false); return }
       fileUrls.push(imgData.imageUrl)
     }
 
@@ -319,7 +319,7 @@ export default function NewOrderPage() {
         body: JSON.stringify(payload),
       })
       const data = await res.json()
-      if (!res.ok) { setError(data.error ?? '저장 중 오류가 발생했습니다.'); setSaving(false); return }
+      if (!res.ok) { setError(data.error ?? 'An error occurred while saving.'); setSaving(false); return }
 
       if (fromQuoteId) {
         await fetch(`/api/pipe-quotes/${fromQuoteId}`, {
@@ -329,61 +329,61 @@ export default function NewOrderPage() {
         }).catch(() => {})
       }
 
-      toast.success('수주서가 저장되었습니다.')
+      toast.success('Order saved.')
       if (data.ecount === 'ok') {
-        toast.success('[ECOUNT] 주문서 등록 완료', { autoClose: 3000 })
+        toast.success('[ECOUNT] Sale order registered', { autoClose: 3000 })
       } else if (data.ecount === 'skipped') {
-        toast.info('ECOUNT 품목코드가 없어 주문서 등록을 건너뛰었습니다.')
+        toast.info('Skipped ECOUNT sale order registration — no matching item code.')
       } else {
-        toast.error(`ECOUNT 주문서 등록 실패 (수주서는 저장됨)\n${data.ecountError ?? ''}`, { autoClose: false })
+        toast.error(`ECOUNT sale order registration failed (order was still saved)\n${data.ecountError ?? ''}`, { autoClose: false })
       }
       localStorage.removeItem(DRAFT_KEY)
       router.push(`/dashboard/orders/${data.id}`)
     } catch {
-      setError('저장 중 오류가 발생했습니다.')
+      setError('An error occurred while saving.')
       setSaving(false)
     }
   }
 
   return (
     <div className="w-full">
-      {/* 유형 선택 */}
+      {/* Type selection */}
       {step === 'select' && (
         <div className="transition-all duration-250 ease-in-out">
           <div className="mb-8">
-            <h1 className="text-xl font-bold text-gray-900">수주서 작성</h1>
-            <p className="text-sm text-gray-500 mt-0.5">품목 유형을 선택해 주세요.</p>
+            <h1 className="text-xl font-bold text-gray-900">New Order</h1>
+            <p className="text-sm text-gray-500 mt-0.5">Please select an item type.</p>
           </div>
           <div className="flex flex-col gap-3 max-w-lg">
             <button onClick={() => selectType('배관')}
               className="group flex items-center justify-between w-full px-7 py-5 rounded-xl border-2 border-blue-300 bg-blue-200 hover:border-blue-500 hover:bg-blue-300 hover:shadow-md transition-all duration-200 cursor-pointer text-left">
               <div>
-                <p className="text-lg font-bold text-blue-800">배관</p>
-                <p className="text-sm text-blue-700">배관 고정구 수주서</p>
+                <p className="text-lg font-bold text-blue-800">Pipe</p>
+                <p className="text-sm text-blue-700">Pipe fixture order</p>
               </div>
               <svg className="w-4 h-4 text-blue-500 group-hover:text-blue-700 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </button>
             <button onClick={() => router.push('/dashboard/duct-orders/new')}
               className="group flex items-center justify-between w-full px-7 py-5 rounded-xl border-2 border-orange-300 bg-orange-200 hover:border-orange-500 hover:bg-orange-300 hover:shadow-md transition-all duration-200 cursor-pointer text-left">
               <div>
-                <p className="text-lg font-bold text-orange-800">사각덕트</p>
-                <p className="text-sm text-orange-700">사각덕트 수주서</p>
+                <p className="text-lg font-bold text-orange-800">Rectangular Duct</p>
+                <p className="text-sm text-orange-700">Rectangular duct order</p>
               </div>
               <svg className="w-4 h-4 text-orange-500 group-hover:text-orange-700 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </button>
             <button onClick={() => router.push('/dashboard/orders/groups/new')}
               className="group flex items-center justify-between w-full px-7 py-5 rounded-xl border-2 border-purple-300 bg-purple-200 hover:border-purple-500 hover:bg-purple-300 hover:shadow-md transition-all duration-200 cursor-pointer text-left">
               <div>
-                <p className="text-lg font-bold text-purple-800">배관 + 사각덕트</p>
-                <p className="text-sm text-purple-700">복합 수주서 (탭 구성)</p>
+                <p className="text-lg font-bold text-purple-800">Pipe + Rectangular Duct</p>
+                <p className="text-sm text-purple-700">Combined order (tabbed)</p>
               </div>
               <svg className="w-4 h-4 text-purple-500 group-hover:text-purple-700 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </button>
             <button onClick={() => router.push('/dashboard/fire-blanket-orders/new')}
               className="group flex items-center justify-between w-full px-7 py-5 rounded-xl border-2 border-red-300 bg-red-200 hover:border-red-500 hover:bg-red-300 hover:shadow-md transition-all duration-200 cursor-pointer text-left">
               <div>
-                <p className="text-lg font-bold text-red-800">방화포</p>
-                <p className="text-sm text-red-700">방화포 수주서</p>
+                <p className="text-lg font-bold text-red-800">Fire Blanket</p>
+                <p className="text-sm text-red-700">Fire blanket order</p>
               </div>
               <svg className="w-4 h-4 text-red-500 group-hover:text-red-700 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </button>
@@ -391,7 +391,7 @@ export default function NewOrderPage() {
         </div>
       )}
 
-      {/* 작성 폼 */}
+      {/* Form */}
       {step === 'form' && (
         <div className="transition-all duration-250 ease-in-out space-y-5" >
           {/* 헤더 */}
@@ -406,8 +406,8 @@ export default function NewOrderPage() {
                 </svg>
               </button>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">수주서 작성</h1>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-[#014A99]">{orderType}</span>
+                <h1 className="text-xl font-bold text-gray-900">New Order</h1>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-[#014A99]">{orderType === '배관' ? 'Pipe' : orderType}</span>
               </div>
               <button
                 onClick={() => setParseOpen(true)}
@@ -417,16 +417,16 @@ export default function NewOrderPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <div className="text-left">
-                  <p className="text-sm font-semibold text-[#014A99]/80 group-hover:text-[#014A99] leading-tight">이미지 파싱</p>
-                  <p className="text-xs text-gray-400 leading-tight">이미지에 있는 내용을 보다 편리하게 기입해보세요</p>
+                  <p className="text-sm font-semibold text-[#014A99]/80 group-hover:text-[#014A99] leading-tight">Parse Image</p>
+                  <p className="text-xs text-gray-400 leading-tight">Fill out this form more easily from an image</p>
                 </div>
               </button>
             </div>
             <div className="flex items-center gap-3">
-              <button onClick={saveDraft} className="px-4 py-2.5 rounded-md text-sm font-medium text-amber-600 border border-amber-300 hover:bg-amber-50 transition-colors cursor-pointer">임시저장</button>
-              <button onClick={() => router.back()} className="px-4 py-2.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">취소</button>
+              <button onClick={saveDraft} className="px-4 py-2.5 rounded-md text-sm font-medium text-amber-600 border border-amber-300 hover:bg-amber-50 transition-colors cursor-pointer">Save Draft</button>
+              <button onClick={() => router.back()} className="px-4 py-2.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">Cancel</button>
               <button onClick={() => setShowConfirm(true)} disabled={saving} className="px-5 py-2.5 rounded-md text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60 transition-colors" style={{ backgroundColor: '#014A99' }}>
-                저장
+                Save
               </button>
             </div>
           </div>
@@ -441,23 +441,23 @@ export default function NewOrderPage() {
                 <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-amber-800 font-medium">임시저장된 내용이 있습니다.</span>
+                <span className="text-amber-800 font-medium">You have a saved draft.</span>
               </div>
               <div className="flex items-center gap-4">
-                <button onClick={restoreDraft} className="text-[#014A99] text-sm font-medium hover:underline cursor-pointer">불러오기</button>
-                <button onClick={clearDraft} className="text-gray-400 text-sm hover:text-gray-600 cursor-pointer">무시</button>
+                <button onClick={restoreDraft} className="text-[#014A99] text-sm font-medium hover:underline cursor-pointer">Restore</button>
+                <button onClick={clearDraft} className="text-gray-400 text-sm hover:text-gray-600 cursor-pointer">Dismiss</button>
               </div>
             </div>
           )}
 
-          {/* 발주 정보 */}
+          {/* Order info */}
           <div className="bg-white rounded-lg border border-gray-200">
             <div className="px-5 py-3.5 border-b border-gray-200 flex items-center gap-2">
               <span className="w-1 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: '#014A99' }} />
-              <h2 className="font-semibold text-gray-800 text-sm">발주 정보</h2>
+              <h2 className="font-semibold text-gray-800 text-sm">Order Info</h2>
             </div>
             <div className="p-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="발주의뢰처" required>
+              <Field label="Requesting Party" required>
                 <select
                   value={vendorMode === 'new' ? '__new__' : vendor}
                   onChange={e => {
@@ -472,88 +472,88 @@ export default function NewOrderPage() {
                   }}
                   className={INPUT_CLS + ' cursor-pointer'}
                 >
-                  <option value="">-- 거래처 선택 --</option>
+                  <option value="">-- Select Vendor --</option>
                   {customers.map(c => (
                     <option key={c.id} value={c.name}>{c.name} ({c.sale_pct}%)</option>
                   ))}
-                  <option value="__new__">직접입력 (신규 업체)</option>
+                  <option value="__new__">Enter Manually (New Vendor)</option>
                 </select>
                 {vendorMode === 'new' && (
                   <input
                     value={vendor}
                     onChange={e => setVendor(e.target.value)}
-                    placeholder="신규 업체명 입력"
+                    placeholder="Enter new vendor name"
                     className={INPUT_CLS + ' mt-2'}
                   />
                 )}
                 {customers.length === 0 && (
                   <p className="text-xs text-amber-600 mt-1">
-                    등록된 거래처가 없습니다.{' '}
-                    <a href="/dashboard/customers" className="underline hover:text-amber-800">거래처 등록</a>
-                    {' '}후 다시 시도해 주세요.
+                    No vendors registered.{' '}
+                    <a href="/dashboard/customers" className="underline hover:text-amber-800">Register a vendor</a>
+                    {' '}and try again.
                   </p>
                 )}
               </Field>
               {pct != null && (
-                <Field label="판매가 비율">
+                <Field label="Sale Price Ratio">
                   <div className={INPUT_CLS + ' bg-gray-50 text-gray-500 cursor-default'}>
-                    협가 × {pct}%
+                    Negotiated price × {pct}%
                   </div>
                 </Field>
               )}
-              <Field label="현장명" required>
-                <input value={project} onChange={e => setProject(e.target.value)} placeholder="예) 강남구 논현동 공동주택" className={INPUT_CLS} />
+              <Field label="Project" required>
+                <input value={project} onChange={e => setProject(e.target.value)} placeholder="e.g. Apartment complex, Nonhyeon-dong, Gangnam-gu" className={INPUT_CLS} />
               </Field>
-              <Field label="발주일">
+              <Field label="Order Date">
                 <input type="date" value={orderDate} onChange={e => setOrderDate(e.target.value)} className={INPUT_CLS} />
               </Field>
-              <Field label="납품희망일">
+              <Field label="Requested Delivery Date">
                 <input type="date" value={deliveryDate} onChange={e => setDeliveryDate(e.target.value)} className={INPUT_CLS} />
               </Field>
-              <Field label="작성자" required>
+              <Field label="Author" required>
                 <select value={author} onChange={e => setAuthor(e.target.value)} className={INPUT_CLS}>
-                  <option value="">-- 선택 --</option>
+                  <option value="">-- Select --</option>
                   {['이주헌', '이주선', '이주송', '이민수'].map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
               </Field>
-              <Field label="납품처">
-                <input value={deliveryDest} onChange={e => setDeliveryDest(e.target.value)} placeholder="납품처" className={INPUT_CLS} />
+              <Field label="Delivery Recipient">
+                <input value={deliveryDest} onChange={e => setDeliveryDest(e.target.value)} placeholder="Delivery recipient" className={INPUT_CLS} />
               </Field>
-              <Field label="인수자">
-                <input value={contactName} onChange={e => setContactName(e.target.value)} placeholder="인수자 성명" className={INPUT_CLS} />
+              <Field label="Contact Person">
+                <input value={contactName} onChange={e => setContactName(e.target.value)} placeholder="Contact person's name" className={INPUT_CLS} />
               </Field>
-              <Field label="인수자 연락처">
+              <Field label="Contact Phone">
                 <input value={contactPhone} onChange={e => setContactPhone(e.target.value)} placeholder="010-0000-0000" className={INPUT_CLS} />
               </Field>
-              <Field label="납품장소">
-                <input value={deliveryLocation} onChange={e => setDeliveryLocation(e.target.value)} placeholder="납품 장소" className={INPUT_CLS} />
+              <Field label="Delivery Location">
+                <input value={deliveryLocation} onChange={e => setDeliveryLocation(e.target.value)} placeholder="Delivery location" className={INPUT_CLS} />
               </Field>
-              <Field label="주소">
-                <input value={address} onChange={e => setAddress(e.target.value)} placeholder="현장 주소" className={INPUT_CLS} />
+              <Field label="Address">
+                <input value={address} onChange={e => setAddress(e.target.value)} placeholder="Site address" className={INPUT_CLS} />
               </Field>
-              <Field label="비고" className="col-span-2">
-                <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="비고" className={INPUT_CLS + ' resize-y'} />
+              <Field label="Notes" className="col-span-2">
+                <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Notes" className={INPUT_CLS + ' resize-y'} />
               </Field>
             </div>
           </div>
 
-          {/* 이미지 첨부 */}
+          {/* Image attachment */}
           <div className="bg-white rounded-lg border border-gray-200">
             <div className="px-5 py-3.5 border-b border-gray-200 flex items-center gap-2">
               <span className="w-1 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: '#014A99' }} />
-              <h2 className="font-semibold text-gray-800 text-sm">발주서 이미지 <span className="text-gray-400 font-normal">(선택)</span></h2>
+              <h2 className="font-semibold text-gray-800 text-sm">Order Image <span className="text-gray-400 font-normal">(optional)</span></h2>
             </div>
             <div className="p-5">
               <MultiFileUploader files={imageFiles} onChange={setImageFiles} />
             </div>
           </div>
 
-          {/* 품목 테이블 */}
+          {/* Item table */}
           <div className="bg-white rounded-lg border border-gray-200">
             <div className="px-5 py-3.5 border-b border-gray-200 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="w-1 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: '#014A99' }} />
-                <h2 className="font-semibold text-gray-800 text-sm">품목 목록</h2>
+                <h2 className="font-semibold text-gray-800 text-sm">Item List</h2>
               </div>
             </div>
             <PipeItemsTable
@@ -574,46 +574,46 @@ export default function NewOrderPage() {
             />
             {saleTotal > 0 && (
               <div className="border-t border-gray-100 px-4 py-3 flex items-center justify-end gap-2 bg-gray-50/50">
-                <span className="text-xs text-gray-400">합계</span>
-                <span className="text-sm font-bold text-gray-800">{saleTotal.toLocaleString()}원</span>
+                <span className="text-xs text-gray-400">Total</span>
+                <span className="text-sm font-bold text-gray-800">{saleTotal.toLocaleString()} KRW</span>
               </div>
             )}
           </div>
 
-          {/* 하단 버튼 */}
+          {/* Bottom buttons */}
           <div className="flex items-center justify-end gap-3 pb-8">
             {error && <span className="text-sm text-red-500">{error}</span>}
-            <button onClick={() => router.back()} className="px-5 py-2.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">취소</button>
+            <button onClick={() => router.back()} className="px-5 py-2.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">Cancel</button>
             <button onClick={() => setShowConfirm(true)} disabled={saving} className="px-6 py-2.5 rounded-md text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60 transition-colors" style={{ backgroundColor: '#014A99' }}>
-              저장
+              Save
             </button>
           </div>
         </div>
       )}
 
-      {/* 저장 확인 모달 */}
+      {/* Save confirmation modal */}
       {showConfirm && (() => {
         const filledItems = items.filter(it => it.name.trim() || it.internalName?.trim())
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
             <div className="bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 max-h-[85vh] flex flex-col">
-              <h2 className="font-bold text-gray-900 text-lg mb-1">수주서 저장 확인</h2>
+              <h2 className="font-bold text-gray-900 text-lg mb-1">Confirm Save</h2>
               <div className="text-sm text-gray-600 mb-4 flex items-center gap-2 flex-wrap">
                 {vendor && <span className="font-semibold text-gray-800">{vendor}</span>}
                 {vendor && project && <span className="text-gray-300">·</span>}
-                {project ? <span className="font-semibold text-gray-800">{project}</span> : <span className="text-gray-400">현장명 없음</span>}
-                {deliveryDate && <><span className="text-gray-300">·</span><span className="text-gray-500">납품 {deliveryDate}</span></>}
+                {project ? <span className="font-semibold text-gray-800">{project}</span> : <span className="text-gray-400">No project name</span>}
+                {deliveryDate && <><span className="text-gray-300">·</span><span className="text-gray-500">Delivery {deliveryDate}</span></>}
               </div>
 
               <div className="flex-1 overflow-y-auto border border-gray-100 rounded-lg">
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="bg-gray-50 text-gray-500 border-b border-gray-100">
-                      <th className="px-3 py-2 text-left font-medium">제조사</th>
-                      <th className="px-3 py-2 text-left font-medium">품목명</th>
-                      <th className="px-3 py-2 text-left font-medium">내부 품명</th>
-                      <th className="px-3 py-2 text-center font-medium">규격</th>
-                      <th className="px-3 py-2 text-right font-medium">수량</th>
+                      <th className="px-3 py-2 text-left font-medium">Manufacturer</th>
+                      <th className="px-3 py-2 text-left font-medium">Item Name</th>
+                      <th className="px-3 py-2 text-left font-medium">Internal Name</th>
+                      <th className="px-3 py-2 text-center font-medium">Spec</th>
+                      <th className="px-3 py-2 text-right font-medium">Qty</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
@@ -631,16 +631,16 @@ export default function NewOrderPage() {
               </div>
 
               <div className="mt-4 flex items-center justify-between">
-                <span className="text-xs text-gray-400">총 {filledItems.length}건</span>
+                <span className="text-xs text-gray-400">{filledItems.length} item(s) total</span>
                 <div className="flex gap-3">
-                  <button onClick={() => setShowConfirm(false)} className="px-4 py-2 text-sm text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer">취소</button>
+                  <button onClick={() => setShowConfirm(false)} className="px-4 py-2 text-sm text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer">Cancel</button>
                   <button
                     onClick={() => { setShowConfirm(false); handleSave() }}
                     disabled={saving}
                     className="px-5 py-2 text-sm font-semibold text-white rounded-md hover:opacity-90 disabled:opacity-60 cursor-pointer"
                     style={{ backgroundColor: '#014A99' }}
                   >
-                    {saving ? '저장 중...' : '저장'}
+                    {saving ? 'Saving...' : 'Save'}
                   </button>
                 </div>
               </div>
@@ -648,14 +648,14 @@ export default function NewOrderPage() {
           </div>
         )
       })()}
-      {/* 이미지 파싱 모달 */}
+      {/* Image parsing modal */}
       {parseOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={e => { if (e.target === e.currentTarget) { setParseOpen(false); resetParseModal() } }}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
               <div>
-                <h2 className="text-base font-bold text-gray-900">이미지 파싱</h2>
-                <p className="text-xs text-gray-400 mt-0.5">이미지에 있는 내용을 보다 편리하게 기입해보세요</p>
+                <h2 className="text-base font-bold text-gray-900">Parse Image</h2>
+                <p className="text-xs text-gray-400 mt-0.5">Fill out this form more easily from an image</p>
               </div>
               <button onClick={() => { setParseOpen(false); resetParseModal() }} className="text-gray-400 hover:text-gray-600 cursor-pointer">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -663,7 +663,7 @@ export default function NewOrderPage() {
             </div>
 
             <div className="p-6 space-y-4 overflow-y-auto">
-              {/* 이미지 업로드 */}
+              {/* Image upload */}
               {!parsedItems && (
                 <>
                   <input ref={parseInputRef} type="file" accept="image/*,application/pdf" className="hidden"
@@ -678,15 +678,15 @@ export default function NewOrderPage() {
                       <div className="space-y-2">
                         {parsePreview && <img src={parsePreview} alt="preview" className="max-h-48 mx-auto rounded-lg object-contain" />}
                         <p className="text-sm font-medium text-gray-700">{parseFile.name}</p>
-                        <p className="text-xs text-gray-400">클릭하여 변경</p>
+                        <p className="text-xs text-gray-400">Click to change</p>
                       </div>
                     ) : (
                       <div className="space-y-2 text-gray-400 py-4">
                         <svg className="w-10 h-10 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        <p className="text-sm">이미지 또는 PDF 드래그 또는 클릭</p>
-                        <p className="text-xs">JPG · PNG · PDF 지원</p>
+                        <p className="text-sm">Drag or click to upload an image or PDF</p>
+                        <p className="text-xs">JPG · PNG · PDF supported</p>
                       </div>
                     )}
                   </div>
@@ -697,45 +697,45 @@ export default function NewOrderPage() {
                       {parseParsing ? (
                         <span className="flex items-center gap-2">
                           <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" /></svg>
-                          파싱 중...
+                          Parsing...
                         </span>
-                      ) : '파싱 시작'}
+                      ) : 'Start Parsing'}
                     </button>
                   </div>
                 </>
               )}
 
-              {/* 파싱 결과 미리보기 (편집 가능) */}
+              {/* Parsed result preview (editable) */}
               {parsedItems && (
                 <>
                   {headerDraft && !isHeaderDraftEmpty(headerDraft) && (
                     <div className="rounded-lg border border-gray-200 overflow-hidden">
                       <div className="px-3 py-2 bg-blue-50/40 border-b border-gray-200 text-xs font-medium text-blue-800">
-                        발주 정보 (확인 후 필요하면 수정하세요)
+                        Order Info (review and edit if needed)
                       </div>
                       <div className="p-3 grid grid-cols-2 gap-2.5">
-                        <ParseField label="발주의뢰처">
+                        <ParseField label="Requesting Party">
                           <input value={headerDraft.vendor} onChange={e => updateHeaderDraft({ vendor: e.target.value })} className={PARSE_INPUT_CLS} />
                         </ParseField>
-                        <ParseField label="현장명">
+                        <ParseField label="Project">
                           <input value={headerDraft.project} onChange={e => updateHeaderDraft({ project: e.target.value })} className={PARSE_INPUT_CLS} />
                         </ParseField>
-                        <ParseField label="납품희망일">
+                        <ParseField label="Requested Delivery Date">
                           <input type="date" value={headerDraft.deliveryDate} onChange={e => updateHeaderDraft({ deliveryDate: e.target.value })} className={PARSE_INPUT_CLS} />
                         </ParseField>
-                        <ParseField label="납품처">
+                        <ParseField label="Delivery Recipient">
                           <input value={headerDraft.deliveryDest} onChange={e => updateHeaderDraft({ deliveryDest: e.target.value })} className={PARSE_INPUT_CLS} />
                         </ParseField>
-                        <ParseField label="인수자">
+                        <ParseField label="Contact Person">
                           <input value={headerDraft.contactName} onChange={e => updateHeaderDraft({ contactName: e.target.value })} className={PARSE_INPUT_CLS} />
                         </ParseField>
-                        <ParseField label="인수자 연락처">
+                        <ParseField label="Contact Phone">
                           <input value={headerDraft.contactPhone} onChange={e => updateHeaderDraft({ contactPhone: e.target.value })} className={PARSE_INPUT_CLS} />
                         </ParseField>
-                        <ParseField label="납품장소">
+                        <ParseField label="Delivery Location">
                           <input value={headerDraft.deliveryLocation} onChange={e => updateHeaderDraft({ deliveryLocation: e.target.value })} className={PARSE_INPUT_CLS} />
                         </ParseField>
-                        <ParseField label="주소">
+                        <ParseField label="Address">
                           <input value={headerDraft.address} onChange={e => updateHeaderDraft({ address: e.target.value })} className={PARSE_INPUT_CLS} />
                         </ParseField>
                       </div>
@@ -745,9 +745,9 @@ export default function NewOrderPage() {
                     <table className="w-full text-xs">
                       <thead className="bg-gray-50 text-gray-500 sticky top-0">
                         <tr>
-                          <th className="px-3 py-2.5 text-left font-medium">품목명</th>
-                          <th className="px-3 py-2.5 text-left font-medium w-24">규격</th>
-                          <th className="px-3 py-2.5 text-right font-medium w-14">수량</th>
+                          <th className="px-3 py-2.5 text-left font-medium">Item Name</th>
+                          <th className="px-3 py-2.5 text-left font-medium w-24">Spec</th>
+                          <th className="px-3 py-2.5 text-right font-medium w-14">Qty</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-50">
@@ -770,16 +770,16 @@ export default function NewOrderPage() {
                       </tbody>
                     </table>
                   </div>
-                  <p className="text-xs text-gray-400">총 {parsedItems.length}건 파싱됨 · OCR 오류가 있으면 위에서 바로 수정한 뒤 적용하세요. 적용 후 내부 품명을 직접 선택해 주세요.</p>
+                  <p className="text-xs text-gray-400">{parsedItems.length} item(s) parsed · Fix any OCR errors above before applying. Please select the internal name manually after applying.</p>
                   <div className="flex items-center justify-between">
                     <button onClick={resetParseModal}
                       className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer">
-                      다시 업로드
+                      Re-upload
                     </button>
                     <button onClick={applyParsedItems}
                       className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white cursor-pointer hover:opacity-90 transition-opacity"
                       style={{ backgroundColor: '#014A99' }}>
-                      품목 적용
+                      Apply Items
                     </button>
                   </div>
                 </>
