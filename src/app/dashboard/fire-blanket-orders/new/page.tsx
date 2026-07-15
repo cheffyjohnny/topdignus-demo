@@ -61,7 +61,7 @@ export default function NewFireBlanketOrderPage() {
         customerName, vendorMode, project, deliveryLocation, address, deliveryDest,
         contactName, contactPhone, orderDate, deliveryDate, author, notes, items,
       }))
-      toast.success('임시저장되었습니다.')
+      toast.success('Draft saved.')
     } catch {}
   }
 
@@ -85,7 +85,7 @@ export default function NewFireBlanketOrderPage() {
       if (d.items) setItems(d.items)
       setHasDraft(false)
       localStorage.removeItem(DRAFT_KEY)
-      toast.success('임시저장 내용을 불러왔습니다.')
+      toast.success('Draft restored.')
     } catch {}
   }
 
@@ -111,10 +111,10 @@ export default function NewFireBlanketOrderPage() {
   }
 
   async function doSave() {
-    if (!customerName.trim()) { setError('발주의뢰처를 입력해 주세요.'); return }
-    if (!project.trim()) { setError('현장명을 입력해 주세요.'); return }
-    if (!deliveryDate) { setError('납품희망일을 입력해 주세요.'); return }
-    if (!author) { setError('작성자를 선택해 주세요.'); return }
+    if (!customerName.trim()) { setError('Please enter the requesting party.'); return }
+    if (!project.trim()) { setError('Please enter the project name.'); return }
+    if (!deliveryDate) { setError('Please enter the requested delivery date.'); return }
+    if (!author) { setError('Please select the author.'); return }
     setSaving(true); setError('')
     try {
       const fileUrls: string[] = []
@@ -122,7 +122,7 @@ export default function NewFireBlanketOrderPage() {
         const fd = new FormData(); fd.append('file', f)
         const imgRes = await fetch('/api/orders/image', { method: 'POST', body: fd })
         const imgData = await imgRes.json()
-        if (!imgRes.ok) { setError(imgData.error ?? '이미지 업로드 실패'); setSaving(false); return }
+        if (!imgRes.ok) { setError(imgData.error ?? 'Image upload failed'); setSaving(false); return }
         fileUrls.push(imgData.imageUrl)
       }
 
@@ -156,16 +156,16 @@ export default function NewFireBlanketOrderPage() {
           })),
         }),
       })
-      if (!res.ok) { const d = await res.json(); setError(d.error ?? '저장 실패'); return }
+      if (!res.ok) { const d = await res.json(); setError(d.error ?? 'Save failed'); return }
       const data = await res.json()
 
-      toast.success('방화포 수주서가 저장되었습니다.')
+      toast.success('Fire blanket order saved.')
       if (data.ecount === 'ok') {
-        toast.success('[ECOUNT] 주문서 등록 완료', { autoClose: 3000 })
+        toast.success('[ECOUNT] Sale order registered', { autoClose: 3000 })
       } else if (data.ecount === 'skipped') {
-        toast.info('ECOUNT 품목코드가 없어 주문입력을 건너뛰었습니다.')
+        toast.info('Skipped ECOUNT sale order registration — no matching item code.')
       } else if (data.ecount === 'fail') {
-        toast.error(`ECOUNT 주문입력 실패 (수주서는 저장됨)\n${data.ecountError ?? ''}`, { autoClose: false })
+        toast.error(`ECOUNT sale order registration failed (order was still saved)\n${data.ecountError ?? ''}`, { autoClose: false })
       }
       localStorage.removeItem(DRAFT_KEY)
       router.push(`/dashboard/fire-blanket-orders/${data.id}`)
@@ -176,19 +176,19 @@ export default function NewFireBlanketOrderPage() {
 
   return (
     <div className="w-full space-y-6">
-      {/* 헤더 */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button onClick={() => router.back()} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </button>
-          <h1 className="text-xl font-bold text-gray-900">방화포 수주서 작성</h1>
+          <h1 className="text-xl font-bold text-gray-900">New Fire Blanket Order</h1>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={saveDraft} className="px-4 py-2.5 rounded-md text-sm font-medium text-amber-600 border border-amber-300 hover:bg-amber-50 transition-colors cursor-pointer">임시저장</button>
-          <button onClick={() => router.back()} className="px-4 py-2.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">취소</button>
+          <button onClick={saveDraft} className="px-4 py-2.5 rounded-md text-sm font-medium text-amber-600 border border-amber-300 hover:bg-amber-50 transition-colors cursor-pointer">Save Draft</button>
+          <button onClick={() => router.back()} className="px-4 py-2.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
           <button onClick={() => setShowConfirm(true)} disabled={saving} className="px-5 py-2.5 rounded-md text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60 transition-colors cursor-pointer" style={{ backgroundColor: '#014A99' }}>
-            저장
+            Save
           </button>
         </div>
       </div>
@@ -201,96 +201,96 @@ export default function NewFireBlanketOrderPage() {
             <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-amber-800 font-medium">임시저장된 내용이 있습니다.</span>
+            <span className="text-amber-800 font-medium">You have a saved draft.</span>
           </div>
           <div className="flex items-center gap-4">
-            <button onClick={restoreDraft} className="text-[#014A99] text-sm font-medium hover:underline cursor-pointer">불러오기</button>
-            <button onClick={clearDraft} className="text-gray-400 text-sm hover:text-gray-600 cursor-pointer">무시</button>
+            <button onClick={restoreDraft} className="text-[#014A99] text-sm font-medium hover:underline cursor-pointer">Restore</button>
+            <button onClick={clearDraft} className="text-gray-400 text-sm hover:text-gray-600 cursor-pointer">Dismiss</button>
           </div>
         </div>
       )}
 
-      {/* 발주 정보 */}
+      {/* Order info */}
       <div className="bg-white rounded-lg border border-gray-200">
         <div className="px-5 py-3.5 border-b border-gray-200 flex items-center gap-2">
           <span className="w-1 h-4 rounded-full flex-shrink-0 bg-[#014A99]" />
-          <h2 className="font-semibold text-gray-800 text-sm">발주 정보</h2>
+          <h2 className="font-semibold text-gray-800 text-sm">Order Info</h2>
         </div>
         <div className="p-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="발주의뢰처" required>
+          <Field label="Requesting Party" required>
             <select
               value={vendorMode === 'new' ? '__new__' : customerName}
               onChange={e => handleVendorChange(e.target.value)}
               className={INPUT_CLS + ' cursor-pointer'}
             >
-              <option value="">-- 거래처 선택 --</option>
+              <option value="">-- Select Vendor --</option>
               {customers.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-              <option value="__new__">직접입력 (신규 업체)</option>
+              <option value="__new__">Enter Manually (New Vendor)</option>
             </select>
             {vendorMode === 'new' && (
               <input
                 value={customerName}
                 onChange={e => setCustomerName(e.target.value)}
-                placeholder="신규 업체명 입력"
+                placeholder="Enter new vendor name"
                 className={INPUT_CLS + ' mt-2'}
               />
             )}
             {customers.length === 0 && (
               <p className="text-xs text-amber-600 mt-1">
-                등록된 거래처가 없습니다.{' '}
-                <a href="/dashboard/customers" className="underline hover:text-amber-800">거래처 등록</a>
-                {' '}후 다시 시도해 주세요.
+                No vendors registered.{' '}
+                <a href="/dashboard/customers" className="underline hover:text-amber-800">Register a vendor</a>
+                {' '}and try again.
               </p>
             )}
           </Field>
-          <Field label="현장명" required>
-            <input value={project} onChange={e => setProject(e.target.value)} className={INPUT_CLS} placeholder="예) 강남구 논현동 공동주택" />
+          <Field label="Project" required>
+            <input value={project} onChange={e => setProject(e.target.value)} className={INPUT_CLS} placeholder="e.g. Apartment complex, Nonhyeon-dong, Gangnam-gu" />
           </Field>
-          <Field label="발주일">
+          <Field label="Order Date">
             <input type="date" value={orderDate} onChange={e => setOrderDate(e.target.value)} className={INPUT_CLS} />
           </Field>
-          <Field label="납품희망일" required>
+          <Field label="Requested Delivery Date" required>
             <input type="date" value={deliveryDate} onChange={e => setDeliveryDate(e.target.value)} className={INPUT_CLS} />
           </Field>
-          <Field label="작성자" required>
+          <Field label="Author" required>
             <select value={author} onChange={e => setAuthor(e.target.value)} className={INPUT_CLS + ' cursor-pointer'}>
-              <option value="">-- 선택 --</option>
+              <option value="">-- Select --</option>
               {['이주헌', '이주선', '이주송', '이민수'].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </Field>
-          <Field label="납품처">
-            <input value={deliveryDest} onChange={e => setDeliveryDest(e.target.value)} className={INPUT_CLS} placeholder="납품처" />
+          <Field label="Delivery Recipient">
+            <input value={deliveryDest} onChange={e => setDeliveryDest(e.target.value)} className={INPUT_CLS} placeholder="Delivery recipient" />
           </Field>
-          <Field label="인수자">
-            <input value={contactName} onChange={e => setContactName(e.target.value)} className={INPUT_CLS} placeholder="인수자 성명" />
+          <Field label="Contact Person">
+            <input value={contactName} onChange={e => setContactName(e.target.value)} className={INPUT_CLS} placeholder="Contact person's name" />
           </Field>
-          <Field label="인수자 연락처">
+          <Field label="Contact Phone">
             <input value={contactPhone} onChange={e => setContactPhone(e.target.value)} className={INPUT_CLS} placeholder="010-0000-0000" />
           </Field>
-          <Field label="납품장소">
-            <input value={deliveryLocation} onChange={e => setDeliveryLocation(e.target.value)} className={INPUT_CLS} placeholder="납품 장소" />
+          <Field label="Delivery Location">
+            <input value={deliveryLocation} onChange={e => setDeliveryLocation(e.target.value)} className={INPUT_CLS} placeholder="Delivery location" />
           </Field>
-          <Field label="주소">
-            <input value={address} onChange={e => setAddress(e.target.value)} className={INPUT_CLS} placeholder="현장 주소" />
+          <Field label="Address">
+            <input value={address} onChange={e => setAddress(e.target.value)} className={INPUT_CLS} placeholder="Site address" />
           </Field>
-          <Field label="비고" className="col-span-2">
-            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} className={INPUT_CLS + ' resize-y'} placeholder="비고" />
+          <Field label="Notes" className="col-span-2">
+            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} className={INPUT_CLS + ' resize-y'} placeholder="Notes" />
           </Field>
         </div>
       </div>
 
-      {/* 발주서 이미지 */}
+      {/* Order image */}
       <div className="bg-white rounded-lg border border-gray-200">
         <div className="px-5 py-3.5 border-b border-gray-200 flex items-center gap-2">
           <span className="w-1 h-4 rounded-full flex-shrink-0 bg-[#014A99]" />
-          <h2 className="font-semibold text-gray-800 text-sm">발주서 이미지 <span className="text-gray-400 font-normal">(선택)</span></h2>
+          <h2 className="font-semibold text-gray-800 text-sm">Order Image <span className="text-gray-400 font-normal">(optional)</span></h2>
         </div>
         <div className="p-5">
           <MultiFileUploader files={imageFiles} onChange={setImageFiles} />
         </div>
       </div>
 
-      {/* 품목 목록 */}
+      {/* Item list */}
       <FireBlanketItemsTable
         items={items}
         onChange={setItems}
@@ -300,37 +300,37 @@ export default function NewFireBlanketOrderPage() {
         customerName={customerName}
       />
 
-      {/* 하단 버튼 */}
+      {/* Bottom buttons */}
       <div className="flex items-center justify-end gap-3 pb-8">
         {error && <span className="text-sm text-red-500">{error}</span>}
-        <button onClick={() => router.back()} className="px-5 py-2.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">취소</button>
+        <button onClick={() => router.back()} className="px-5 py-2.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
         <button onClick={() => setShowConfirm(true)} disabled={saving} className="px-6 py-2.5 rounded-md text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60 transition-colors cursor-pointer" style={{ backgroundColor: '#014A99' }}>
-          저장
+          Save
         </button>
       </div>
 
-      {/* 저장 확인 모달 */}
+      {/* Save confirmation modal */}
       {showConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 max-h-[85vh] flex flex-col">
-            <h2 className="font-bold text-gray-900 text-lg mb-1">수주서 저장 확인</h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-1">Confirm Save</h2>
             <div className="text-sm text-gray-600 mb-4 flex items-center gap-2 flex-wrap">
               {customerName && <span className="font-semibold text-gray-800">{customerName}</span>}
               {customerName && project && <span className="text-gray-300">·</span>}
-              {project ? <span className="font-semibold text-gray-800">{project}</span> : <span className="text-gray-400">현장명 없음</span>}
-              {deliveryDate && <><span className="text-gray-300">·</span><span className="text-gray-500">납품 {deliveryDate}</span></>}
+              {project ? <span className="font-semibold text-gray-800">{project}</span> : <span className="text-gray-400">No project name</span>}
+              {deliveryDate && <><span className="text-gray-300">·</span><span className="text-gray-500">Delivery {deliveryDate}</span></>}
             </div>
 
             <div className="flex-1 overflow-y-auto border border-gray-100 rounded-lg">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-gray-50 text-gray-500 border-b border-gray-100">
-                    <th className="px-3 py-2 text-left font-medium">품명</th>
-                    <th className="px-3 py-2 text-left font-medium">규격</th>
-                    <th className="px-3 py-2 text-left font-medium">제조사</th>
-                    <th className="px-3 py-2 text-right font-medium">수량 (롤)</th>
-                    <th className="px-3 py-2 text-right font-medium">단가</th>
-                    <th className="px-3 py-2 text-right font-medium">금액</th>
+                    <th className="px-3 py-2 text-left font-medium">Item Name</th>
+                    <th className="px-3 py-2 text-left font-medium">Spec</th>
+                    <th className="px-3 py-2 text-left font-medium">Manufacturer</th>
+                    <th className="px-3 py-2 text-right font-medium">Qty (rolls)</th>
+                    <th className="px-3 py-2 text-right font-medium">Unit Price</th>
+                    <th className="px-3 py-2 text-right font-medium">Amount</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -352,16 +352,16 @@ export default function NewFireBlanketOrderPage() {
             </div>
 
             <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
-              <span className="text-xs text-gray-400">총 {items.length}건 · 합계 {items.reduce((s, it) => s + calcAmount(it), 0).toLocaleString()}원</span>
+              <span className="text-xs text-gray-400">{items.length} item(s) total · Total {items.reduce((s, it) => s + calcAmount(it), 0).toLocaleString()} KRW</span>
               <div className="flex gap-3">
-                <button onClick={() => setShowConfirm(false)} className="px-4 py-2 text-sm text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer">취소</button>
+                <button onClick={() => setShowConfirm(false)} className="px-4 py-2 text-sm text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer">Cancel</button>
                 <button
                   onClick={() => { setShowConfirm(false); doSave() }}
                   disabled={saving}
                   className="px-5 py-2 text-sm font-semibold text-white rounded-md hover:opacity-90 disabled:opacity-60 cursor-pointer"
                   style={{ backgroundColor: '#014A99' }}
                 >
-                  {saving ? '저장 중...' : '저장'}
+                  {saving ? 'Saving...' : 'Save'}
                 </button>
               </div>
             </div>
