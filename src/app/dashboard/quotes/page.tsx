@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { statusLabel, QUOTE_STATUS_LABEL } from '@/lib/status-labels'
 
 type QuoteStatus = '검토중' | '검토완료' | '송부완료' | '수주확정' | '취소'
 type StatusTab = '전체' | QuoteStatus
@@ -57,6 +58,8 @@ const STATUS_COLORS: Record<QuoteStatus, string> = {
 
 const STATUS_TABS: StatusTab[] = ['전체', '검토중', '검토완료', '송부완료', '수주확정', '취소']
 const TYPE_TABS: TypeTab[] = ['전체', '배관', '덕트', '배관+덕트']
+const TYPE_LABEL: Record<TypeTab, string> = { '전체': 'All', '배관': 'Pipe', '덕트': 'Duct', '배관+덕트': 'Pipe+Duct' }
+const STATUS_TAB_LABEL: Record<StatusTab, string> = { '전체': 'All', '검토중': 'In Review', '검토완료': 'Reviewed', '송부완료': 'Sent', '수주확정': 'Confirmed', '취소': 'Cancelled' }
 
 type AllRow = {
   id: string
@@ -247,38 +250,38 @@ export default function QuotesPage() {
   return (
     <>
     <div className="w-full space-y-4">
-      {/* 헤더 */}
+      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">견적서 현황</h1>
-          <p className="text-sm text-gray-500 mt-0.5">배관·덕트 견적서 내역을 관리합니다.</p>
+          <h1 className="text-xl font-bold text-gray-900">Quote List</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Manage pipe and duct quote records.</p>
         </div>
         <div className="flex items-center gap-2">
           {(typeTab === '전체' || typeTab === '배관+덕트') && (
             <button onClick={() => router.push('/dashboard/quotes/groups/new')}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 hover:border-purple-300 transition-colors cursor-pointer">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-              새 복합 견적서
+              New Combined Quote
             </button>
           )}
           {(typeTab === '전체' || typeTab === '배관') && (
             <button onClick={() => router.push('/dashboard/pipe-quotes/new')}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 hover:border-blue-300 transition-colors cursor-pointer">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-              {typeTab === '전체' ? '새 배관 견적서' : '새 견적서'}
+              {typeTab === '전체' ? 'New Pipe Quote' : 'New Quote'}
             </button>
           )}
           {(typeTab === '전체' || typeTab === '덕트') && (
             <button onClick={() => router.push('/dashboard/duct-quotes/new')}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-orange-700 bg-orange-50 hover:bg-orange-100 border border-orange-200 hover:border-orange-300 transition-colors cursor-pointer">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-              {typeTab === '전체' ? '새 덕트 견적서' : '새 견적서'}
+              {typeTab === '전체' ? 'New Duct Quote' : 'New Quote'}
             </button>
           )}
         </div>
       </div>
 
-      {/* 유형 탭 */}
+      {/* Type tabs */}
       <div className="flex gap-1">
         {TYPE_TABS.map(tab => (
           <button
@@ -292,7 +295,7 @@ export default function QuotesPage() {
                 : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
             }`}
           >
-            {tab}
+            {TYPE_LABEL[tab]}
             <span className={`text-xs px-1.5 py-0.5 rounded-full ${
               typeTab === tab ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-500'
             }`}>
@@ -302,7 +305,7 @@ export default function QuotesPage() {
         ))}
       </div>
 
-      {/* 상태 탭 */}
+      {/* Status tabs */}
       <div className="flex border-b border-gray-200 gap-1">
         {STATUS_TABS.map(tab => (
           <button
@@ -312,7 +315,7 @@ export default function QuotesPage() {
               statusTab === tab ? 'border-[#014A99] text-[#014A99]' : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
-            {tab}
+            {STATUS_TAB_LABEL[tab]}
             <span className={`text-xs px-1.5 py-0.5 rounded-full ${
               statusTab === tab ? 'bg-[#014A99] text-white' : 'bg-gray-100 text-gray-500'
             }`}>
@@ -322,7 +325,7 @@ export default function QuotesPage() {
         ))}
       </div>
 
-      {/* 필터 */}
+      {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
         <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
           className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[#014A99] bg-white" />
@@ -331,7 +334,7 @@ export default function QuotesPage() {
           className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[#014A99] bg-white" />
         <select value={vendorFilter} onChange={e => setVendorFilter(e.target.value)}
           className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[#014A99] bg-white cursor-pointer">
-          <option value="">전체 업체</option>
+          <option value="">All Vendors</option>
           {vendorList.map(v => <option key={v} value={v}>{v}</option>)}
         </select>
         {hasFilters && (
@@ -340,17 +343,17 @@ export default function QuotesPage() {
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
-            초기화
+            Reset
           </button>
         )}
-        <span className="ml-auto text-xs text-gray-400">{displayCount}건</span>
+        <span className="ml-auto text-xs text-gray-400">{displayCount}</span>
       </div>
 
-      {/* 테이블 */}
+      {/* Table */}
       {loading ? (
-        <div className="text-center py-12 text-sm text-gray-400">불러오는 중...</div>
+        <div className="text-center py-12 text-sm text-gray-400">Loading...</div>
       ) : displayCount === 0 ? (
-        <div className="text-center py-12 text-sm text-gray-400">견적서가 없습니다.</div>
+        <div className="text-center py-12 text-sm text-gray-400">No quotes.</div>
       ) : typeTab === '배관+덕트' ? (
         <GroupTable rows={filteredGroups} onNavigate={id => router.push(`/dashboard/quotes/groups/${id}`)} />
       ) : typeTab === '배관' ? (
@@ -394,18 +397,18 @@ export default function QuotesPage() {
               </svg>
             </div>
             <div>
-              <p className="font-semibold text-gray-900">견적서 삭제</p>
-              <p className="text-sm text-gray-500 mt-0.5">삭제하면 복구할 수 없습니다.</p>
+              <p className="font-semibold text-gray-900">Delete Quote</p>
+              <p className="text-sm text-gray-500 mt-0.5">This cannot be undone.</p>
             </div>
           </div>
           <div className="bg-gray-50 rounded-lg px-4 py-3 text-sm space-y-1">
-            <p><span className="text-gray-400 w-16 inline-block">업체</span><span className="font-medium">{confirmTarget.vendor}</span></p>
-            <p><span className="text-gray-400 w-16 inline-block">현장명</span><span>{confirmTarget.project || '-'}</span></p>
-            <p><span className="text-gray-400 w-16 inline-block">작성일</span><span>{confirmTarget.order_date?.slice(0, 10) ?? '-'}</span></p>
+            <p><span className="text-gray-400 w-16 inline-block">Vendor</span><span className="font-medium">{confirmTarget.vendor}</span></p>
+            <p><span className="text-gray-400 w-16 inline-block">Project</span><span>{confirmTarget.project || '-'}</span></p>
+            <p><span className="text-gray-400 w-16 inline-block">Date</span><span>{confirmTarget.order_date?.slice(0, 10) ?? '-'}</span></p>
           </div>
           <div className="flex gap-2 justify-end">
-            <button onClick={() => setConfirmTarget(null)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">취소</button>
-            <button onClick={confirmDelete} className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-red-500 hover:bg-red-600 cursor-pointer">삭제</button>
+            <button onClick={() => setConfirmTarget(null)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">Cancel</button>
+            <button onClick={confirmDelete} className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-red-500 hover:bg-red-600 cursor-pointer">Delete</button>
           </div>
         </div>
       </div>
@@ -422,13 +425,13 @@ function GroupTable({ rows, onNavigate }: { rows: QuoteGroup[]; onNavigate: (id:
         <thead className="bg-gray-50 text-gray-500 text-xs">
           <tr>
             <th className="px-4 py-3 text-left w-12">No.</th>
-            <th className="px-4 py-3 text-left w-20">유형</th>
-            <th className="px-4 py-3 text-left">작성일</th>
-            <th className="px-4 py-3 text-left">업체</th>
-            <th className="px-4 py-3 text-left">현장명</th>
-            <th className="px-4 py-3 text-left">작성자</th>
-            <th className="px-4 py-3 text-center w-28">하위 견적서</th>
-            <th className="px-4 py-3 text-center w-20">상태</th>
+            <th className="px-4 py-3 text-left w-20">Type</th>
+            <th className="px-4 py-3 text-left">Date</th>
+            <th className="px-4 py-3 text-left">Vendor</th>
+            <th className="px-4 py-3 text-left">Project</th>
+            <th className="px-4 py-3 text-left">Author</th>
+            <th className="px-4 py-3 text-center w-28">Sub-Quotes</th>
+            <th className="px-4 py-3 text-center w-20">Status</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
@@ -437,7 +440,7 @@ function GroupTable({ rows, onNavigate }: { rows: QuoteGroup[]; onNavigate: (id:
               className="bg-purple-50/30 hover:bg-purple-50 cursor-pointer transition-colors">
               <td className="px-4 py-3 text-gray-400 text-xs text-center">{i + 1}</td>
               <td className="px-4 py-3">
-                <span className="text-xs font-medium px-2 py-0.5 rounded-full border whitespace-nowrap bg-purple-50 text-purple-700 border-purple-200">배관+덕트</span>
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full border whitespace-nowrap bg-purple-50 text-purple-700 border-purple-200">Pipe+Duct</span>
               </td>
               <td className="px-4 py-3 text-gray-500">{g.order_date?.slice(0, 10) ?? '-'}</td>
               <td className="px-4 py-3 font-medium">{g.vendor}</td>
@@ -446,15 +449,15 @@ function GroupTable({ rows, onNavigate }: { rows: QuoteGroup[]; onNavigate: (id:
               <td className="px-4 py-3 text-center">
                 <div className="flex flex-col gap-0.5 items-center">
                   {g.pipe_quotes.map(s => (
-                    <span key={s.id} className="text-xs px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200 whitespace-nowrap">배관 {s.status}</span>
+                    <span key={s.id} className="text-xs px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200 whitespace-nowrap">Pipe {statusLabel(s.status, QUOTE_STATUS_LABEL)}</span>
                   ))}
                   {g.duct_quotes.map(s => (
-                    <span key={s.id} className="text-xs px-1.5 py-0.5 rounded-full bg-orange-50 text-orange-600 border border-orange-200 whitespace-nowrap">덕트 {s.status}</span>
+                    <span key={s.id} className="text-xs px-1.5 py-0.5 rounded-full bg-orange-50 text-orange-600 border border-orange-200 whitespace-nowrap">Duct {statusLabel(s.status, QUOTE_STATUS_LABEL)}</span>
                   ))}
                 </div>
               </td>
               <td className="px-4 py-3 text-center">
-                <span className={`text-xs font-medium px-2 py-1 rounded-full border whitespace-nowrap ${STATUS_COLORS[g.status]}`}>{g.status}</span>
+                <span className={`text-xs font-medium px-2 py-1 rounded-full border whitespace-nowrap ${STATUS_COLORS[g.status]}`}>{statusLabel(g.status, QUOTE_STATUS_LABEL)}</span>
               </td>
             </tr>
           ))}
@@ -483,25 +486,25 @@ function AllTable({ rows, sortKey, sortDir, onSort, deletingId, onNavigate, onDe
         <thead className="bg-gray-50 text-gray-500 text-xs">
           <tr>
             <th className="px-4 py-3 text-left w-10">No.</th>
-            <th className="px-4 py-3 text-left w-[72px]">유형</th>
+            <th className="px-4 py-3 text-left w-[72px]">Type</th>
             <th className="relative group/th px-4 py-3 text-left cursor-pointer select-none" style={{width:w.order_date}} onClick={()=>onSort('order_date')}>
-              <span className="inline-flex items-center gap-1">작성일<SortArrow col="order_date" sortKey={sortKey} sortDir={sortDir}/></span>{rh('order_date')}
+              <span className="inline-flex items-center gap-1">Date<SortArrow col="order_date" sortKey={sortKey} sortDir={sortDir}/></span>{rh('order_date')}
             </th>
             <th className="relative group/th px-4 py-3 text-left cursor-pointer select-none" style={{width:w.vendor}} onClick={()=>onSort('vendor')}>
-              <span className="inline-flex items-center gap-1">업체<SortArrow col="vendor" sortKey={sortKey} sortDir={sortDir}/></span>{rh('vendor')}
+              <span className="inline-flex items-center gap-1">Vendor<SortArrow col="vendor" sortKey={sortKey} sortDir={sortDir}/></span>{rh('vendor')}
             </th>
             <th className="relative group/th px-4 py-3 text-left cursor-pointer select-none" style={{width:w.project}} onClick={()=>onSort('project')}>
-              <span className="inline-flex items-center gap-1">현장명<SortArrow col="project" sortKey={sortKey} sortDir={sortDir}/></span>{rh('project')}
+              <span className="inline-flex items-center gap-1">Project<SortArrow col="project" sortKey={sortKey} sortDir={sortDir}/></span>{rh('project')}
             </th>
             <th className="relative group/th px-4 py-3 text-left cursor-pointer select-none" style={{width:w.delivery_date}} onClick={()=>onSort('delivery_date')}>
-              <span className="inline-flex items-center gap-1">유효기간<SortArrow col="delivery_date" sortKey={sortKey} sortDir={sortDir}/></span>{rh('delivery_date')}
+              <span className="inline-flex items-center gap-1">Valid Until<SortArrow col="delivery_date" sortKey={sortKey} sortDir={sortDir}/></span>{rh('delivery_date')}
             </th>
             <th className="relative group/th px-4 py-3 text-left cursor-pointer select-none" style={{width:w.author}} onClick={()=>onSort('author')}>
-              <span className="inline-flex items-center gap-1">작성자<SortArrow col="author" sortKey={sortKey} sortDir={sortDir}/></span>{rh('author')}
+              <span className="inline-flex items-center gap-1">Author<SortArrow col="author" sortKey={sortKey} sortDir={sortDir}/></span>{rh('author')}
             </th>
-            <th className="relative group/th px-4 py-3 text-center" style={{width:w.status}}>상태{rh('status')}</th>
-            <th className="relative group/th px-4 py-3 text-center" style={{width:w.converted}}>전환{rh('converted')}</th>
-            <th className="px-4 py-3 text-center" style={{width:w.del}}>삭제</th>
+            <th className="relative group/th px-4 py-3 text-center" style={{width:w.status}}>Status{rh('status')}</th>
+            <th className="relative group/th px-4 py-3 text-center" style={{width:w.converted}}>Converted{rh('converted')}</th>
+            <th className="px-4 py-3 text-center" style={{width:w.del}}>Delete</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
@@ -516,7 +519,7 @@ function AllTable({ rows, sortKey, sortDir, onSort, deletingId, onNavigate, onDe
                     row.type === '배관' ? 'bg-blue-50 text-blue-700 border-blue-200'
                     : row.type === '덕트' ? 'bg-orange-50 text-orange-600 border-orange-200'
                     : 'bg-purple-50 text-purple-700 border-purple-200'
-                  }`}>{row.type}</span>
+                  }`}>{row.type === '배관' ? 'Pipe' : row.type === '덕트' ? 'Duct' : 'Pipe+Duct'}</span>
                 </td>
                 <td className="px-4 py-3 text-gray-500">{row.order_date?.slice(0, 10) ?? '-'}</td>
                 <td className="px-4 py-3 font-medium">{row.vendor}</td>
@@ -529,16 +532,16 @@ function AllTable({ rows, sortKey, sortDir, onSort, deletingId, onNavigate, onDe
                       {row.subQuotes.map((s, j) => (
                         <span key={j} className={`text-xs px-1.5 py-0.5 rounded-full border whitespace-nowrap ${
                           s.type === '배관' ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-orange-50 text-orange-600 border-orange-200'
-                        }`}>{s.type} {s.status}</span>
+                        }`}>{s.type === '배관' ? 'Pipe' : 'Duct'} {statusLabel(s.status, QUOTE_STATUS_LABEL)}</span>
                       ))}
                     </div>
                   ) : (
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full border whitespace-nowrap ${STATUS_COLORS[row.status]}`}>{row.status}</span>
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full border whitespace-nowrap ${STATUS_COLORS[row.status]}`}>{statusLabel(row.status, QUOTE_STATUS_LABEL)}</span>
                   )}
                 </td>
                 <td className="px-4 py-3 text-center">
                   {isGroup ? <span className="text-gray-300 text-xs">—</span>
-                    : row.converted_id ? <span className="text-xs text-green-600 font-medium">✓ 전환됨</span>
+                    : row.converted_id ? <span className="text-xs text-green-600 font-medium">✓ Converted</span>
                     : <span className="text-gray-300 text-xs">—</span>}
                 </td>
                 <td className="px-4 py-3 text-center">
@@ -573,26 +576,26 @@ function PipeTable({ rows, sortKey, sortDir, onSort, deletingId, onNavigate, onD
           <tr>
             <th className="px-4 py-3 text-left w-10">No.</th>
             <th className="relative group/th px-4 py-3 text-left cursor-pointer select-none" style={{width:w.order_date}} onClick={()=>onSort('order_date')}>
-              <span className="inline-flex items-center gap-1">작성일<SortArrow col="order_date" sortKey={sortKey} sortDir={sortDir}/></span>{rh('order_date')}
+              <span className="inline-flex items-center gap-1">Date<SortArrow col="order_date" sortKey={sortKey} sortDir={sortDir}/></span>{rh('order_date')}
             </th>
             <th className="relative group/th px-4 py-3 text-left cursor-pointer select-none" style={{width:w.vendor}} onClick={()=>onSort('vendor')}>
-              <span className="inline-flex items-center gap-1">업체<SortArrow col="vendor" sortKey={sortKey} sortDir={sortDir}/></span>{rh('vendor')}
+              <span className="inline-flex items-center gap-1">Vendor<SortArrow col="vendor" sortKey={sortKey} sortDir={sortDir}/></span>{rh('vendor')}
             </th>
             <th className="relative group/th px-4 py-3 text-left cursor-pointer select-none" style={{width:w.project}} onClick={()=>onSort('project')}>
-              <span className="inline-flex items-center gap-1">현장명<SortArrow col="project" sortKey={sortKey} sortDir={sortDir}/></span>{rh('project')}
+              <span className="inline-flex items-center gap-1">Project<SortArrow col="project" sortKey={sortKey} sortDir={sortDir}/></span>{rh('project')}
             </th>
             <th className="relative group/th px-4 py-3 text-left cursor-pointer select-none" style={{width:w.delivery_date}} onClick={()=>onSort('delivery_date')}>
-              <span className="inline-flex items-center gap-1">유효기간<SortArrow col="delivery_date" sortKey={sortKey} sortDir={sortDir}/></span>{rh('delivery_date')}
+              <span className="inline-flex items-center gap-1">Valid Until<SortArrow col="delivery_date" sortKey={sortKey} sortDir={sortDir}/></span>{rh('delivery_date')}
             </th>
             <th className="relative group/th px-4 py-3 text-left cursor-pointer select-none" style={{width:w.contact_name}} onClick={()=>onSort('contact_name')}>
-              <span className="inline-flex items-center gap-1">인수자<SortArrow col="contact_name" sortKey={sortKey} sortDir={sortDir}/></span>{rh('contact_name')}
+              <span className="inline-flex items-center gap-1">Contact<SortArrow col="contact_name" sortKey={sortKey} sortDir={sortDir}/></span>{rh('contact_name')}
             </th>
             <th className="relative group/th px-4 py-3 text-left cursor-pointer select-none" style={{width:w.author}} onClick={()=>onSort('author')}>
-              <span className="inline-flex items-center gap-1">작성자<SortArrow col="author" sortKey={sortKey} sortDir={sortDir}/></span>{rh('author')}
+              <span className="inline-flex items-center gap-1">Author<SortArrow col="author" sortKey={sortKey} sortDir={sortDir}/></span>{rh('author')}
             </th>
-            <th className="relative group/th px-4 py-3 text-center" style={{width:w.status}}>상태{rh('status')}</th>
-            <th className="relative group/th px-4 py-3 text-center" style={{width:w.converted}}>전환{rh('converted')}</th>
-            <th className="px-4 py-3 text-center w-12">삭제</th>
+            <th className="relative group/th px-4 py-3 text-center" style={{width:w.status}}>Status{rh('status')}</th>
+            <th className="relative group/th px-4 py-3 text-center" style={{width:w.converted}}>Converted{rh('converted')}</th>
+            <th className="px-4 py-3 text-center w-12">Delete</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
@@ -607,11 +610,11 @@ function PipeTable({ rows, sortKey, sortDir, onSort, deletingId, onNavigate, onD
               <td className="px-4 py-3 text-gray-500">{q.contact_name || '-'}</td>
               <td className="px-4 py-3 text-gray-500">{q.author || '-'}</td>
               <td className="px-4 py-3 text-center">
-                <span className={`text-xs font-medium px-2 py-1 rounded-full border whitespace-nowrap ${STATUS_COLORS[q.status]}`}>{q.status}</span>
+                <span className={`text-xs font-medium px-2 py-1 rounded-full border whitespace-nowrap ${STATUS_COLORS[q.status]}`}>{statusLabel(q.status, QUOTE_STATUS_LABEL)}</span>
               </td>
               <td className="px-4 py-3 text-center">
                 {q.converted_order_id
-                  ? <span className="text-xs text-green-600 font-medium">✓ 전환됨</span>
+                  ? <span className="text-xs text-green-600 font-medium">✓ Converted</span>
                   : <span className="text-gray-300 text-xs">—</span>}
               </td>
               <td className="px-4 py-3 text-center">
@@ -645,26 +648,26 @@ function DuctTable({ rows, sortKey, sortDir, onSort, deletingId, onNavigate, onD
           <tr>
             <th className="px-4 py-3 text-left w-10">No.</th>
             <th className="relative group/th px-4 py-3 text-left cursor-pointer select-none" style={{width:w.order_date}} onClick={()=>onSort('order_date')}>
-              <span className="inline-flex items-center gap-1">작성일<SortArrow col="order_date" sortKey={sortKey} sortDir={sortDir}/></span>{rh('order_date')}
+              <span className="inline-flex items-center gap-1">Date<SortArrow col="order_date" sortKey={sortKey} sortDir={sortDir}/></span>{rh('order_date')}
             </th>
             <th className="relative group/th px-4 py-3 text-left cursor-pointer select-none" style={{width:w.manufacturer}} onClick={()=>onSort('manufacturer')}>
-              <span className="inline-flex items-center gap-1">제조사<SortArrow col="manufacturer" sortKey={sortKey} sortDir={sortDir}/></span>{rh('manufacturer')}
+              <span className="inline-flex items-center gap-1">Manufacturer<SortArrow col="manufacturer" sortKey={sortKey} sortDir={sortDir}/></span>{rh('manufacturer')}
             </th>
             <th className="relative group/th px-4 py-3 text-left cursor-pointer select-none" style={{width:w.customer_name}} onClick={()=>onSort('customer_name')}>
-              <span className="inline-flex items-center gap-1">업체<SortArrow col="customer_name" sortKey={sortKey} sortDir={sortDir}/></span>{rh('customer_name')}
+              <span className="inline-flex items-center gap-1">Vendor<SortArrow col="customer_name" sortKey={sortKey} sortDir={sortDir}/></span>{rh('customer_name')}
             </th>
             <th className="relative group/th px-4 py-3 text-left cursor-pointer select-none" style={{width:w.project}} onClick={()=>onSort('project')}>
-              <span className="inline-flex items-center gap-1">현장명<SortArrow col="project" sortKey={sortKey} sortDir={sortDir}/></span>{rh('project')}
+              <span className="inline-flex items-center gap-1">Project<SortArrow col="project" sortKey={sortKey} sortDir={sortDir}/></span>{rh('project')}
             </th>
             <th className="relative group/th px-4 py-3 text-left cursor-pointer select-none" style={{width:w.delivery_date}} onClick={()=>onSort('delivery_date')}>
-              <span className="inline-flex items-center gap-1">유효기간<SortArrow col="delivery_date" sortKey={sortKey} sortDir={sortDir}/></span>{rh('delivery_date')}
+              <span className="inline-flex items-center gap-1">Valid Until<SortArrow col="delivery_date" sortKey={sortKey} sortDir={sortDir}/></span>{rh('delivery_date')}
             </th>
             <th className="relative group/th px-4 py-3 text-left cursor-pointer select-none" style={{width:w.author}} onClick={()=>onSort('author')}>
-              <span className="inline-flex items-center gap-1">작성자<SortArrow col="author" sortKey={sortKey} sortDir={sortDir}/></span>{rh('author')}
+              <span className="inline-flex items-center gap-1">Author<SortArrow col="author" sortKey={sortKey} sortDir={sortDir}/></span>{rh('author')}
             </th>
-            <th className="relative group/th px-4 py-3 text-center" style={{width:w.status}}>상태{rh('status')}</th>
-            <th className="relative group/th px-4 py-3 text-center" style={{width:w.converted}}>전환{rh('converted')}</th>
-            <th className="px-4 py-3 text-center w-12">삭제</th>
+            <th className="relative group/th px-4 py-3 text-center" style={{width:w.status}}>Status{rh('status')}</th>
+            <th className="relative group/th px-4 py-3 text-center" style={{width:w.converted}}>Converted{rh('converted')}</th>
+            <th className="px-4 py-3 text-center w-12">Delete</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
@@ -679,11 +682,11 @@ function DuctTable({ rows, sortKey, sortDir, onSort, deletingId, onNavigate, onD
               <td className="px-4 py-3 text-gray-500">{q.delivery_date?.slice(0, 10) ?? '-'}</td>
               <td className="px-4 py-3 text-gray-500">{q.author || '-'}</td>
               <td className="px-4 py-3 text-center">
-                <span className={`text-xs font-medium px-2 py-1 rounded-full border whitespace-nowrap ${STATUS_COLORS[q.status]}`}>{q.status}</span>
+                <span className={`text-xs font-medium px-2 py-1 rounded-full border whitespace-nowrap ${STATUS_COLORS[q.status]}`}>{statusLabel(q.status, QUOTE_STATUS_LABEL)}</span>
               </td>
               <td className="px-4 py-3 text-center">
                 {q.converted_duct_order_id
-                  ? <span className="text-xs text-green-600 font-medium">✓ 전환됨</span>
+                  ? <span className="text-xs text-green-600 font-medium">✓ Converted</span>
                   : <span className="text-gray-300 text-xs">—</span>}
               </td>
               <td className="px-4 py-3 text-center">
