@@ -111,7 +111,7 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
     try {
       const res = await fetch('/api/quotes/parse-excel', { method: 'POST', body: fd })
       const data = await res.json()
-      if (!res.ok) { alert(data.error ?? '파싱 오류'); return }
+      if (!res.ok) { alert(data.error ?? 'Parsing error'); return }
       setExcelSheets(data.sheets ?? []); setExcelSelectedSheet(data.selectedSheet ?? '')
       setExcelRows(data.rows ?? []); setExcelHeaderRowIdx(data.detected?.headerRowIdx ?? 0)
       setExcelNameCol(data.detected?.nameCol ?? null); setExcelSpecCol(data.detected?.specCol ?? null)
@@ -126,7 +126,7 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
       (row[excelNameCol] ?? '').includes('내화') ||
       (excelSpecCol !== null && (row[excelSpecCol] ?? '').includes('내화'))
     )
-    if (filtered.length === 0) { alert("'내화' 포함 품목을 찾지 못했습니다."); return }
+    if (filtered.length === 0) { alert("Couldn't find any items containing '내화' (fire-resistant)."); return }
     const base = pipeItems.filter(it => it.name.trim() || it.internalName?.trim())
     const newItems: OrderItem[] = filtered.map((row, i) => ({
       no: base.length + i + 1, name: row[excelNameCol] ?? '',
@@ -142,7 +142,7 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
         vendor, vendorMode, pct, project, orderDate, agreeDate, author, notes,
         pipeItems, ductItems, insul50Qty, insul25Qty, manufacturer, activeTab,
       }))
-      toast.success('임시저장되었습니다.')
+      toast.success('Draft saved.')
     } catch {}
   }
 
@@ -167,7 +167,7 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
       if (d.activeTab) setActiveTab(d.activeTab)
       setHasDraft(false)
       localStorage.removeItem(draftKey)
-      toast.success('임시저장 내용을 불러왔습니다.')
+      toast.success('Draft restored.')
     } catch {}
   }
 
@@ -178,22 +178,22 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
 
   // ── 저장 ──
   async function handleSave() {
-    if (!vendor.trim()) { setError('발주의뢰처를 선택해 주세요.'); return }
-    if (!author.trim()) { setError('작성자를 입력해 주세요.'); return }
+    if (!vendor.trim()) { setError('Please select a requesting party.'); return }
+    if (!author.trim()) { setError('Please enter an author.'); return }
     if (vendorMode === 'new' && (pct == null || pct <= 0 || pct > 100)) {
-      setError('판매가 비율(1~100)을 입력해 주세요.'); return
+      setError('Please enter a sale price % (1–100).'); return
     }
     if (type === 'pipe' && !pipeItems.some(it => it.name.trim() || it.internalName?.trim())) {
-      setError('배관 품목을 1개 이상 입력해 주세요.'); return
+      setError('Please enter at least one pipe item.'); return
     }
     if (type === 'combined' && !pipeItems.some(it => it.name.trim() || it.internalName?.trim()) && ductItems.length === 0) {
-      setError('배관 또는 덕트 품목을 입력해 주세요.'); return
+      setError('Please enter pipe or duct items.'); return
     }
     if ((type === 'pipe' || type === 'combined') && pipeItems.some(it => (it.name?.trim() || it.internalName?.trim()) && it.internalName !== '수기 금액 추가' && !it.spec?.trim())) {
-      setError('배관 품목의 규격을 모두 입력해 주세요.'); return
+      setError('Please enter specs for all pipe items.'); return
     }
     if ((type === 'duct' || type === 'combined') && ductItems.some(it => it.type !== '수기 금액 추가' && (it.width <= 0 || it.height <= 0))) {
-      setError('덕트 품목의 가로/세로 치수를 입력해 주세요.'); return
+      setError('Please enter width/height for all duct items.'); return
     }
     setError(''); setSaving(true)
     try {
@@ -212,11 +212,11 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
           body: JSON.stringify({ name: vendor.trim(), sale_pct: pct, ductSalePrices: ductSalePricesPayload }),
         })
         const regData = await regRes.json()
-        if (!regRes.ok) { setError(regData.error ?? '거래처 등록 오류'); return }
-        toast.success(`신규 거래처 '${vendor.trim()}'가 등록되었습니다.`)
-        if (ductSalePricesPayload.length > 0) toast.success('덕트 단가도 함께 등록되었습니다.')
-        if (regData.ecount === 'ok') toast.success('[ECOUNT] 거래처 등록 완료')
-        else if (regData.ecount === 'fail') toast.warning('ECOUNT 거래처 등록에 실패했습니다.')
+        if (!regRes.ok) { setError(regData.error ?? 'Error registering account'); return }
+        toast.success(`New account '${vendor.trim()}' registered.`)
+        if (ductSalePricesPayload.length > 0) toast.success('Duct pricing was also registered.')
+        if (regData.ecount === 'ok') toast.success('[ECOUNT] Account registered')
+        else if (regData.ecount === 'fail') toast.warning('Failed to register account in ECOUNT.')
       }
 
       const fileUrls: string[] = []
@@ -224,7 +224,7 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
         const fd = new FormData(); fd.append('file', f)
         const res = await fetch('/api/orders/image', { method: 'POST', body: fd })
         const data = await res.json()
-        if (!res.ok) { setError(data.error ?? '파일 업로드 실패'); setSaving(false); return }
+        if (!res.ok) { setError(data.error ?? 'File upload failed'); setSaving(false); return }
         fileUrls.push(data.imageUrl)
       }
 
@@ -277,15 +277,15 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
       }
 
       if (type === 'combined') {
-        // 1. quote_group 먼저 생성
+        // 1. Create quote_group first
         const groupRes = await fetch('/api/quote-groups', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ vendor, project, orderDate: orderDate || today(), author, notes }),
         })
-        if (!groupRes.ok) { setError('그룹 생성 오류'); setSaving(false); return }
+        if (!groupRes.ok) { setError('Error creating group'); setSaving(false); return }
         const { id: groupId } = await groupRes.json()
 
-        // 2. 배관 + 덕트 견적서 각각 저장 (group_id 포함)
+        // 2. Save pipe + duct quotes separately (with group_id)
         const commonInfo = { vendor, project, orderDate: orderDate || today(), agreeDate, author, notes, fileUrls, groupId }
         const filledPipe = pipeItems.filter(it => it.name.trim() || it.internalName?.trim())
         const pipeMfrDerived = [...new Set(filledPipe.map(it => (it as any).manufacturer).filter(Boolean))].join(',') || manufacturer
@@ -300,9 +300,9 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
           })
           if (pipeRes.ok) {
             const pd = await pipeRes.json()
-            if (pd.ecount === 'ok') toast.success('[ECOUNT] 배관 견적서 등록 완료')
-            else if (pd.ecount === 'skipped') toast.info('ECOUNT 품목코드가 없어 배관 견적서 등록을 건너뛰었습니다.')
-            else if (pd.ecount === 'fail') toast.error(`ECOUNT 배관 견적서 등록 실패${pd.ecountError ? `\n${pd.ecountError}` : ''}`, { autoClose: false })
+            if (pd.ecount === 'ok') toast.success('[ECOUNT] Pipe quote registered')
+            else if (pd.ecount === 'skipped') toast.info('Skipped ECOUNT pipe quote registration — no matching item code.')
+            else if (pd.ecount === 'fail') toast.error(`ECOUNT pipe quote registration failed${pd.ecountError ? `\n${pd.ecountError}` : ''}`, { autoClose: false })
           }
         }
 
@@ -333,13 +333,13 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
           })
           if (ductRes.ok) {
             const dd = await ductRes.json()
-            if (dd.ecount === 'ok') toast.success('[ECOUNT] 덕트 견적서 등록 완료')
-            else if (dd.ecount === 'skipped') toast.info('ECOUNT 품목코드가 없어 덕트 견적서 등록을 건너뛰었습니다.')
-            else if (dd.ecount === 'fail') toast.error(`ECOUNT 덕트 견적서 등록 실패${dd.ecountError ? `\n${dd.ecountError}` : ''}`, { autoClose: false })
+            if (dd.ecount === 'ok') toast.success('[ECOUNT] Duct quote registered')
+            else if (dd.ecount === 'skipped') toast.info('Skipped ECOUNT duct quote registration — no matching item code.')
+            else if (dd.ecount === 'fail') toast.error(`ECOUNT duct quote registration failed${dd.ecountError ? `\n${dd.ecountError}` : ''}`, { autoClose: false })
           }
         }
 
-        toast.success('복합 견적서가 저장되었습니다.')
+        toast.success('Combined quote saved.')
         localStorage.removeItem(draftKey)
         router.push(`/dashboard/quotes/groups/${groupId}`)
         return
@@ -347,8 +347,8 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
 
       const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       const data = await res.json()
-      if (!res.ok) { setError(data.error ?? '저장 오류'); return }
-      const msg = type === 'pipe' ? '배관 견적서가 저장되었습니다.' : '덕트 견적서가 저장되었습니다.'
+      if (!res.ok) { setError(data.error ?? 'Save error'); return }
+      const msg = type === 'pipe' ? 'Pipe quote saved.' : 'Duct quote saved.'
       sessionStorage.setItem('quote_toast', JSON.stringify({ msg, ecount: data.ecount, ecountError: data.ecountError ?? null }))
       const detailPath = type === 'pipe' ? `/dashboard/pipe-quotes/${data.id}` : `/dashboard/duct-quotes/${data.id}`
       localStorage.removeItem(draftKey)
@@ -356,7 +356,7 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
     } finally { setSaving(false) }
   }
 
-  const colOptions = excelRows[excelHeaderRowIdx]?.map((val, idx) => ({ idx, label: `${colLabel(idx)}열${val ? ` (${val.slice(0, 12)})` : ''}` })) ?? []
+  const colOptions = excelRows[excelHeaderRowIdx]?.map((val, idx) => ({ idx, label: `Col ${colLabel(idx)}${val ? ` (${val.slice(0, 12)})` : ''}` })) ?? []
   const previewRows = excelRows.slice(0, excelHeaderRowIdx + 1 + 20)
   const filteredCount = excelNameCol !== null
     ? excelRows.slice(excelHeaderRowIdx + 1).filter(r => (r[excelNameCol!] ?? '').includes('내화') || (excelSpecCol !== null && (r[excelSpecCol] ?? '').includes('내화'))).length
@@ -364,21 +364,21 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
 
   return (
     <div className="w-full space-y-5">
-      {/* 헤더 */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button onClick={() => router.push('/dashboard/quotes/new')} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </button>
           <h1 className="text-xl font-bold text-gray-900">
-            {type === 'pipe' ? '배관' : type === 'duct' ? '사각덕트' : '배관 + 사각덕트'} 견적서 작성
+            New {type === 'pipe' ? 'Pipe' : type === 'duct' ? 'Rectangular Duct' : 'Pipe + Rectangular Duct'} Quote
           </h1>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={saveDraft} className="px-4 py-2.5 rounded-md text-sm font-medium text-amber-600 border border-amber-300 hover:bg-amber-50 transition-colors cursor-pointer">임시저장</button>
-          <button onClick={() => router.back()} className="px-4 py-2.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">취소</button>
+          <button onClick={saveDraft} className="px-4 py-2.5 rounded-md text-sm font-medium text-amber-600 border border-amber-300 hover:bg-amber-50 transition-colors cursor-pointer">Save Draft</button>
+          <button onClick={() => router.back()} className="px-4 py-2.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
           <button onClick={handleSave} disabled={saving} className="px-5 py-2.5 rounded-md text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60 transition-colors cursor-pointer" style={{ backgroundColor: '#014A99' }}>
-            {saving ? '저장 중...' : '저장'}
+            {saving ? 'Saving...' : 'Save'}
           </button>
         </div>
       </div>
@@ -391,23 +391,23 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
             <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-amber-800 font-medium">임시저장된 내용이 있습니다.</span>
+            <span className="text-amber-800 font-medium">You have a saved draft.</span>
           </div>
           <div className="flex items-center gap-4">
-            <button onClick={restoreDraft} className="text-[#014A99] text-sm font-medium hover:underline cursor-pointer">불러오기</button>
-            <button onClick={clearDraft} className="text-gray-400 text-sm hover:text-gray-600 cursor-pointer">무시</button>
+            <button onClick={restoreDraft} className="text-[#014A99] text-sm font-medium hover:underline cursor-pointer">Restore</button>
+            <button onClick={clearDraft} className="text-gray-400 text-sm hover:text-gray-600 cursor-pointer">Dismiss</button>
           </div>
         </div>
       )}
 
-      {/* 견적 정보 */}
+      {/* Quote info */}
       <div className="bg-white rounded-lg border border-gray-200">
         <div className="px-5 py-3.5 border-b border-gray-200 flex items-center gap-2">
           <span className="w-1 h-4 rounded-full flex-shrink-0 bg-[#014A99]" />
-          <h2 className="font-semibold text-gray-800 text-sm">견적 정보</h2>
+          <h2 className="font-semibold text-gray-800 text-sm">Quote Info</h2>
         </div>
         <div className="p-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="발주의뢰처" required>
+          <Field label="Requesting Party" required>
             <select
               value={vendorMode === 'new' ? '__new__' : vendor}
               onChange={e => {
@@ -422,93 +422,93 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
               }}
               className={INPUT_CLS + ' cursor-pointer'}
             >
-              <option value="">-- 거래처 선택 --</option>
+              <option value="">-- Select Account --</option>
               {customers.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-              <option value="__new__">직접입력 (신규 업체)</option>
+              <option value="__new__">Enter manually (new account)</option>
             </select>
             {vendorMode === 'new' && (
-              <input value={vendor} onChange={e => setVendor(e.target.value)} placeholder="신규 업체명 입력" className={INPUT_CLS + ' mt-2'} />
+              <input value={vendor} onChange={e => setVendor(e.target.value)} placeholder="Enter new company name" className={INPUT_CLS + ' mt-2'} />
             )}
             {customers.length === 0 && (
               <p className="text-xs text-amber-600 mt-1">
-                등록된 거래처가 없습니다.{' '}
-                <a href="/dashboard/customers" className="underline hover:text-amber-800">거래처 등록</a>
-                {' '}후 다시 시도해 주세요.
+                No accounts registered.{' '}
+                <a href="/dashboard/customers" className="underline hover:text-amber-800">Register an account</a>
+                {' '}and try again.
               </p>
             )}
           </Field>
-          <Field label="제조사">
-            <input value={manufacturer} onChange={e => setManufacturer(e.target.value)} placeholder="필립산업" className={INPUT_CLS} />
+          <Field label="Manufacturer">
+            <input value={manufacturer} onChange={e => setManufacturer(e.target.value)} placeholder="Phillip Industries" className={INPUT_CLS} />
           </Field>
           {(pct != null || vendorMode === 'new') && (
-            <Field label="판매가 비율">
+            <Field label="Sale Price %">
               {vendorMode === 'new' ? (
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 whitespace-nowrap">협가 ×</span>
+                  <span className="text-sm text-gray-500 whitespace-nowrap">Negotiated ×</span>
                   <input type="number" min={1} max={100} value={pct ?? ''} onChange={e => setPct(e.target.value ? Number(e.target.value) : null)} className={INPUT_CLS + ' w-24'} />
                   <span className="text-sm text-gray-500">%</span>
                 </div>
               ) : (
-                <div className={INPUT_CLS + ' bg-gray-50 text-gray-500 cursor-default'}>협가 × {pct}%</div>
+                <div className={INPUT_CLS + ' bg-gray-50 text-gray-500 cursor-default'}>Negotiated × {pct}%</div>
               )}
             </Field>
           )}
-          <Field label="현장명">
-            <input value={project} onChange={e => setProject(e.target.value)} placeholder="예) 강남구 논현동 공동주택" className={INPUT_CLS} />
+          <Field label="Project">
+            <input value={project} onChange={e => setProject(e.target.value)} placeholder="e.g. Gangnam-gu Nonhyeon-dong apartment" className={INPUT_CLS} />
           </Field>
-          <Field label="작성일">
+          <Field label="Date Created">
             <input type="date" value={orderDate} onChange={e => setOrderDate(e.target.value)} className={INPUT_CLS} />
           </Field>
-          <Field label="유효기간">
+          <Field label="Valid Until">
             <input type="date" value={agreeDate} onChange={e => setAgreeDate(e.target.value)} className={INPUT_CLS} />
           </Field>
-          <Field label="작성자" required>
+          <Field label="Author" required>
             <select value={author} onChange={e => setAuthor(e.target.value)} className={INPUT_CLS}>
-              <option value="">-- 선택 --</option>
-              {['이주헌', '이주선', '이주송', '이민수'].map(n => <option key={n} value={n}>{n}</option>)}
+              <option value="">-- Select --</option>
+              {['John Lee', 'Sarah Kim', 'Tom Choi', 'Anna Min'].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </Field>
-          <Field label="비고" className="col-span-2">
-            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="비고" className={INPUT_CLS + ' resize-y'} />
+          <Field label="Notes" className="col-span-2">
+            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Notes" className={INPUT_CLS + ' resize-y'} />
           </Field>
         </div>
       </div>
 
-      {/* 파일 첨부 */}
+      {/* File attachments */}
       <div className="bg-white rounded-lg border border-gray-200">
         <div className="px-5 py-3.5 border-b border-gray-200 flex items-center gap-2">
           <span className="w-1 h-4 rounded-full flex-shrink-0 bg-[#014A99]" />
-          <h2 className="font-semibold text-gray-800 text-sm">파일 첨부 <span className="text-gray-400 font-normal">(선택)</span></h2>
+          <h2 className="font-semibold text-gray-800 text-sm">Attachments <span className="text-gray-400 font-normal">(optional)</span></h2>
         </div>
         <div className="p-5">
           <MultiFileUploader files={attachFiles} onChange={setAttachFiles} />
         </div>
       </div>
 
-      {/* 품목 목록 */}
+      {/* Item list */}
       <div className="bg-white rounded-lg border border-gray-200">
         <div className="px-5 py-3.5 border-b border-gray-200 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="w-1 h-4 rounded-full flex-shrink-0 bg-[#014A99]" />
-            <h2 className="font-semibold text-gray-800 text-sm">품목 목록</h2>
+            <h2 className="font-semibold text-gray-800 text-sm">Item List</h2>
           </div>
           {(type === 'pipe' || (type === 'combined' && activeTab === '배관')) && (
             <div className="flex items-center gap-3">
               <button onClick={() => setShowExcel(true)} className="flex items-center gap-1 text-xs font-medium text-gray-500 border border-gray-200 rounded-md px-2.5 py-1.5 hover:bg-gray-50 transition-colors cursor-pointer">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                엑셀 가져오기
+                Import from Excel
               </button>
             </div>
           )}
         </div>
-        {/* combined: 탭 구성 */}
+        {/* combined: tab layout */}
         {type === 'combined' && (
           <div className="flex border-b border-gray-200">
             {(['배관', '덕트'] as const).map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)}
                 className={`px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer ${activeTab === tab ? (tab === '배관' ? 'border-[#014A99] text-[#014A99]' : 'border-orange-500 text-orange-600') : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
-                <span className={`text-xs px-2 py-0.5 rounded-full mr-1.5 ${tab === '배관' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-600'}`}>{tab}</span>
-                {tab === '배관' ? pipeItems.filter(it => it.name.trim() || it.internalName?.trim()).length : ductItems.length}건
+                <span className={`text-xs px-2 py-0.5 rounded-full mr-1.5 ${tab === '배관' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-600'}`}>{tab === '배관' ? 'Pipe' : 'Duct'}</span>
+                {tab === '배관' ? pipeItems.filter(it => it.name.trim() || it.internalName?.trim()).length : ductItems.length}
               </button>
             ))}
           </div>
@@ -524,8 +524,8 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
             />
             {pipeSaleTotal > 0 && (
               <div className="border-t border-gray-100 px-4 py-3 flex items-center justify-end gap-2 bg-gray-50/50">
-                <span className="text-xs text-gray-400">합계</span>
-                <span className="text-sm font-bold text-gray-800">{pipeSaleTotal.toLocaleString()}원</span>
+                <span className="text-xs text-gray-400">Total</span>
+                <span className="text-sm font-bold text-gray-800">₩{pipeSaleTotal.toLocaleString()}</span>
               </div>
             )}
           </>
@@ -540,21 +540,21 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
         )}
       </div>
 
-      {/* 하단 버튼 */}
+      {/* Bottom buttons */}
       <div className="flex items-center justify-end gap-3 pb-8">
         {error && <span className="text-sm text-red-500">{error}</span>}
-        <button onClick={() => router.back()} className="px-5 py-2.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">취소</button>
+        <button onClick={() => router.back()} className="px-5 py-2.5 rounded-md text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">Cancel</button>
         <button onClick={handleSave} disabled={saving} className="px-6 py-2.5 rounded-md text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60 transition-colors cursor-pointer" style={{ backgroundColor: '#014A99' }}>
-          {saving ? '저장 중...' : '저장'}
+          {saving ? 'Saving...' : 'Save'}
         </button>
       </div>
 
-      {/* 엑셀 가져오기 모달 (배관) */}
+      {/* Excel import modal (pipe) */}
       {(type === 'pipe' || type === 'combined') && showExcel && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
-              <div><h2 className="text-base font-bold text-gray-900">엑셀에서 품목 가져오기</h2><p className="text-xs text-gray-400 mt-0.5">공내역서 엑셀에서 '내화' 포함 품목만 추출합니다.</p></div>
+              <div><h2 className="text-base font-bold text-gray-900">Import Items from Excel</h2><p className="text-xs text-gray-400 mt-0.5">Extracts only items containing '내화' (fire-resistant) from the BOQ Excel file.</p></div>
               <button onClick={() => { setShowExcel(false); setExcelFile(null); setExcelRows([]) }} className="text-gray-400 hover:text-gray-600 cursor-pointer">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
@@ -565,43 +565,43 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
                 <div onClick={() => excelInputRef.current?.click()} onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) { setExcelFile(f); fetchExcel(f) } }} onDragOver={e => e.preventDefault()}
                   className="border-2 border-dashed border-gray-200 rounded-xl p-10 text-center cursor-pointer hover:border-[#014A99] hover:bg-blue-50/20 transition-colors">
                   <svg className="w-10 h-10 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                  <p className="text-sm text-gray-500">엑셀 파일 드래그 또는 클릭하여 선택</p>
+                  <p className="text-sm text-gray-500">Drag an Excel file here or click to select</p>
                   <p className="text-xs text-gray-300 mt-1">.xlsx · .xls · .xlsm</p>
                 </div>
               ) : excelLoading ? (
-                <div className="text-center py-10 text-sm text-gray-400">파싱 중...</div>
+                <div className="text-center py-10 text-sm text-gray-400">Parsing...</div>
               ) : excelRows.length > 0 && (
                 <>
                   <div className="flex items-center gap-2 text-sm">
                     <svg className="w-4 h-4 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                     <span className="font-medium text-gray-700">{excelFile.name}</span>
-                    <button onClick={() => { setExcelFile(null); setExcelRows([]) }} className="ml-auto text-xs text-gray-400 hover:text-red-400 cursor-pointer">파일 변경</button>
+                    <button onClick={() => { setExcelFile(null); setExcelRows([]) }} className="ml-auto text-xs text-gray-400 hover:text-red-400 cursor-pointer">Change File</button>
                   </div>
                   {excelSheets.length > 1 && (
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-medium text-gray-500 shrink-0">시트 선택</span>
+                      <span className="text-xs font-medium text-gray-500 shrink-0">Select Sheet</span>
                       <select value={excelSelectedSheet} onChange={e => { setExcelSelectedSheet(e.target.value); if (excelFile) fetchExcel(excelFile, e.target.value) }} className="border border-gray-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-[#014A99] bg-white cursor-pointer">
                         {excelSheets.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
                   )}
                   <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                    <p className="text-xs font-semibold text-gray-600">컬럼 매핑</p>
+                    <p className="text-xs font-semibold text-gray-600">Column Mapping</p>
                     <div className="grid grid-cols-3 gap-3">
-                      {[{ label:'품명', value:excelNameCol, setter:setExcelNameCol, required:true }, { label:'규격', value:excelSpecCol, setter:setExcelSpecCol, required:false }, { label:'수량', value:excelQtyCol, setter:setExcelQtyCol, required:false }].map(({ label, value, setter, required }) => (
+                      {[{ label:'Item Name', value:excelNameCol, setter:setExcelNameCol, required:true }, { label:'Spec', value:excelSpecCol, setter:setExcelSpecCol, required:false }, { label:'Quantity', value:excelQtyCol, setter:setExcelQtyCol, required:false }].map(({ label, value, setter, required }) => (
                         <div key={label} className="flex flex-col gap-1">
                           <label className="text-xs text-gray-500">{label}{required && <span className="text-red-400 ml-0.5">*</span>}</label>
                           <select value={value??''} onChange={e => setter(e.target.value===''?null:Number(e.target.value))} className="border border-gray-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#014A99] bg-white cursor-pointer">
-                            <option value="">-- 선택 안함 --</option>
+                            <option value="">-- None --</option>
                             {colOptions.map(o => <option key={o.idx} value={o.idx}>{o.label}</option>)}
                           </select>
                         </div>
                       ))}
                     </div>
-                    {excelNameCol !== null && <p className="text-xs text-blue-600 font-medium">'내화' 포함 품목: {filteredCount}건</p>}
+                    {excelNameCol !== null && <p className="text-xs text-blue-600 font-medium">Items containing '내화': {filteredCount}</p>}
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-gray-600 mb-2">미리보기 (상위 {previewRows.length}행)</p>
+                    <p className="text-xs font-semibold text-gray-600 mb-2">Preview (first {previewRows.length} rows)</p>
                     <div className="overflow-x-auto rounded-lg border border-gray-200">
                       <table className="text-xs w-full">
                         <thead><tr className="bg-gray-50 border-b border-gray-200">
@@ -625,9 +625,9 @@ export default function QuoteFormPage({ type }: { type: QuoteType }) {
               )}
             </div>
             <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 shrink-0">
-              <button onClick={() => { setShowExcel(false); setExcelFile(null); setExcelRows([]) }} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">취소</button>
+              <button onClick={() => { setShowExcel(false); setExcelFile(null); setExcelRows([]) }} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 cursor-pointer">Cancel</button>
               <button onClick={handleExcelImport} disabled={excelNameCol===null||filteredCount===0} className="px-5 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-40 cursor-pointer" style={{ backgroundColor:'#014A99' }}>
-                {filteredCount>0?`${filteredCount}개 품목 가져오기`:'가져오기'}
+                {filteredCount>0?`Import ${filteredCount} item(s)`:'Import'}
               </button>
             </div>
           </div>
