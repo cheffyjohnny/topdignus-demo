@@ -1,8 +1,8 @@
 # Topdignus
 
-A business web portal and internal CRM for a fire-resistance fitting supplier.
+A business web portal built as an ERP+CRM system for a fire-resistance fitting supplier.
 
-Covers the full sales cycle: quote generation → order management → ERP sync → customer tracking.
+Covers the full sales cycle — quote generation → order management → customer tracking — with real-time ERP sync (ECOUNT) throughout.
 
 ---
 
