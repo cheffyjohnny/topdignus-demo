@@ -23,15 +23,13 @@ Covers the full sales cycle: quote generation → order management → ERP sync 
 
 ---
 
-## Domain
+## Hosting
 
 | Item | Detail |
 |---|---|
-| Domain | `topdignus.co.kr` |
-| Registrar | Gabia (gabia.com) |
-| Expiry | 2027-03-23 |
-| Hosting | Vercel |
-| Email | Resend DNS verified → sends from `topdi@topdignus.co.kr` |
+| Hosting | Vercel (free tier) |
+| Domain | `topdignus-demo.vercel.app` — no custom domain, demo instance only |
+| Database | Supabase (separate free-tier project, fully isolated from production) |
 
 ---
 
