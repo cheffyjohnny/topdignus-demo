@@ -17,7 +17,9 @@ Covers the full sales cycle: quote generation → order management → ERP sync 
 | Email | Resend |
 | Excel export | ExcelJS |
 | OCR | Google Drive API (OAuth2) |
+| AI | Gemini API (article → structured data extraction) |
 | ERP | ECOUNT integration |
+| Dev tooling | Built with [Claude Code](https://claude.com/claude-code) |
 
 ---
 
@@ -46,12 +48,14 @@ Covers the full sales cycle: quote generation → order management → ERP sync 
 
 ```
 NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY
 NEXTAUTH_SECRET
 RESEND_API_KEY
 GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET
 GOOGLE_REFRESH_TOKEN
+GEMINI_API_KEY
 ECOUNT_COM_CODE
 ECOUNT_USER_ID
 ECOUNT_API_CERT_KEY        # expires 2027-05-05
@@ -99,19 +103,16 @@ Run these files in sequence via the Supabase SQL Editor:
 
 ---
 
-## Local Development
+## Live Demo
 
-```bash
-npm install
-# set up .env.local first
-npm run dev   # http://localhost:3000
-```
+**https://topdignus-demo.vercel.app/**
 
----
+A fully working instance running on fake data only — no connection to production or any live business data.
 
-## Demo Environment
+Admin portal: **https://topdignus-demo.vercel.app/login**
+`username: demo` / `password: password`
 
-To run a demo instance with fake data (for portfolio / review purposes), see [`docs/DEMO_SETUP.md`](docs/DEMO_SETUP.md).
+To spin up a separate copy of this demo, see [`docs/DEMO_SETUP.md`](docs/DEMO_SETUP.md).
 
 ---
 
